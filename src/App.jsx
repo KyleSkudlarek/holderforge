@@ -1,11 +1,40 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid, SoftShadows } from "@react-three/drei";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { SUBTRACTION, Brush, Evaluator } from "three-bvh-csg";
+import * as THREE from "three";
+
+function BoxWithHole({ diameter }) {
+  const FIXED_HEIGHT = 25;
+
+  // Create the CSG geometry
+  const geometry = useMemo(() => {
+    const evaluator = new Evaluator();
+
+    // Base box
+    const box = new Brush(new THREE.BoxGeometry(1, 1, 1));
+
+    // Cylinder hole
+    const hole = new Brush(new THREE.CylinderGeometry(diameter / 200, diameter / 200, 1.2, 32));
+    hole.position.set(0, 0, 0);
+    hole.rotation.x = Math.PI / 2; // Rotate to align with box
+
+    // Subtract the hole from the box
+    const result = evaluator.evaluate(box, hole, SUBTRACTION);
+    
+    return result.geometry;
+  }, [diameter]);
+
+  return (
+    <mesh position={[0, FIXED_HEIGHT / 200, 0]} scale={[1, FIXED_HEIGHT / 100, 1]} castShadow receiveShadow geometry={geometry}>
+      <meshStandardMaterial color="white" />
+    </mesh>
+  );
+}
 
 function App() {
   const [inputDiameter, setInputDiameter] = useState("20");
   const [renderedDiameter, setRenderedDiameter] = useState(20);
-  const FIXED_HEIGHT = 25;
 
   const limits = {
     diameter: { min: 10, max: 30 }
@@ -13,11 +42,9 @@ function App() {
 
   const handleInputChange = (e) => {
     const newValue = e.target.value;
-    // If change is from spinbutton (step of 1)
     if (Math.abs(Number(newValue) - Number(inputDiameter)) === 1) {
       updateRenderedDiameter(newValue);
     } else {
-      // Just update input state while typing
       setInputDiameter(newValue);
     }
   };
@@ -81,11 +108,8 @@ function App() {
           {/* Floor Grid */}
           <Grid args={[10, 10]} cellSize={0.2} cellColor="#aaaaaa" sectionColor="#ffffff" fadeDistance={10} />
 
-          {/* Cube */}
-          <mesh position={[0, FIXED_HEIGHT / 200, 0]} scale={[renderedDiameter / 100, FIXED_HEIGHT / 100, renderedDiameter / 100]} castShadow receiveShadow>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="white" />
-          </mesh>
+          {/* Cube with Hole */}
+          <BoxWithHole diameter={renderedDiameter} />
 
           {/* Orbit Controls for panning & zooming */}
           <OrbitControls 

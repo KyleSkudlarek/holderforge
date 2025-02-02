@@ -3,9 +3,16 @@ import styled from "styled-components";
 import { atom, useAtom } from "jotai";
 
 const modelConfigAtom = atom({
-  mm2pixel: 2, // Scale factor (1mm = 2px)
-  width: 120, // Default model width in mm
-  height: 81, // Default model width in mm
+  mm2pixel: 2, // Scale factor (1mm = 2px). Default is 2
+  width: 120, // Default model width in mm. Default is 120
+  height: 81, // Default model width in mm. Default is 81
+  rows: 3, // Default is 3
+  row_1_height: 27, // Default is 27
+  row_2_height: 27, // Default is 27
+  row_3_height: 27, // Default is 27
+  row_1_hole_diameter: 15, // Default is 15
+  row_2_hole_diameter: 15, // Default is 15
+  row_3_hole_diameter: 15, // Default is 15
 });
 
 // Styled Components
@@ -24,19 +31,19 @@ const GridLayout = styled.div`
 const Header = styled.header`
   grid-area: header;
   background: grey;
-  border-bottom: 3px solid black;
+  outline: 3px solid black;
 `;
 
 const Footer = styled.footer`
   grid-area: footer;
   background: grey;
-  border-top: 3px solid black;
+  outline: 3px solid black;
 `;
 
 const LeftPanel = styled.div`
   grid-area: left;
   background: white;
-  border: 3px solid black;
+  outline: 3px solid black;
   display: flex;
   flex-direction: column; 
   justify-content: center;
@@ -55,7 +62,7 @@ const Input = styled.input`
 const RightPanel = styled.div`
   grid-area: right;
   background: white;
-  border: 3px solid black;
+  outline: 3px solid black;
 `;
 
 const CenterPanel = styled.div`
@@ -65,10 +72,67 @@ const CenterPanel = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  outline: 3px solid black;
 `;
 
 const Model = styled.div`
-  background: lightgray;
+  background: red;
+  width: ${({ width }) => width}px;
+  height: ${({ height }) => height}px;
+  outline: 1px solid black;
+`;
+
+const Row1 = styled.div`
+  background: lightgrey;
+  width: 100%;
+  height: ${({ height }) => height}px;
+  outline: 1px solid black;
+  display: flex;
+  box-sizing: border-box; /* Ensures padding is part of the width */
+  padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;
+  padding-right:${({ paddingLeftRight }) => paddingLeftRight}px;
+  padding-top:${({ paddingTopBottom }) => paddingTopBottom}px;
+  padding-bottom:${({ paddingTopBottom }) => paddingTopBottom}px;
+  gap: ${({ holeGap }) => holeGap}px;
+
+ 
+
+`;
+
+const Row2 = styled.div`
+  background: lightgrey;
+  width: 100%;
+  height: ${({ height }) => height}px;
+  outline: 1px solid black;
+  display: flex;
+  box-sizing: border-box; /* Ensures padding is part of the width */
+  padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;
+  padding-right:${({ paddingLeftRight }) => paddingLeftRight}px;
+  padding-top:${({ paddingTopBottom }) => paddingTopBottom}px;
+  padding-bottom:${({ paddingTopBottom }) => paddingTopBottom}px;
+  gap: ${({ holeGap }) => holeGap}px;
+`;
+
+const Row3 = styled.div`
+  background: lightgrey;
+  width: 100%;
+  height: ${({ height }) => height}px;
+  outline: 1px solid black;
+  display: flex;
+  box-sizing: border-box; /* Ensures padding is part of the width */
+  padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;
+  padding-right:${({ paddingLeftRight }) => paddingLeftRight}px;
+  padding-top:${({ paddingTopBottom }) => paddingTopBottom}px;
+  padding-bottom:${({ paddingTopBottom }) => paddingTopBottom}px;
+  gap: ${({ holeGap }) => holeGap}px;
+`;
+
+const Hole = styled.div`
+  background: darkgrey;
+  width: ${({ diameter }) => diameter}px;
+  height: ${({ diameter }) => diameter}px;
+  outline: 1px solid black;
+  box-shadow: inset 0 0 10px black; /* Inner shadow for depth */
 `;
 
 
@@ -90,6 +154,48 @@ const GridPreview = () => {
     }));
   };
 
+  const updateRow1Height = (e) => {
+    setModelConfig((prev) => ({
+      ...prev,
+      row_1_height: parseInt(e.target.value) || 0,
+    }));
+  };
+
+  const updateRow2Height = (e) => {
+    setModelConfig((prev) => ({
+      ...prev,
+      row_2_height: parseInt(e.target.value) || 0,
+    }));
+  };
+
+  const updateRow3Height = (e) => {
+    setModelConfig((prev) => ({
+      ...prev,
+      row_3_height: parseInt(e.target.value) || 0,
+    }));
+  };
+
+  const updateRow1HoleDiameter = (e) => {
+    setModelConfig((prev) => ({
+      ...prev,
+      row_1_hole_diameter: parseInt(e.target.value) || 0,
+    }));
+  };
+
+  const updateRow2HoleDiameter = (e) => {
+    setModelConfig((prev) => ({
+      ...prev,
+      row_2_hole_diameter: parseInt(e.target.value) || 0,
+    }));
+  };
+
+  const updateRow3HoleDiameter = (e) => {
+    setModelConfig((prev) => ({
+      ...prev,
+      row_3_hole_diameter: parseInt(e.target.value) || 0,
+    }));
+  };
+
 
   return (
     <GridLayout>
@@ -103,14 +209,70 @@ const GridPreview = () => {
           <span>Model Height (mm)</span>
           <Input type="number" value={modelConfig.height} onChange={updateModelHeight} />
         </ModelInput>
+        <ModelInput>
+          <span>Row 1 Height (mm)</span>
+          <Input type="number" value={modelConfig.row_1_height} onChange={updateRow1Height} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 2 Height (mm)</span>
+          <Input type="number" value={modelConfig.row_2_height} onChange={updateRow2Height} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 3 Height (mm)</span>
+          <Input type="number" value={modelConfig.row_3_height} onChange={updateRow3Height} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 1 Hole Diameter (mm)</span>
+          <Input type="number" value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 2 Hole Diameter (mm)</span>
+          <Input type="number" value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 3 Hole Diameter (mm)</span>
+          <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
+        </ModelInput>
       </LeftPanel>
       <CenterPanel>
         <Model
-          style={{
-            width: modelConfig.width * modelConfig.mm2pixel,
-            height: modelConfig.height * modelConfig.mm2pixel,
-          }}
-        />
+            width={modelConfig.width * modelConfig.mm2pixel}
+            height={modelConfig.height * modelConfig.mm2pixel}
+        >
+          <Row1 height={modelConfig.row_1_height * modelConfig.mm2pixel} 
+                paddingLeftRight={9.9 * modelConfig.mm2pixel}
+                paddingTopBottom={6 * modelConfig.mm2pixel}
+                holeGap={6.3 * modelConfig.mm2pixel}
+          >
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
+          </Row1>
+          <Row2 height={modelConfig.row_2_height * modelConfig.mm2pixel}
+                paddingLeftRight={9.9 * modelConfig.mm2pixel}
+                paddingTopBottom={6 * modelConfig.mm2pixel}
+                holeGap={6.3 * modelConfig.mm2pixel}
+          >
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
+          </Row2>  
+          <Row3 height={modelConfig.row_3_height * modelConfig.mm2pixel} 
+                paddingLeftRight={9.9 * modelConfig.mm2pixel}
+                paddingTopBottom={6 * modelConfig.mm2pixel}
+                holeGap={6.3 * modelConfig.mm2pixel}
+          >
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
+          </Row3>
+        </Model>
       </CenterPanel>
       <RightPanel />
       <Footer />

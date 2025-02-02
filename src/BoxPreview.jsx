@@ -4,14 +4,12 @@ import styled from "styled-components";
 
 // Jotai state for grid (explicit row hole sizes)
 const boxConfigAtom = atom({
-  row1HoleSize: 35, // Bottom row
+  row1HoleSize: 20, // Bottom row
   row2HoleSize: 20, // Middle row
-  row3HoleSize: 24, // Top row
-  holeSpacing: 3, // 3mm between holes
+  row3HoleSize: 20, // Top row
   rows: 3, // Fixed number of rows
-  columns: 5, // Number of columns
+  holes_per_row: 5, // Number of holes per row
   mm2pixel: 2, // Scale factor (1mm = 2px)
-  rowTierHeight: 8, // Height difference per tier in mm
   minGap: 4, // Minimum gap between holes in mm
 });
 
@@ -62,7 +60,7 @@ const Box = styled.div.attrs({ displayName: "Box" })`
 
 const Row = styled.div.attrs({ displayName: "Row" })`
   display: grid;
-  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
+  grid-template-columns: ${({ holes_per_row }) => `repeat(${holes_per_row}, 1fr)`};
   place-items: center;
   position: relative;
   width: 100%;
@@ -139,11 +137,6 @@ const BoxPreview = () => {
 
   // Calculate box size dynamically based on the largest hole size in any row
   const maxRowHoleSize = Math.max(row1Size, row2Size, row3Size);
-  const boxWidth =
-    boxConfig.columns * (maxRowHoleSize + boxConfig.holeSpacing) * boxConfig.mm2pixel;
-  const boxHeight =
-    boxConfig.rows * (maxRowHoleSize + boxConfig.holeSpacing) * boxConfig.mm2pixel +
-    boxConfig.rowTierHeight * boxConfig.rows * boxConfig.mm2pixel;
 
   // Apply the updated hole sizes when the "Calculate" button is clicked
   const applyHoleSizes = () => {
@@ -190,8 +183,8 @@ const BoxPreview = () => {
         <BoxWrapper>
           <Box>
             {[row3Size, row2Size, row1Size].map((size, rowIndex) => (
-              <Row key={rowIndex} columns={boxConfig.columns}>
-                {Array.from({ length: boxConfig.columns }).map((_, colIndex) => (
+              <Row key={rowIndex} holes_per_row={boxConfig.holes_per_row}>
+                {Array.from({ length: boxConfig.holes_per_row }).map((_, colIndex) => (
                   <Hole
                     key={`${rowIndex}-${colIndex}`}
                     size={size * boxConfig.mm2pixel}

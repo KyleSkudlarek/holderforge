@@ -32,6 +32,9 @@ const Header = styled.header`
   grid-area: header;
   background: grey;
   outline: 3px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Footer = styled.footer`
@@ -199,7 +202,9 @@ const GridPreview = () => {
 
   return (
     <GridLayout>
-      <Header />
+      <Header>
+        <h1>HolderForge</h1>
+      </Header>
       <LeftPanel>
         <ModelInput>
           <span>Model Width (mm)</span>

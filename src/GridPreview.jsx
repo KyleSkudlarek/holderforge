@@ -138,6 +138,80 @@ const Hole = styled.div`
   box-shadow: inset 0 0 10px black; /* Inner shadow for depth */
 `;
 
+
+const ModelProfile = styled.div`
+  width: ${({ model_depth }) => model_depth}px;
+  height: ${({ model_height }) => model_height}px;
+  display: flex;
+  flex-direction: column;
+
+  border-sizing: border-box;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+`;
+
+const ModelProfileTier = styled.div`
+  background: lightgrey;
+  width: ${({ tier_depth}) => tier_depth}px;
+  height: ${({ tier_extrusion_distance }) => tier_extrusion_distance}px;
+  margin-left: ${({ model_depth, tier_depth }) => model_depth - tier_depth}px;
+  
+  box-sizing: border-box;
+  border-left: 1px solid black;
+  
+`;
+
+const ModelProfileHole = styled.div`
+  height: ${({ hole_height }) => hole_height}px;
+  width: ${({ hole_diameter }) => hole_diameter}px;
+  margin-left: ${({ tier_row_padding_top_bottom }) => tier_row_padding_top_bottom}px;
+  background: white;
+
+  border-sizing: border-box;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
+
+  position: absolute;
+  z-index: 10;
+
+  /* Inner shadow (inset) for sides and bottom, but NOT the top */
+  box-shadow: 
+    inset 2px 0 6px rgba(0, 0, 0, 0.5),  /* Left shadow */
+    inset -4px 0 6px rgba(0, 0, 0, 0.5), /* Right shadow */
+    inset 0 -4px 6px rgba(0, 0, 0, 0.5), /* Bottom shadow */
+    inset 0 1px 6px white); /* Transparent top shadow */
+
+  
+  /* Left border segment */
+  &::before {
+    content: '';
+    position: absolute;
+    left: ${({ tier_row_padding_top_bottom }) => (-1 * tier_row_padding_top_bottom)-1}px;  /* Extend left of hole */
+    width: ${({ tier_row_padding_top_bottom }) => tier_row_padding_top_bottom}px;  /* Length of border segment */
+    height: 1px;
+    background: black;
+  }
+
+  /* Right border segment */
+  &::after {
+    content: '';
+    position: absolute;
+    right: ${({ tier_row_padding_top_bottom }) => (-1 * tier_row_padding_top_bottom)+1}px;
+    width: ${({ tier_row_padding_top_bottom }) => tier_row_padding_top_bottom-1}px;
+    height: 1px;
+    background: black;
+  }
+
+
+
+
+
+
+
+
+`;
+
 // State for model - user inputs and system values
 const baseModelConfigAtom = atom({
   
@@ -177,6 +251,38 @@ const modelConfigAtom = atom((get) => {
 });
 
 class ModelCalculator {
+
+  // Computes the hole height based on hole diameter and bottle height.  
+  getHoleHeight(override, holeDiameter, bottleHeight) {
+    if (override !== null && override !== undefined) return override;
+
+    if (bottleHeight > 80 && bottleHeight <= 130) return 21;
+    if (bottleHeight < 60) return 14;
+
+    return holeDiameter * 1.1;
+  }
+
+    
+    // Computes the first tier extrusion distance based on hole height.
+    getTier1ExtrusionDistance(override, holeHeight) {
+      if (override !== null && override !== undefined) return override;
+  
+      if (holeHeight >= 16) return 24;
+      if (holeHeight < 16) return 19;
+  
+      return holeHeight + 5;
+    }
+
+    // Computes the top two tiers' height based on the first tier height.
+    getTier23ExtrusionDistance(override, firstTierHeight) {
+      if (override !== null && override !== undefined) return override;
+
+      if (firstTierHeight >= 21) return firstTierHeight - 5;
+      if (firstTierHeight < 21) return firstTierHeight - 1;
+
+      return firstTierHeight - 3;
+    }
+
   constructor(config) {
     this.config = config;
 
@@ -232,40 +338,10 @@ class ModelCalculator {
     this.row_3_hole_horizontal_constraint = this.row_3_padding_left_right + (this.config.row_3_hole_diameter / 2);
     this.row_3_hole_vertical_constraint = this.row_3_padding_top_bottom + (this.config.row_3_hole_diameter / 2);
     this.row_3_rectangular_repeat_pattern_distance = (4 * this.config.row_3_hole_diameter) + ( 4 * this.row_3_inner_gap);
+
+    this.model_height = this.tier_1_extrusion_distance + this.tier_2_extrusion_distance + this.tier_3_extrusion_distance;
   }
   
-
-  // Computes the hole height based on hole diameter and bottle height.  
-  getHoleHeight(override, holeDiameter, bottleHeight) {
-    if (override !== null && override !== undefined) return override;
-
-    if (bottleHeight > 80 && bottleHeight <= 130) return 21;
-    if (bottleHeight < 60) return 14;
-
-    return holeDiameter * 1.1;
-  }
-
-    
-    // Computes the first tier extrusion distance based on hole height.
-    getTier1ExtrusionDistance(override, holeHeight) {
-      if (override !== null && override !== undefined) return override;
-  
-      if (holeHeight >= 16) return 24;
-      if (holeHeight < 16) return 19;
-  
-      return holeHeight + 5;
-    }
-
-    // Computes the top two tiers' height based on the first tier height.
-    getTier23ExtrusionDistance(override, firstTierHeight) {
-      if (override !== null && override !== undefined) return override;
-
-      if (firstTierHeight >= 21) return firstTierHeight - 5;
-      if (firstTierHeight < 21) return firstTierHeight - 1;
-
-      return firstTierHeight - 3;
-    }
-
   getCalculatedModelDimensions() {
 
     // Return an object containing the calculated values
@@ -299,6 +375,7 @@ class ModelCalculator {
       row_3_hole_horizontal_constraint: this.row_3_hole_horizontal_constraint,
       row_3_hole_vertical_constraint: this.row_3_hole_vertical_constraint,
       row_3_rectangular_repeat_pattern_distance: this.row_3_rectangular_repeat_pattern_distance,
+      model_height: this.model_height,
     };
   }
 }
@@ -437,6 +514,45 @@ const GridPreview = () => {
             <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
           </Row3>
         </Model>
+
+        <ModelProfile
+            model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
+            model_height={modelConfig.model_height * modelConfig.mm2pixel}
+        >
+          <ModelProfileTier
+            model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
+            tier_depth={modelConfig.tier_3_depth * modelConfig.mm2pixel}
+            tier_extrusion_distance={modelConfig.tier_3_extrusion_distance * modelConfig.mm2pixel}
+          >
+            <ModelProfileHole
+              hole_height={modelConfig.row_3_hole_height * modelConfig.mm2pixel}
+              hole_diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel}
+              tier_row_padding_top_bottom={modelConfig.row_3_padding_top_bottom * modelConfig.mm2pixel}
+            />
+          </ModelProfileTier>  
+          <ModelProfileTier
+            model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
+            tier_depth={modelConfig.tier_2_depth * modelConfig.mm2pixel}
+            tier_extrusion_distance={modelConfig.tier_2_extrusion_distance * modelConfig.mm2pixel}
+          >
+            <ModelProfileHole
+              hole_height={modelConfig.row_2_hole_height * modelConfig.mm2pixel}
+              hole_diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel}
+              tier_row_padding_top_bottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
+            />
+          </ModelProfileTier>  
+          <ModelProfileTier
+            model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
+            tier_depth={modelConfig.tier_1_depth * modelConfig.mm2pixel}
+            tier_extrusion_distance={modelConfig.tier_1_extrusion_distance * modelConfig.mm2pixel}
+          >
+            <ModelProfileHole
+              hole_height={modelConfig.row_1_hole_height * modelConfig.mm2pixel}
+              hole_diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel}
+              tier_row_padding_top_bottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
+            />
+          </ModelProfileTier>  
+        </ModelProfile>
       </CenterPanel>
       <RightPanel>
         <h3>Computed Values</h3>

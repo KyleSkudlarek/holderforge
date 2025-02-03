@@ -3,10 +3,16 @@ import styled from "styled-components";
 import { atom, useAtom } from "jotai";
 
 const baseModelConfigAtom = atom({
+  
+  // System values (not editable by user)
   mm2pixel: 2,
+  rows: 3,
+  number_holes_per_row: 5,
+  edge_gap_scale_factor: 1.32,
+
+  // Default values for user inputs
   width: 120,
   height: 81,
-  rows: 3,
   row_1_hole_diameter: 15,
   row_2_hole_diameter: 15,
   row_3_hole_diameter: 15,
@@ -18,12 +24,12 @@ const modelConfigAtom = atom((get) => {
   const config = get(baseModelConfigAtom);
   
   // Create a new instance of the ModelCalculator class with current state of the BaseModelConfigAtom (config)
-  const calculator = new ModelCalculator(config);
+  const modelCalculator = new ModelCalculator(config);
 
   // Return a new object with the original config and the calculated values
   return {
     ...config, // Keep user inputs
-    ...calculator.calculate(), // Add calculated values
+    ...modelCalculator.getCalculatedModelDimensions(), // Add calculated values
   };
 });
 
@@ -31,30 +37,55 @@ const modelConfigAtom = atom((get) => {
 class ModelCalculator {
   constructor(config) {
     this.config = config;
+
+    this.row_1_height = this.config.height / this.config.rows;
+    this.row_2_height = this.config.height / this.config.rows;
+    this.row_3_height = this.config.height / this.config.rows;
+
+    this.row_1_min_width = this.config.row_1_hole_diameter * this.config.number_holes_per_row;  
+    this.row_2_min_width = this.config.row_2_hole_diameter * this.config.number_holes_per_row;  
+    this.row_3_min_width = this.config.row_3_hole_diameter * this.config.number_holes_per_row;  
+
+
+    this.row_1_free_space = this.config.width - this.row_1_min_width;
+    this.row_2_free_space = this.config.width - this.row_2_min_width;
+    this.row_3_free_space = this.config.width - this.row_3_min_width;
+
+    this.row_1_average_gap = this.row_1_free_space / (this.config.number_holes_per_row + 1);
+    this.row_2_average_gap = this.row_2_free_space / (this.config.number_holes_per_row + 1);
+    this.row_3_average_gap = this.row_3_free_space / (this.config.number_holes_per_row + 1);
+
+    this.row_1_padding_left_right = Math.ceil((this.row_1_average_gap * this.config.edge_gap_scale_factor * 10)) / 10;
+    this.row_2_padding_left_right = Math.ceil((this.row_2_average_gap * this.config.edge_gap_scale_factor * 10)) / 10;
+    this.row_3_padding_left_right = Math.ceil((this.row_3_average_gap * this.config.edge_gap_scale_factor * 10)) / 10;
+
+    this.row_1_padding_top_bottom = (this.row_1_height - this.config.row_1_hole_diameter) / 2;
+    this.row_2_padding_top_bottom = (this.row_2_height - this.config.row_2_hole_diameter) / 2;
+    this.row_3_padding_top_bottom = (this.row_3_height - this.config.row_3_hole_diameter) / 2;
+
+
+    this.row_1_inner_gap = (this.config.width - (this.row_1_padding_left_right * 2) - this.row_1_min_width) / (this.config.number_holes_per_row - 1);
+    this.row_2_inner_gap = (this.config.width - (this.row_2_padding_left_right * 2) - this.row_2_min_width) / (this.config.number_holes_per_row - 1);
+    this.row_3_inner_gap = (this.config.width - (this.row_3_padding_left_right * 2) - this.row_3_min_width) / (this.config.number_holes_per_row - 1);
+  
   }
 
-  calculate() {
-    // Extract values from `this.config` for easier access
-    const width = this.config.width;
-    const row_1_hole_diameter = this.config.row_1_hole_diameter;
-    const mm2pixel = this.config.mm2pixel;
-
-    // Compute the left/right padding for each row (currently set to a static value)
-    const row_1_padding_left_right = 9.9;
-    const row_2_padding_left_right = 9.9;
-    const row_3_padding_left_right = 9.9;
-    const row_1_height = 27; 
-    const row_2_height = 27; 
-    const row_3_height = 27; 
+  getCalculatedModelDimensions() {
 
     // Return an object containing the calculated values
     return {
-      row_1_height: row_1_height,
-      row_2_height: row_2_height,
-      row_3_height: row_3_height,
-      row_1_padding_left_right: row_1_padding_left_right,
-      row_2_padding_left_right: row_2_padding_left_right,
-      row_3_padding_left_right: row_3_padding_left_right,
+      row_1_height: this.row_1_height,
+      row_2_height: this.row_2_height,
+      row_3_height: this.row_3_height,
+      row_1_padding_left_right: this.row_1_padding_left_right,
+      row_2_padding_left_right: this.row_2_padding_left_right,
+      row_3_padding_left_right: this.row_3_padding_left_right,
+      row_1_padding_top_bottom: this.row_1_padding_top_bottom,
+      row_2_padding_top_bottom: this.row_2_padding_top_bottom,
+      row_3_padding_top_bottom: this.row_3_padding_top_bottom,
+      row_1_inner_gap: this.row_1_inner_gap,
+      row_2_inner_gap: this.row_2_inner_gap,
+      row_3_inner_gap: this.row_3_inner_gap
     };
   }
 }
@@ -94,6 +125,7 @@ const LeftPanel = styled.div`
   display: flex;
   flex-direction: column; 
   justify-content: center;
+  padding: 10px;
 `;
 
 const ModelInput = styled.div`
@@ -107,16 +139,20 @@ const Input = styled.input`
 `;
 
 const RightPanel = styled.div`
+  color: black;
   grid-area: right;
   background: white;
   outline: 3px solid black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px;
 `;
 
 const ModelOutput = styled.div`
   color: black;
   display: flex;
-  justify-content: flex-end;
-
+  justify-content: flex-start;
 `;
 
 const CenterPanel = styled.div`
@@ -287,8 +323,8 @@ const GridPreview = () => {
         >
           <Row1 height={modelConfig.row_1_height * modelConfig.mm2pixel} 
                 paddingLeftRight={modelConfig.row_1_padding_left_right * modelConfig.mm2pixel}
-                paddingTopBottom={6 * modelConfig.mm2pixel}
-                holeGap={6.3 * modelConfig.mm2pixel}
+                paddingTopBottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
+                holeGap={modelConfig.row_1_inner_gap * modelConfig.mm2pixel}
           >
             <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
             <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
@@ -298,8 +334,8 @@ const GridPreview = () => {
           </Row1>
           <Row2 height={modelConfig.row_2_height * modelConfig.mm2pixel}
                 paddingLeftRight={modelConfig.row_2_padding_left_right * modelConfig.mm2pixel}
-                paddingTopBottom={6 * modelConfig.mm2pixel}
-                holeGap={6.3 * modelConfig.mm2pixel}
+                paddingTopBottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
+                holeGap={modelConfig.row_2_inner_gap * modelConfig.mm2pixel}
           >
             <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
             <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
@@ -309,8 +345,8 @@ const GridPreview = () => {
           </Row2>  
           <Row3 height={modelConfig.row_3_height * modelConfig.mm2pixel} 
                 paddingLeftRight={modelConfig.row_3_padding_left_right * modelConfig.mm2pixel}
-                paddingTopBottom={6 * modelConfig.mm2pixel}
-                holeGap={6.3 * modelConfig.mm2pixel}
+                paddingTopBottom={modelConfig.row_3_padding_top_bottom * modelConfig.mm2pixel}
+                holeGap={modelConfig.row_3_inner_gap * modelConfig.mm2pixel}
           >
             <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
             <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
@@ -320,7 +356,33 @@ const GridPreview = () => {
           </Row3>
         </Model>
       </CenterPanel>
-      <RightPanel />
+      <RightPanel>
+        <h3>Computed Values</h3>
+        <ModelOutput>
+          <span>Row 1 Padding Left-Right: </span>
+          <span>{modelConfig.row_1_padding_left_right} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 2 Padding Left-Right:</span>
+          <span>{modelConfig.row_2_padding_left_right} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 3 Padding Left-Right: </span>
+          <span>{modelConfig.row_3_padding_left_right} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 1 Height: </span>
+          <span>{modelConfig.row_1_height} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 2 Height: </span>
+          <span>{modelConfig.row_2_height} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 3 Height: </span>
+          <span>{modelConfig.row_3_height} mm</span>
+        </ModelOutput>
+      </RightPanel>  
       <Footer />
     </GridLayout>
   );

@@ -2,18 +2,62 @@ import React from "react";
 import styled from "styled-components";
 import { atom, useAtom } from "jotai";
 
-const modelConfigAtom = atom({
-  mm2pixel: 2, // Scale factor (1mm = 2px). Default is 2
-  width: 120, // Default model width in mm. Default is 120
-  height: 81, // Default model width in mm. Default is 81
-  rows: 3, // Default is 3
-  row_1_height: 27, // Default is 27
-  row_2_height: 27, // Default is 27
-  row_3_height: 27, // Default is 27
-  row_1_hole_diameter: 15, // Default is 15
-  row_2_hole_diameter: 15, // Default is 15
-  row_3_hole_diameter: 15, // Default is 15
+const baseModelConfigAtom = atom({
+  mm2pixel: 2,
+  width: 120,
+  height: 81,
+  rows: 3,
+  row_1_hole_diameter: 15,
+  row_2_hole_diameter: 15,
+  row_3_hole_diameter: 15,
 });
+
+// Jotai state for grid (explicit row hole sizes)
+const modelConfigAtom = atom((get) => {
+  // The 'get' function allows us to access other atoms
+  const config = get(baseModelConfigAtom);
+  
+  // Create a new instance of the ModelCalculator class with current state of the BaseModelConfigAtom (config)
+  const calculator = new ModelCalculator(config);
+
+  // Return a new object with the original config and the calculated values
+  return {
+    ...config, // Keep user inputs
+    ...calculator.calculate(), // Add calculated values
+  };
+});
+
+
+class ModelCalculator {
+  constructor(config) {
+    this.config = config;
+  }
+
+  calculate() {
+    // Extract values from `this.config` for easier access
+    const width = this.config.width;
+    const row_1_hole_diameter = this.config.row_1_hole_diameter;
+    const mm2pixel = this.config.mm2pixel;
+
+    // Compute the left/right padding for each row (currently set to a static value)
+    const row_1_padding_left_right = 9.9;
+    const row_2_padding_left_right = 9.9;
+    const row_3_padding_left_right = 9.9;
+    const row_1_height = 27; 
+    const row_2_height = 27; 
+    const row_3_height = 27; 
+
+    // Return an object containing the calculated values
+    return {
+      row_1_height: row_1_height,
+      row_2_height: row_2_height,
+      row_3_height: row_3_height,
+      row_1_padding_left_right: row_1_padding_left_right,
+      row_2_padding_left_right: row_2_padding_left_right,
+      row_3_padding_left_right: row_3_padding_left_right,
+    };
+  }
+}
 
 // Styled Components
 const GridLayout = styled.div`
@@ -66,6 +110,13 @@ const RightPanel = styled.div`
   grid-area: right;
   background: white;
   outline: 3px solid black;
+`;
+
+const ModelOutput = styled.div`
+  color: black;
+  display: flex;
+  justify-content: flex-end;
+
 `;
 
 const CenterPanel = styled.div`
@@ -141,59 +192,61 @@ const Hole = styled.div`
 
 
 const GridPreview = () => {
-  const [modelConfig, setModelConfig] = useAtom(modelConfigAtom);
+
+  const [userConfig, setUserConfig] = useAtom(baseModelConfigAtom);
+  const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
 
   const updateModelWidth = (e) => {
-    setModelConfig((prev) => ({
+    setUserConfig((prev) => ({
       ...prev,
       width: parseInt(e.target.value) || 0, // Ensure it's a number
     }));
   };
 
   const updateModelHeight = (e) => {
-    setModelConfig((prev) => ({
+    setUserConfig((prev) => ({
       ...prev,
       height: parseInt(e.target.value) || 0,
     }));
   };
 
   const updateRow1Height = (e) => {
-    setModelConfig((prev) => ({
+    setUserConfig((prev) => ({
       ...prev,
       row_1_height: parseInt(e.target.value) || 0,
     }));
   };
 
   const updateRow2Height = (e) => {
-    setModelConfig((prev) => ({
+    setUserConfig((prev) => ({
       ...prev,
       row_2_height: parseInt(e.target.value) || 0,
     }));
   };
 
   const updateRow3Height = (e) => {
-    setModelConfig((prev) => ({
+    setUserConfig((prev) => ({
       ...prev,
       row_3_height: parseInt(e.target.value) || 0,
     }));
   };
 
   const updateRow1HoleDiameter = (e) => {
-    setModelConfig((prev) => ({
+    setUserConfig((prev) => ({
       ...prev,
       row_1_hole_diameter: parseInt(e.target.value) || 0,
     }));
   };
 
   const updateRow2HoleDiameter = (e) => {
-    setModelConfig((prev) => ({
+    setUserConfig((prev) => ({
       ...prev,
       row_2_hole_diameter: parseInt(e.target.value) || 0,
     }));
   };
 
   const updateRow3HoleDiameter = (e) => {
-    setModelConfig((prev) => ({
+    setUserConfig((prev) => ({
       ...prev,
       row_3_hole_diameter: parseInt(e.target.value) || 0,
     }));
@@ -215,18 +268,6 @@ const GridPreview = () => {
           <Input type="number" value={modelConfig.height} onChange={updateModelHeight} />
         </ModelInput>
         <ModelInput>
-          <span>Row 1 Height (mm)</span>
-          <Input type="number" value={modelConfig.row_1_height} onChange={updateRow1Height} />
-        </ModelInput>
-        <ModelInput>
-          <span>Row 2 Height (mm)</span>
-          <Input type="number" value={modelConfig.row_2_height} onChange={updateRow2Height} />
-        </ModelInput>
-        <ModelInput>
-          <span>Row 3 Height (mm)</span>
-          <Input type="number" value={modelConfig.row_3_height} onChange={updateRow3Height} />
-        </ModelInput>
-        <ModelInput>
           <span>Row 1 Hole Diameter (mm)</span>
           <Input type="number" value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
         </ModelInput>
@@ -245,7 +286,7 @@ const GridPreview = () => {
             height={modelConfig.height * modelConfig.mm2pixel}
         >
           <Row1 height={modelConfig.row_1_height * modelConfig.mm2pixel} 
-                paddingLeftRight={9.9 * modelConfig.mm2pixel}
+                paddingLeftRight={modelConfig.row_1_padding_left_right * modelConfig.mm2pixel}
                 paddingTopBottom={6 * modelConfig.mm2pixel}
                 holeGap={6.3 * modelConfig.mm2pixel}
           >
@@ -256,7 +297,7 @@ const GridPreview = () => {
             <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
           </Row1>
           <Row2 height={modelConfig.row_2_height * modelConfig.mm2pixel}
-                paddingLeftRight={9.9 * modelConfig.mm2pixel}
+                paddingLeftRight={modelConfig.row_2_padding_left_right * modelConfig.mm2pixel}
                 paddingTopBottom={6 * modelConfig.mm2pixel}
                 holeGap={6.3 * modelConfig.mm2pixel}
           >
@@ -267,7 +308,7 @@ const GridPreview = () => {
             <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
           </Row2>  
           <Row3 height={modelConfig.row_3_height * modelConfig.mm2pixel} 
-                paddingLeftRight={9.9 * modelConfig.mm2pixel}
+                paddingLeftRight={modelConfig.row_3_padding_left_right * modelConfig.mm2pixel}
                 paddingTopBottom={6 * modelConfig.mm2pixel}
                 holeGap={6.3 * modelConfig.mm2pixel}
           >

@@ -36,7 +36,7 @@ const LeftPanel = styled.div`
   outline: 3px solid black;
   display: flex;
   flex-direction: column; 
-  justify-content: center;
+  justify-content: flex-start;
   padding: 10px;
 `;
 
@@ -57,8 +57,9 @@ const RightPanel = styled.div`
   outline: 3px solid black;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 10px;
+  justify-content: flex-start;
+  padding-top: 0px;
+  padding-left: 10px;
 `;
 
 const ModelOutput = styled.div`
@@ -73,7 +74,7 @@ const CenterPanel = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   outline: 3px solid black;
 `;
 
@@ -140,6 +141,9 @@ const Hole = styled.div`
 
 
 const ModelProfile = styled.div`
+
+  margin-top: 20px;
+
   width: ${({ model_depth }) => model_depth}px;
   height: ${({ model_height }) => model_height}px;
   display: flex;
@@ -168,19 +172,14 @@ const ModelProfileHole = styled.div`
   background: white;
 
   border-sizing: border-box;
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  border-bottom: 1px solid black;
+  border-left: 1px dashed black;
+  border-right: 1px dashed black;
+  border-bottom: 1px dashed black;
 
   position: absolute;
   z-index: 10;
 
-  /* Inner shadow (inset) for sides and bottom, but NOT the top */
-  box-shadow: 
-    inset 2px 0 6px rgba(0, 0, 0, 0.5),  /* Left shadow */
-    inset -4px 0 6px rgba(0, 0, 0, 0.5), /* Right shadow */
-    inset 0 -4px 6px rgba(0, 0, 0, 0.5), /* Bottom shadow */
-    inset 0 1px 6px white); /* Transparent top shadow */
+
 
   
   /* Left border segment */
@@ -221,9 +220,9 @@ const baseModelConfigAtom = atom({
   number_holes_per_row: 5,
   edge_gap_scale_factor: 1.32,
   model_chamfer: 5,
-  row_1_bottle_height: 100,
-  row_2_bottle_height: 100,
-  row_3_bottle_height: 100,
+  row_1_bottle_height: 10,
+  row_2_bottle_height: 10,
+  row_3_bottle_height: 10,
 
 
   // Default values for user inputs

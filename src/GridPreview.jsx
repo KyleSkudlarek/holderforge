@@ -16,6 +16,9 @@ const baseModelConfigAtom = atom({
   row_1_hole_diameter: 15,
   row_2_hole_diameter: 15,
   row_3_hole_diameter: 15,
+  row_1_bottle_height: 100,
+  row_2_bottle_height: 100,
+  row_3_bottle_height: 100,
 });
 
 // Jotai state for grid (explicit row hole sizes)
@@ -68,7 +71,34 @@ class ModelCalculator {
     this.row_2_inner_gap = (this.config.model_width - (this.row_2_padding_left_right * 2) - this.row_2_min_width) / (this.config.number_holes_per_row - 1);
     this.row_3_inner_gap = (this.config.model_width - (this.row_3_padding_left_right * 2) - this.row_3_min_width) / (this.config.number_holes_per_row - 1);
   
+    this.row_1_hole_height = this.getHoleHeight(null, this.config.row_1_hole_diameter, this.config.row_1_bottle_height);
+    this.tier_1_extrusion_distance = this.getFirstTierExtrusionDistance(null, this.row_1_hole_height);
+    this.row_1_hole_horizontal_constraint = this.row_1_padding_left_right + (this.config.row_1_hole_diameter / 2);
+    this.row_1_hole_vertical_constraint = this.row_1_padding_top_bottom + (this.config.row_1_hole_diameter / 2);
+    this.row_1_rectangular_repeat_pattern_distance = (4 * this.config.row_1_hole_diameter) + ( 4 * this.row_1_inner_gap);
   }
+  
+
+  // Computes the hole height based on hole diameter and bottle height.  
+  getHoleHeight(override, holeDiameter, bottleHeight) {
+    if (override !== null && override !== undefined) return override;
+
+    if (bottleHeight > 80 && bottleHeight <= 130) return 21;
+    if (bottleHeight < 60) return 14;
+
+    return holeDiameter * 1.1;
+  }
+
+    
+    // Computes the first tier extrusion distance based on hole height.
+    getFirstTierExtrusionDistance(override, holeHeight) {
+      if (override !== null && override !== undefined) return override;
+  
+      if (holeHeight >= 16) return 24;
+      if (holeHeight < 16) return 19;
+  
+      return holeHeight + 5;
+    }
 
   getCalculatedModelDimensions() {
 
@@ -85,7 +115,12 @@ class ModelCalculator {
       row_3_padding_top_bottom: this.row_3_padding_top_bottom,
       row_1_inner_gap: this.row_1_inner_gap,
       row_2_inner_gap: this.row_2_inner_gap,
-      row_3_inner_gap: this.row_3_inner_gap
+      row_3_inner_gap: this.row_3_inner_gap,
+      tier_1_extrusion_distance: this.tier_1_extrusion_distance,
+      row_1_hole_height: this.row_1_hole_height,
+      row_1_hole_horizontal_constraint: this.row_1_hole_horizontal_constraint,
+      row_1_hole_vertical_constraint: this.row_1_hole_vertical_constraint,
+      row_1_rectangular_repeat_pattern_distance: this.row_1_rectangular_repeat_pattern_distance,
     };
   }
 }
@@ -95,7 +130,7 @@ const GridLayout = styled.div`
   display: grid;
   width: 100vw;
   height: 100vh;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 2fr 2fr 3fr;
   grid-template-rows: 100px 1fr 100px;
   grid-template-areas:
     "header header header"
@@ -225,7 +260,10 @@ const Hole = styled.div`
   box-shadow: inset 0 0 10px black; /* Inner shadow for depth */
 `;
 
-
+const formatNumber = (value) => {
+  if (typeof value !== "number" || isNaN(value)) return "N/A"; 
+  return (Math.ceil(value * 10) / 10).toFixed(1);  // Round up to nearest 0.1 mm
+};
 
 const GridPreview = () => {
 
@@ -286,10 +324,6 @@ const GridPreview = () => {
       ...prev,
       row_3_hole_diameter: parseInt(e.target.value) || 0,
     }));
-  };
-
-  const formatNumber = (value) => {
-    return value !== undefined ? (Math.round(value * 10) / 10).toFixed(1) : "N/A";
   };
 
   return (
@@ -409,6 +443,34 @@ const GridPreview = () => {
           <span>Row 3 Inner Gap: </span>
           <span>{formatNumber(modelConfig.row_3_inner_gap)} mm</span>
         </ModelOutput>
+
+        <h3>AutoFusion360 Computed Values</h3>
+        <ModelOutput>
+          <span>Model bottom rectangle dimensions: </span>
+          <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.model_depth)} </span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>First tier extrusion distance: </span>
+          <span>{formatNumber(modelConfig.tier_1_extrusion_distance)} mm </span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 1 hole height (negative extrusion distance): </span>
+          <span>{formatNumber(modelConfig.row_1_hole_height)} mm </span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 1 hole horizontal constraint (hole center to model edge): </span>
+          <span>{formatNumber(modelConfig.row_1_hole_horizontal_constraint)} mm </span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 1 hole vertical constraint (hole center to model edge): </span>
+          <span>{formatNumber(modelConfig.row_1_hole_vertical_constraint)} mm </span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 1 rectangular repeat pattern distance: </span>
+          <span>{formatNumber(modelConfig.row_1_rectangular_repeat_pattern_distance)} mm </span>
+        </ModelOutput>
+
+
 
 
       </RightPanel>  

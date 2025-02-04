@@ -2,7 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { atom, useAtom } from "jotai";
 import { pythonTemplate } from "./template"; // Import the Python template
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 // Styled Components
 const GridLayout = styled.div`
@@ -236,6 +238,12 @@ const DownloadButton = styled.button`
   }
 `;
 
+const ThreeContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  background: white; /* Ensures the container matches scene background */
+`;
+
 
 // State for model - user inputs and system values
 const baseModelConfigAtom = atom({
@@ -416,6 +424,98 @@ const formatNumber = (value) => {
   return (Math.ceil(value * 10) / 10).toFixed(1);  // Round up to nearest 0.1 mm
 };
 
+
+const ThreeViewer = ({ modelConfig }) => {
+  const mountRef = useRef(null);
+
+  useEffect(() => {
+
+    // Colors
+    const white = 0xffffff;
+    const grey = 0xd3d3d3;
+    const blue = 0x457EDE;
+    const green = 0xff0000;
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(white);
+    const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
+    camera.position.set(200, 150, 200); // Three-quarter view from the side
+    camera.lookAt(0, 0, 0); // Ensures the camera is looking at the model center
+
+    // Renderer setup
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+
+    // Append renderer to the DOM
+    mountRef.current.appendChild(renderer.domElement);
+
+    // Lighting
+    const light = new THREE.DirectionalLight(white, 1);
+    light.position.set(100, 200, 100); // Position the light at an angle
+    light.castShadow = true; // Enable shadows
+    scene.add(light);
+
+    // Orbit Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; // Smooth movement
+
+    // Animation loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Add tier 1 - In three.js x is left/right, y is up/down (height), and z is forward/backward (depth)
+    const tier1Geometry = new THREE.BoxGeometry(modelConfig.model_width, modelConfig.tier_1_extrusion_distance, modelConfig.model_depth);
+    const tier1Material = new THREE.MeshStandardMaterial({ color: grey });
+    const tier1 = new THREE.Mesh(tier1Geometry, tier1Material);
+    scene.add(tier1);
+
+    // Add tier 2
+    const tier2Geometry = new THREE.BoxGeometry(
+      modelConfig.model_width, // Width 
+      modelConfig.tier_2_extrusion_distance, // Height of the tier
+      modelConfig.tier_2_depth // Depth 
+    );
+    const tier2Material = new THREE.MeshStandardMaterial({ color: green });
+    const tier2 = new THREE.Mesh(tier2Geometry, tier2Material);
+    tier2.position.y = (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance / 2); // Position it on top of tier 1
+    tier2.position.z = -(modelConfig.model_depth - modelConfig.tier_2_depth) / 2;    
+    scene.add(tier2);
+
+    // Add tier 3
+    const tier3Geometry = new THREE.BoxGeometry(
+      modelConfig.model_width, // Width 
+      modelConfig.tier_3_extrusion_distance, // Height of the tier
+      modelConfig.tier_3_depth // Depth
+    );
+    const tier3Material = new THREE.MeshStandardMaterial({ color: blue });
+    const tier3 = new THREE.Mesh(tier3Geometry, tier3Material);
+    tier3.position.y = (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance) + modelConfig.tier_3_extrusion_distance / 2;
+    tier3.position.z = -(modelConfig.model_depth - modelConfig.tier_3_depth) / 2;    
+    scene.add(tier3);
+
+
+
+
+
+
+    // Cleanup
+    return () => {
+      mountRef.current.removeChild(renderer.domElement);
+    };
+  }, [modelConfig]);
+
+  return <ThreeContainer ref={mountRef} />;
+};
+
+
+
 const GridPreview = () => {
 
   const [userConfig, setUserConfig] = useAtom(baseModelConfigAtom);
@@ -471,6 +571,7 @@ const GridPreview = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url); // Clean up memory
   };
+
 
   const updateModelWidth = (e) => {
     setUserConfig((prev) => ({
@@ -712,6 +813,7 @@ const GridPreview = () => {
             />
           </ModelProfileTier>  
         </ModelProfile>
+        <ThreeViewer modelConfig={modelConfig}/>
       </CenterPanel>
       <RightPanel>
         <h3>Download</h3>

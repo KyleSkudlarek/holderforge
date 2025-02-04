@@ -533,7 +533,7 @@ const ThreeViewer = ({ modelConfig }) => {
     const tier1CylinderCSG = CSG.fromMesh(tier1CylinderCopy);
 
     // Perform subtraction
-    const tier1WithHole = CSG.toMesh(
+    let tier1WithHole = CSG.toMesh(
         tier1CSG.subtract(tier1CylinderCSG),
         tier1.matrix,
         tier1Material
@@ -541,6 +541,20 @@ const ThreeViewer = ({ modelConfig }) => {
 
     // Keep tier1 at original position
     tier1WithHole.position.set(0, 0, 0);
+
+    // Create the remaining 4 holes using the first hole as reference
+    for (let i = 1; i < 5; i++) {
+      const nextCylinder = tier1Cylinder.clone();
+      nextCylinder.position.x = tier1Cylinder.position.x + i * (modelConfig.row_1_hole_diameter + modelConfig.row_1_inner_gap);
+      nextCylinder.updateMatrix();
+      
+      const nextCylinderCSG = CSG.fromMesh(nextCylinder);
+      tier1WithHole = CSG.toMesh(
+          CSG.fromMesh(tier1WithHole).subtract(nextCylinderCSG),
+          tier1.matrix,
+          tier1Material
+      );
+    }
 
     // Remove original pieces and add new
     scene.remove(tier1);

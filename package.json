@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@react-three/csg": "^3.3.0",
     "@react-three/drei": "^9.121.4",
     "@react-three/fiber": "^8.17.14",
     "jotai": "^2.11.3",
@@ -18,7 +17,7 @@
     "react-dom": "^18.3.1",
     "styled-components": "^6.1.14",
     "three": "^0.173.0",
-    "three-bvh-csg": "^0.0.16"
+    "three-csg-ts": "^3.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

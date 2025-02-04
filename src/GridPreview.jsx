@@ -5,6 +5,7 @@ import { pythonTemplate } from "./template"; // Import the Python template
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import {CSG} from "three-csg-ts";
 
 // Styled Components
 const GridLayout = styled.div`
@@ -440,7 +441,7 @@ const ThreeViewer = ({ modelConfig }) => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(white);
     const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
-    camera.position.set(200, 150, 200); // Three-quarter view from the side
+    camera.position.set(120, 100, 150); // Three-quarter view from the side
     camera.lookAt(0, 0, 0); // Ensures the camera is looking at the model center
 
     // Renderer setup
@@ -500,7 +501,58 @@ const ThreeViewer = ({ modelConfig }) => {
     tier3.position.z = -(modelConfig.model_depth - modelConfig.tier_3_depth) / 2;    
     scene.add(tier3);
 
+    // Add a test cylinder
+    const tier1CylinderGeometry = new THREE.CylinderGeometry(
+      modelConfig.row_1_hole_diameter/2, // top radius (half the diameter)
+      modelConfig.row_1_hole_diameter/2, // bottom radius
+      modelConfig.tier_1_extrusion_distance+20, // height
+      32 // segments
+    );
+    const tier1CylinderMaterial = new THREE.MeshStandardMaterial({ color: blue });
+    const tier1Cylinder = new THREE.Mesh(tier1CylinderGeometry, tier1CylinderMaterial);
 
+    // Position it next to tier1
+    tier1Cylinder.rotation.x = Math.PI; // Make it vertical
+    // Position from left edge (X position)
+    tier1Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_1_hole_horizontal_constraint;
+    // Height position (Y position)
+    tier1Cylinder.position.y = 0;
+    // Position from front edge (Z position) - move it to the front row
+    tier1Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_hole_vertical_constraint;
+
+    scene.add(tier1Cylinder);
+
+    // Convert meshes to CSG objects
+    // After your current cylinder positioning code, replace the CSG section with:
+
+    // Clone and position tier1 to match cylinder's coordinate space
+    const tier1Copy = tier1.clone();
+    tier1Copy.position.copy(tier1Cylinder.position);
+    tier1Copy.updateMatrix();
+    const tier1CSG = CSG.fromMesh(tier1Copy);
+
+    // Keep cylinder where it is
+    const tier1CylinderCSG = CSG.fromMesh(tier1Cylinder);
+
+    // Perform subtraction
+    const tier1WithHole = CSG.toMesh(
+        tier1CSG.subtract(tier1CylinderCSG),
+        tier1Copy.matrix, // Use the positioned copy's matrix
+        tier1Material
+    );
+
+    // Set the final position
+    // Keep tier1 at original position
+    tier1WithHole.position.set(0, 0, 0);
+
+    // For debugging - let's first see both:
+    scene.remove(tier1);
+    scene.add(tier1WithHole);
+    // scene.remove(tier1);  // Comment this out temporarily so we can see both
+
+    console.log('Cylinder position:', tier1Cylinder.position);
+    console.log('Copy position:', tier1Copy.position);
+    console.log('Final hole position:', tier1WithHole.position);
 
 
 

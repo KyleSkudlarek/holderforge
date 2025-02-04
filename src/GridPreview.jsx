@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { atom, useAtom } from "jotai";
 import { pythonTemplate } from "./template"; // Import the Python template
-
+import { useEffect } from "react";
 
 // Styled Components
 const GridLayout = styled.div`
@@ -19,35 +19,36 @@ const GridLayout = styled.div`
 
 const Header = styled.header`
   grid-area: header;
-  background: grey;
-  outline: 3px solid black;
+  background: white;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 40px;
+  color: black;
 `;
 
 const Footer = styled.footer`
   grid-area: footer;
-  background: grey;
-  outline: 3px solid black;
+  background: white;
 `;
 
 const LeftPanel = styled.div`
   color: black;
   grid-area: left;
   background: white;
-  outline: 3px solid black;
   display: flex;
   flex-direction: column; 
   justify-content: flex-start;
   align-items: flex-end;
   padding-right: 10px;
+  padding-top:20px;
 `;
 
 const ModelInput = styled.div`
   color: black;
   display: flex;
   justify-content: flex-end;
+  padding-bottom:7px;
 `;
 
 const Input = styled.input`
@@ -58,18 +59,19 @@ const RightPanel = styled.div`
   color: black;
   grid-area: right;
   background: white;
-  outline: 3px solid black;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   padding-top: 0px;
   padding-left: 10px;
+  padding-top:20px;
 `;
 
 const ModelOutput = styled.div`
   color: black;
   display: flex;
   justify-content: flex-start;
+  font-size: 12px;
 `;
 
 const CenterPanel = styled.div`
@@ -80,7 +82,7 @@ const CenterPanel = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  outline: 3px solid black;
+  padding-top:20px;
 `;
 
 const Model = styled.div`
@@ -405,6 +407,10 @@ const GridPreview = () => {
 
   const [userConfig, setUserConfig] = useAtom(baseModelConfigAtom);
   const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
+
+  useEffect(() => {
+    document.title = "HolderForge"; 
+  }, []);
 
   const generatePythonFile = () => {
 

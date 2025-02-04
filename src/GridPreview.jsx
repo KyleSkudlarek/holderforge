@@ -505,7 +505,7 @@ const ThreeViewer = ({ modelConfig }) => {
     const tier1CylinderGeometry = new THREE.CylinderGeometry(
       modelConfig.row_1_hole_diameter/2, // top radius (half the diameter)
       modelConfig.row_1_hole_diameter/2, // bottom radius
-      modelConfig.tier_1_extrusion_distance+20, // height
+      modelConfig.row_1_hole_height, // height
       32 // segments
     );
     const tier1CylinderMaterial = new THREE.MeshStandardMaterial({ color: blue });
@@ -516,14 +516,11 @@ const ThreeViewer = ({ modelConfig }) => {
     // Position from left edge (X position)
     tier1Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_1_hole_horizontal_constraint;
     // Height position (Y position)
-    tier1Cylinder.position.y = 0;
+    tier1Cylinder.position.y = modelConfig.tier_1_extrusion_distance/2 - modelConfig.row_1_hole_height/2;
     // Position from front edge (Z position) - move it to the front row
     tier1Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_hole_vertical_constraint;
 
-    //scene.add(tier1Cylinder);
-
-    // Convert meshes to CSG objects
-    // After your current cylinder positioning code, replace the CSG section with:
+    //scene.add(tier1Cylinder);  // Render the cylinder for debugging
 
     // Clone and position tier1 to match cylinder's coordinate space
     const tier1Copy = tier1.clone();

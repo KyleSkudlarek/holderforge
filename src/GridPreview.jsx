@@ -150,6 +150,7 @@ const Hole = styled.div`
   height: ${({ diameter }) => diameter}px;
   outline: 1px solid black;
   box-shadow: inset 0 0 10px black; /* Inner shadow for depth */
+  border-radius: ${({ shape }) => (shape === "circle" ? "50%" : "0")}; 
 `;
 
 
@@ -235,6 +236,7 @@ const DownloadButton = styled.button`
   }
 `;
 
+
 // State for model - user inputs and system values
 const baseModelConfigAtom = atom({
   
@@ -256,6 +258,10 @@ const baseModelConfigAtom = atom({
   row_1_bottle_height: 120,
   row_2_bottle_height: 120,
   row_3_bottle_height: 120,
+
+  row_1_hole_shape: "circle", // Options: "circle" or "square"
+  row_2_hole_shape: "circle",
+  row_3_hole_shape: "circle",
 
 });
 
@@ -543,6 +549,27 @@ const GridPreview = () => {
     }));
   };
 
+  const updateRow1HoleShape = (e) => {
+    setUserConfig((prev) => ({
+      ...prev,
+      row_1_hole_shape: e.target.value,
+    }));
+  };
+
+  const updateRow2HoleShape = (e) => {
+    setUserConfig((prev) => ({
+      ...prev,
+      row_2_hole_shape: e.target.value,
+    }));
+  };
+
+  const updateRow3HoleShape = (e) => {
+    setUserConfig((prev) => ({
+      ...prev,
+      row_3_hole_shape: e.target.value,
+    }));
+  };
+
 
   return (
     <GridLayout>
@@ -558,6 +585,27 @@ const GridPreview = () => {
         <ModelInput>
           <span>Model Depth (mm)</span>
           <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 1 Hole Shape:</span>
+          <select value={modelConfig.row_1_hole_shape} onChange={updateRow1HoleShape}>
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+          </select>
+        </ModelInput>
+        <ModelInput>
+          <span>Row 2 Hole Shape:</span>
+          <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+          </select>
+        </ModelInput>
+        <ModelInput>
+          <span>Row 3 Hole Shape:</span>
+          <select value={modelConfig.row_3_hole_shape} onChange={updateRow3HoleShape}>
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+          </select>
         </ModelInput>
         <ModelInput>
           <span>Row 1 Hole Diameter (mm)</span>
@@ -590,39 +638,40 @@ const GridPreview = () => {
             model_width={modelConfig.model_width * modelConfig.mm2pixel}
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
         >
-          <Row1 depth={modelConfig.row_1_depth * modelConfig.mm2pixel} 
-                paddingLeftRight={modelConfig.row_1_padding_left_right * modelConfig.mm2pixel}
-                paddingTopBottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
-                holeGap={modelConfig.row_1_inner_gap * modelConfig.mm2pixel}
-          >
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} />
-          </Row1>
-          <Row2 depth={modelConfig.row_2_depth * modelConfig.mm2pixel}
-                paddingLeftRight={modelConfig.row_2_padding_left_right * modelConfig.mm2pixel}
-                paddingTopBottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
-                holeGap={modelConfig.row_2_inner_gap * modelConfig.mm2pixel}
-          >
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} />
-          </Row2>  
           <Row3 depth={modelConfig.row_3_depth * modelConfig.mm2pixel} 
                 paddingLeftRight={modelConfig.row_3_padding_left_right * modelConfig.mm2pixel}
                 paddingTopBottom={modelConfig.row_3_padding_top_bottom * modelConfig.mm2pixel}
                 holeGap={modelConfig.row_3_inner_gap * modelConfig.mm2pixel}
           >
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} />
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
           </Row3>
+          <Row2 depth={modelConfig.row_2_depth * modelConfig.mm2pixel}
+                paddingLeftRight={modelConfig.row_2_padding_left_right * modelConfig.mm2pixel}
+                paddingTopBottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
+                holeGap={modelConfig.row_2_inner_gap * modelConfig.mm2pixel}
+          >
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}  />
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}/>
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}/>
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}/>
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}/>
+          </Row2>
+          <Row1 depth={modelConfig.row_1_depth * modelConfig.mm2pixel} 
+                paddingLeftRight={modelConfig.row_1_padding_left_right * modelConfig.mm2pixel}
+                paddingTopBottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
+                holeGap={modelConfig.row_1_inner_gap * modelConfig.mm2pixel}
+          >
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+          </Row1>  
+
         </Model>
 
         <ModelProfile
@@ -717,7 +766,7 @@ const GridPreview = () => {
           <span>{formatNumber(modelConfig.row_3_inner_gap)} mm</span>
         </ModelOutput>
 
-        <h3>AutoFusion360 Computed Values</h3>
+        <h3>Autodesk Fusion Computed Values</h3>
         <ModelOutput>
           <span>Tier 1 rectangle dimensions: </span>
           <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.model_depth)} mm </span>

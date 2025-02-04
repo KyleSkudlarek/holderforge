@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import { atom, useAtom } from "jotai";
+import { pythonTemplate } from "./template"; // Import the Python template
+
 
 // Styled Components
 const GridLayout = styled.div`
@@ -31,13 +33,15 @@ const Footer = styled.footer`
 `;
 
 const LeftPanel = styled.div`
+  color: black;
   grid-area: left;
   background: white;
   outline: 3px solid black;
   display: flex;
   flex-direction: column; 
   justify-content: flex-start;
-  padding: 10px;
+  align-items: flex-end;
+  padding-right: 10px;
 `;
 
 const ModelInput = styled.div`
@@ -69,6 +73,7 @@ const ModelOutput = styled.div`
 `;
 
 const CenterPanel = styled.div`
+  color:black;
   grid-area: center;
   background: white;
   display: flex;
@@ -201,14 +206,25 @@ const ModelProfileHole = styled.div`
     height: 1px;
     background: black;
   }
+`;
 
+const DownloadButton = styled.button`
+  padding: 5px 10px; /* Smaller padding */
+  font-size: 14px; /* Adjust text size */
+  width: auto; /* Shrinks to fit text */
+  min-width: 120px; /* Ensures it doesn't get too small */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: inline-block;
+  width: 300px;
 
-
-
-
-
-
-
+  &:hover {
+    background-color: #0056b3;
+  }
 `;
 
 // State for model - user inputs and system values
@@ -220,17 +236,17 @@ const baseModelConfigAtom = atom({
   number_holes_per_row: 5,
   edge_gap_scale_factor: 1.32,
   model_chamfer: 5,
-  row_1_bottle_height: 10,
-  row_2_bottle_height: 10,
-  row_3_bottle_height: 10,
+  row_1_bottle_height: 120,
+  row_2_bottle_height: 120,
+  row_3_bottle_height: 120,
 
 
   // Default values for user inputs
   model_width: 120,
   model_depth: 81,
-  row_1_hole_diameter: 15,
-  row_2_hole_diameter: 15,
-  row_3_hole_diameter: 15,
+  row_1_hole_diameter: 19,
+  row_2_hole_diameter: 19,
+  row_3_hole_diameter: 19,
 
 });
 
@@ -380,7 +396,6 @@ class ModelCalculator {
 }
 
 
-
 const formatNumber = (value) => {
   if (typeof value !== "number" || isNaN(value)) return "N/A"; 
   return (Math.ceil(value * 10) / 10).toFixed(1);  // Round up to nearest 0.1 mm
@@ -390,6 +405,53 @@ const GridPreview = () => {
 
   const [userConfig, setUserConfig] = useAtom(baseModelConfigAtom);
   const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
+
+  const generatePythonFile = () => {
+
+    console.log("Download button clicked!");
+  
+  
+    // Replace placeholders with actual computed values
+    let template = pythonTemplate
+      .replace("{{input_model_width}}", modelConfig.model_width/10)
+      .replace("{{input_model_depth}}", modelConfig.model_depth/10)
+      .replace("{{input_model_fillet_radius}}", modelConfig.model_chamfer/10)
+      .replace("{{input_tier_1_extrusion_distance}}", modelConfig.tier_1_extrusion_distance/10)
+      .replace("{{input_row_1_hole_diameter}}", modelConfig.row_1_hole_diameter/10)
+      .replace("{{input_row_1_hole_horizontal_constraint}}", modelConfig.row_1_hole_horizontal_constraint/10)
+      .replace("{{input_row_1_hole_vertical_constraint}}", modelConfig.row_1_hole_vertical_constraint/10)
+      .replace("{{input_row_1_hole_height}}", modelConfig.row_1_hole_height/10)
+      .replace("{{input_row_1_rectangular_repeat_pattern_distance}}", modelConfig.row_1_rectangular_repeat_pattern_distance/10)
+      .replace("{{input_tier_2_total_depth}}", modelConfig.tier_2_depth/10)
+      .replace("{{input_tier_2_extrusion_distance}}", modelConfig.tier_2_extrusion_distance/10)
+      .replace("{{input_row_2_hole_diameter}}", modelConfig.row_2_hole_diameter/10)
+      .replace("{{input_row_2_hole_horizontal_constraint}}", modelConfig.row_2_hole_horizontal_constraint/10)
+      .replace("{{input_row_2_hole_vertical_constraint}}", modelConfig.row_2_hole_vertical_constraint/10)
+      .replace("{{input_row_2_hole_height}}", modelConfig.row_2_hole_height/10)
+      .replace("{{input_row_2_rectangular_repeat_pattern_distance}}", modelConfig.row_2_rectangular_repeat_pattern_distance/10)
+      .replace("{{input_tier_3_total_depth}}", modelConfig.tier_3_depth/10)
+      .replace("{{input_tier_3_extrusion_distance}}", modelConfig.tier_3_extrusion_distance/10)
+      .replace("{{input_row_3_hole_diameter}}", modelConfig.row_3_hole_diameter/10)
+      .replace("{{input_row_3_hole_horizontal_constraint}}", modelConfig.row_3_hole_horizontal_constraint/10)
+      .replace("{{input_row_3_hole_vertical_constraint}}", modelConfig.row_3_hole_vertical_constraint/10)
+      .replace("{{input_row_3_hole_height}}", modelConfig.row_3_hole_height/10)
+      .replace("{{input_row_3_rectangular_repeat_pattern_distance}}", modelConfig.row_3_rectangular_repeat_pattern_distance/10)    
+
+    ;
+  
+    // Create a Blob (file-like object) and generate a downloadable URL
+    const blob = new Blob([template], { type: "text/x-python" });
+    const url = URL.createObjectURL(blob);
+  
+    // Create a temporary <a> element and trigger download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "model_dimensions.py"; // File name
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url); // Clean up memory
+  };
 
   const updateModelWidth = (e) => {
     setUserConfig((prev) => ({
@@ -453,6 +515,7 @@ const GridPreview = () => {
         <h1>HolderForge</h1>
       </Header>
       <LeftPanel>
+        <h3>Customize</h3>
         <ModelInput>
           <span>Model Width (mm)</span>
           <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
@@ -475,6 +538,7 @@ const GridPreview = () => {
         </ModelInput>
       </LeftPanel>
       <CenterPanel>
+        <h3>Preview</h3>
         <Model
             model_width={modelConfig.model_width * modelConfig.mm2pixel}
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
@@ -554,6 +618,8 @@ const GridPreview = () => {
         </ModelProfile>
       </CenterPanel>
       <RightPanel>
+        <h3>Download</h3>
+        <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
         <h3>Computed Values</h3>
         <ModelOutput>
           <span>Row 1 Depth: </span>

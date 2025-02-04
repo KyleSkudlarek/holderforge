@@ -441,7 +441,7 @@ const ThreeViewer = ({ modelConfig }) => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(white);
     const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
-    camera.position.set(120, 100, 150); // Three-quarter view from the side
+    camera.position.set(0, 100, 150); // Three-quarter view from the side
     camera.lookAt(0, 0, 0); // Ensures the camera is looking at the model center
 
     // Renderer setup
@@ -556,9 +556,131 @@ const ThreeViewer = ({ modelConfig }) => {
       );
     }
 
-    // Remove original pieces and add new
+    // Remove original tier 1 pieces and add new tier1 with holes
     scene.remove(tier1);
     scene.add(tier1WithHole);
+
+    // Create test cylinder for tier2
+    const tier2CylinderGeometry = new THREE.CylinderGeometry(
+      modelConfig.row_2_hole_diameter/2,
+      modelConfig.row_2_hole_diameter/2,
+      modelConfig.row_2_hole_height,
+      32
+    );
+    const tier2CylinderMaterial = new THREE.MeshStandardMaterial({ color: blue });
+    const tier2Cylinder = new THREE.Mesh(tier2CylinderGeometry, tier2CylinderMaterial);
+
+    // Position tier2 cylinder
+    tier2Cylinder.rotation.x = Math.PI;
+    tier2Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_2_hole_horizontal_constraint;
+    tier2Cylinder.position.y = (modelConfig.tier_1_extrusion_distance) + modelConfig.tier_2_extrusion_distance/2 - modelConfig.row_2_hole_height/2;
+    tier2Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_depth - modelConfig.row_2_hole_vertical_constraint;
+
+    // Add cylinder for debugging
+    //scene.add(tier2Cylinder);
+
+    // Clone and position tier2 for CSG operations
+    const tier2Copy = tier2.clone();
+    tier2Copy.updateMatrix();
+    const tier2CSG = CSG.fromMesh(tier2Copy);
+
+    // Use cylinder as is
+    const tier2CylinderCopy = tier2Cylinder.clone();
+    tier2CylinderCopy.updateMatrix();
+    const tier2CylinderCSG = CSG.fromMesh(tier2CylinderCopy);
+
+    // Perform subtraction
+    let tier2WithHole = CSG.toMesh(
+        tier2CSG.subtract(tier2CylinderCSG),
+        tier2.matrix,
+        tier2Material
+    );
+
+    // Keep tier2 at original position
+    tier2WithHole.position.set(0, (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance / 2), -(modelConfig.model_depth - modelConfig.tier_2_depth) / 2);
+
+    // Create the remaining 4 holes using the first hole as reference
+    for (let i = 1; i < 5; i++) {
+        const nextCylinder = tier2Cylinder.clone();
+        nextCylinder.position.x = tier2Cylinder.position.x + i * (modelConfig.row_2_hole_diameter + modelConfig.row_2_inner_gap);
+        nextCylinder.updateMatrix();
+        
+        const nextCylinderCSG = CSG.fromMesh(nextCylinder);
+        tier2WithHole = CSG.toMesh(
+            CSG.fromMesh(tier2WithHole).subtract(nextCylinderCSG),
+            tier2.matrix,
+            tier2Material
+        );
+    }
+
+    // Remove original tier2 and add tier 2 with holes
+    scene.remove(tier2);
+    scene.add(tier2WithHole);
+
+
+    // Create test cylinder for tier3
+    const tier3CylinderGeometry = new THREE.CylinderGeometry(
+      modelConfig.row_3_hole_diameter/2,
+      modelConfig.row_3_hole_diameter/2,
+      modelConfig.row_3_hole_height+100,
+      32
+    );
+    const tier3CylinderMaterial = new THREE.MeshStandardMaterial({ color: blue });
+    const tier3Cylinder = new THREE.Mesh(tier2CylinderGeometry, tier2CylinderMaterial);
+
+    // Position tier2 cylinder
+    tier3Cylinder.rotation.x = Math.PI;
+    tier3Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_3_hole_horizontal_constraint;
+    tier3Cylinder.position.y = (modelConfig.tier_1_extrusion_distance+modelConfig.tier_2_extrusion_distance) + modelConfig.tier_3_extrusion_distance/2 - modelConfig.row_3_hole_height/2;
+    tier3Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_depth - modelConfig.row_2_depth - modelConfig.row_3_hole_vertical_constraint;
+
+    // Add cylinder for debugging
+    //scene.add(tier3Cylinder);
+
+    // Clone and position tier3 for CSG operations
+    const tier3Copy = tier3.clone();
+    tier3Copy.updateMatrix();
+    const tier3CSG = CSG.fromMesh(tier3Copy);
+
+    // Use cylinder as is
+    const tier3CylinderCopy = tier3Cylinder.clone();
+    tier3CylinderCopy.updateMatrix();
+    const tier3CylinderCSG = CSG.fromMesh(tier3CylinderCopy);
+
+    // Perform subtraction
+    let tier3WithHole = CSG.toMesh(
+        tier3CSG.subtract(tier3CylinderCSG),
+        tier3.matrix,
+        tier3Material
+    );
+
+    // Keep tier3 at original position
+    tier3WithHole.position.set(0, (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance / 2), -(modelConfig.model_depth - modelConfig.tier_2_depth) / 2);
+
+    // Create the remaining 4 holes using the first hole as reference
+    for (let i = 1; i < 5; i++) {
+        const nextCylinder = tier3Cylinder.clone();
+        nextCylinder.position.x = tier3Cylinder.position.x + i * (modelConfig.row_3_hole_diameter + modelConfig.row_3_inner_gap);
+        nextCylinder.updateMatrix();
+        
+        const nextCylinderCSG = CSG.fromMesh(nextCylinder);
+        tier3WithHole = CSG.toMesh(
+            CSG.fromMesh(tier3WithHole).subtract(nextCylinderCSG),
+            tier3.matrix,
+            tier3Material
+        );
+    }
+
+    // Remove original tier3 and add tier 3 with holes
+    scene.remove(tier3);
+    scene.add(tier3WithHole);
+
+
+
+
+
+
+
 
 
 

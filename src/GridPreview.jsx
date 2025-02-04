@@ -49,6 +49,8 @@ const ModelInput = styled.div`
   display: flex;
   justify-content: flex-end;
   padding-bottom:7px;
+  font-size: 14px;
+  font-weight: bold;
 `;
 
 const Input = styled.input`
@@ -72,6 +74,10 @@ const ModelOutput = styled.div`
   display: flex;
   justify-content: flex-start;
   font-size: 12px;
+  span:first-child {
+    margin-right: 6px; /* ✅ Ensures space between label and value */
+    font-weight: bold; /* Optional: Makes label stand out */
+  }
 `;
 
 const CenterPanel = styled.div`
@@ -238,9 +244,7 @@ const baseModelConfigAtom = atom({
   number_holes_per_row: 5,
   edge_gap_scale_factor: 1.32,
   model_chamfer: 5,
-  row_1_bottle_height: 120,
-  row_2_bottle_height: 120,
-  row_3_bottle_height: 120,
+
 
 
   // Default values for user inputs
@@ -249,6 +253,9 @@ const baseModelConfigAtom = atom({
   row_1_hole_diameter: 19,
   row_2_hole_diameter: 19,
   row_3_hole_diameter: 19,
+  row_1_bottle_height: 120,
+  row_2_bottle_height: 120,
+  row_3_bottle_height: 120,
 
 });
 
@@ -515,6 +522,28 @@ const GridPreview = () => {
     }));
   };
 
+  const updateRow1BottleHeight = (e) => {
+    setUserConfig((prev) => ({
+      ...prev,
+      row_1_bottle_height: parseInt(e.target.value) || 0,
+    }));
+  };
+
+  const updateRow2BottleHeight = (e) => {
+    setUserConfig((prev) => ({
+      ...prev,
+      row_2_bottle_height: parseInt(e.target.value) || 0,
+    }));
+  };
+
+  const updateRow3BottleHeight = (e) => {
+    setUserConfig((prev) => ({
+      ...prev,
+      row_3_bottle_height: parseInt(e.target.value) || 0,
+    }));
+  };
+
+
   return (
     <GridLayout>
       <Header>
@@ -541,6 +570,18 @@ const GridPreview = () => {
         <ModelInput>
           <span>Row 3 Hole Diameter (mm)</span>
           <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 1 Bottle Height (mm)</span>
+          <Input type="number" value={modelConfig.row_1_bottle_height} onChange={updateRow1BottleHeight} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 2 Bottle Height (mm)</span>
+          <Input type="number" value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 3 Bottle Height (mm)</span>
+          <Input type="number" value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
         </ModelInput>
       </LeftPanel>
       <CenterPanel>

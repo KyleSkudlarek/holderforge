@@ -520,35 +520,38 @@ const ThreeViewer = ({ modelConfig }) => {
     // Position from front edge (Z position) - move it to the front row
     tier1Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_hole_vertical_constraint;
 
-    scene.add(tier1Cylinder);
+    //scene.add(tier1Cylinder);
 
     // Convert meshes to CSG objects
     // After your current cylinder positioning code, replace the CSG section with:
 
     // Clone and position tier1 to match cylinder's coordinate space
     const tier1Copy = tier1.clone();
-    tier1Copy.position.copy(tier1Cylinder.position);
     tier1Copy.updateMatrix();
     const tier1CSG = CSG.fromMesh(tier1Copy);
 
-    // Keep cylinder where it is
-    const tier1CylinderCSG = CSG.fromMesh(tier1Cylinder);
+    // Use cylinder as is
+    const tier1CylinderCopy = tier1Cylinder.clone();
+    tier1CylinderCopy.updateMatrix();
+    const tier1CylinderCSG = CSG.fromMesh(tier1CylinderCopy);
 
     // Perform subtraction
     const tier1WithHole = CSG.toMesh(
         tier1CSG.subtract(tier1CylinderCSG),
-        tier1Copy.matrix, // Use the positioned copy's matrix
+        tier1.matrix,
         tier1Material
     );
 
-    // Set the final position
     // Keep tier1 at original position
     tier1WithHole.position.set(0, 0, 0);
 
-    // For debugging - let's first see both:
+    // Remove original pieces and add new
     scene.remove(tier1);
     scene.add(tier1WithHole);
-    // scene.remove(tier1);  // Comment this out temporarily so we can see both
+
+
+
+
 
     console.log('Cylinder position:', tier1Cylinder.position);
     console.log('Copy position:', tier1Copy.position);

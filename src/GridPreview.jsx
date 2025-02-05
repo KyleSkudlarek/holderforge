@@ -635,8 +635,8 @@ const ThreeViewer = ({ modelConfig }) => {
       modelConfig.row_3_hole_height,
       32
     );
-    const tier3CylinderMaterial = new THREE.MeshStandardMaterial({ color: blue });
-    const tier3Cylinder = new THREE.Mesh(tier2CylinderGeometry, tier2CylinderMaterial);
+    const tier3CylinderMaterial = new THREE.MeshStandardMaterial({ color: grey });
+    const tier3Cylinder = new THREE.Mesh(tier3CylinderGeometry, tier3CylinderMaterial);
 
     // Position tier2 cylinder
     tier3Cylinder.rotation.x = Math.PI;

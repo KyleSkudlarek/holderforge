@@ -441,7 +441,7 @@ const ThreeViewer = ({ modelConfig }) => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(white);
     const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
-    camera.position.set(0, 100, 150); // Three-quarter view from the side
+    camera.position.set(0, 150, 0); // Three-quarter view from the side. Top-bottom: (0, 150, 0). Three quarter view from side (0,100,150)
     camera.lookAt(0, 0, 0); // Ensures the camera is looking at the model center
 
     // Renderer setup
@@ -474,8 +474,8 @@ const ThreeViewer = ({ modelConfig }) => {
     // Add tier 1 - In three.js x is left/right, y is up/down (height), and z is forward/backward (depth)
     const tier1Geometry = new THREE.BoxGeometry(modelConfig.model_width, modelConfig.tier_1_extrusion_distance, modelConfig.model_depth);
     const tier1Material = new THREE.MeshStandardMaterial({ color: grey });
-    tier1Material.transparent = true;
-    tier1Material.opacity = 0.5;
+    // tier1Material.transparent = true;
+    // tier1Material.opacity = 0.5;
     const tier1 = new THREE.Mesh(tier1Geometry, tier1Material);
     scene.add(tier1);
 
@@ -486,8 +486,8 @@ const ThreeViewer = ({ modelConfig }) => {
       modelConfig.tier_2_depth // Depth 
     );
     const tier2Material = new THREE.MeshStandardMaterial({ color: grey });
-    tier2Material.transparent = true;
-    tier2Material.opacity = 0.5;
+    // tier2Material.transparent = true;
+    // tier2Material.opacity = 0.5;
     const tier2 = new THREE.Mesh(tier2Geometry, tier2Material);
     tier2.position.y = (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance / 2); // Position it on top of tier 1
     tier2.position.z = -(modelConfig.model_depth - modelConfig.tier_2_depth) / 2;    
@@ -500,8 +500,8 @@ const ThreeViewer = ({ modelConfig }) => {
       modelConfig.tier_3_depth // Depth
     );
     const tier3Material = new THREE.MeshStandardMaterial({ color: grey });
-    tier3Material.transparent = true;
-    tier3Material.opacity = 0.5;
+    // tier3Material.transparent = true;
+    // tier3Material.opacity = 0.5;
     const tier3 = new THREE.Mesh(tier3Geometry, tier3Material);
     tier3.position.y = (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance) + modelConfig.tier_3_extrusion_distance / 2;
     tier3.position.z = -(modelConfig.model_depth - modelConfig.tier_3_depth) / 2;    
@@ -530,12 +530,12 @@ const ThreeViewer = ({ modelConfig }) => {
 
     // Clone and position tier1 to match cylinder's coordinate space
     const tier1Copy = tier1.clone();
-    tier1Copy.updateMatrix();
+    tier1Copy.updateMatrixWorld(true);
     const tier1CSG = CSG.fromMesh(tier1Copy);
 
     // Use cylinder as is
     const tier1CylinderCopy = tier1Cylinder.clone();
-    tier1CylinderCopy.updateMatrix();
+    tier1CylinderCopy.updateMatrixWorld(true);
     const tier1CylinderCSG = CSG.fromMesh(tier1CylinderCopy);
 
     // Perform subtraction
@@ -552,7 +552,8 @@ const ThreeViewer = ({ modelConfig }) => {
     for (let i = 1; i < 5; i++) {
       const nextCylinder = tier1Cylinder.clone();
       nextCylinder.position.x = tier1Cylinder.position.x + i * (modelConfig.row_1_hole_diameter + modelConfig.row_1_inner_gap);
-      nextCylinder.updateMatrix();
+      // scene.add(nextCylinder);
+      nextCylinder.updateMatrixWorld(true);
       
       const nextCylinderCSG = CSG.fromMesh(nextCylinder);
       tier1WithHole = CSG.toMesh(
@@ -573,7 +574,7 @@ const ThreeViewer = ({ modelConfig }) => {
       modelConfig.row_2_hole_height,
       32
     );
-    const tier2CylinderMaterial = new THREE.MeshStandardMaterial({ color: blue });
+    const tier2CylinderMaterial = new THREE.MeshStandardMaterial({ color: grey });
     const tier2Cylinder = new THREE.Mesh(tier2CylinderGeometry, tier2CylinderMaterial);
 
     // Position tier2 cylinder
@@ -589,12 +590,12 @@ const ThreeViewer = ({ modelConfig }) => {
 
     // Clone and position tier2 for CSG operations
     const tier2Copy = tier2.clone();
-    tier2Copy.updateMatrix();
+    tier2Copy.updateMatrixWorld(true);
     const tier2CSG = CSG.fromMesh(tier2Copy);
 
     // Use cylinder as is
     const tier2CylinderCopy = tier2Cylinder.clone();
-    tier2CylinderCopy.updateMatrix();
+    tier2CylinderCopy.updateMatrixWorld(true);
     const tier2CylinderCSG = CSG.fromMesh(tier2CylinderCopy);
 
     // Perform subtraction
@@ -611,6 +612,7 @@ const ThreeViewer = ({ modelConfig }) => {
     for (let i = 1; i < 5; i++) {
         const nextCylinder = tier2Cylinder.clone();
         nextCylinder.position.x = tier2Cylinder.position.x + i * (modelConfig.row_2_hole_diameter + modelConfig.row_2_inner_gap);
+        //scene.add(nextCylinder);
         nextCylinder.updateMatrix();
         
         const nextCylinderCSG = CSG.fromMesh(nextCylinder);
@@ -621,7 +623,7 @@ const ThreeViewer = ({ modelConfig }) => {
         );
     }
 
-    // // Remove original tier2 and add tier 2 with holes
+    // Remove original tier2 and add tier 2 with holes
     scene.remove(tier2);
     scene.add(tier2WithHole);
 
@@ -644,7 +646,7 @@ const ThreeViewer = ({ modelConfig }) => {
 
 
     // Add cylinder for debugging
-    scene.add(tier3Cylinder);
+    //scene.add(tier3Cylinder);
 
     // Clone and position tier3 for CSG operations
     const tier3Copy = tier3.clone();
@@ -683,16 +685,6 @@ const ThreeViewer = ({ modelConfig }) => {
     // Remove original tier3 and add tier 3 with holes
     scene.remove(tier3);
     scene.add(tier3WithHole);
-
-
-
-
-
-
-
-
-
-
 
     // Cleanup
     return () => {

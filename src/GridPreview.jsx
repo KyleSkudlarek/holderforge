@@ -10,8 +10,8 @@ import {CSG} from "three-csg-ts";
 
 
 const breakpoints = {
-  tablet: '1100px',
-  mobile: '700px',
+  tablet: '1250px',
+  mobile: '900px',
 };
 
 
@@ -22,7 +22,11 @@ const GridLayout = styled.div`
   display: grid;
   width: 100vw;
   height: 100vh;
-  grid-template-columns: 2fr 2fr 3fr;
+  
+  overflow-x: hidden;   
+
+
+  grid-template-columns: 2fr 2fr 4fr;
   grid-template-rows: 100px 1fr 100px;
   grid-template-areas:
     "header header header"
@@ -164,12 +168,15 @@ const CenterPanel = styled.div`
 
     /* Tablet */
   @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
+      padding-left: 20px;
+      padding-right: 20px;
   }
 
   /* Mobile */
   @media (max-width: ${breakpoints.mobile}) {
     align-items: flex-start;
     padding-left: 20px;
+    padding-right: 20px;
   }
 
 `;
@@ -253,6 +260,9 @@ const ModelProfile = styled.div`
   display: flex;
   flex-direction: column;
 
+  position: relative; /* Ensure children are positioned relative to this */
+  overflow: hidden; /* Ensure it doesn't interfere */
+
   border-sizing: border-box;
   border-bottom: 1px solid black;
   border-right: 1px solid black;
@@ -335,14 +345,25 @@ const DownloadButton = styled.button`
 
 const ThreeContainer = styled.div`
   width: 100%; /* Adjust based on your layout */
+  border-sizing: border-box;
   aspect-ratio: 1 / 1; /* Ensures height always matches width */  
   background: white; /* Ensures the container matches scene background */
   margin-top: 20px;
+
+
+  /* Tablet */
+  @media (max-width: ${breakpoints.tablet}) {
+    margin-left: auto;
+    margin-right: auto;
+    padding: auto;
+  }
+
 
   /* Mobile */
   @media (max-width: ${breakpoints.mobile}) {
     margin-left: auto;
     margin-right: auto;
+    padding: auto;
   }
 
 
@@ -553,7 +574,7 @@ const ThreeViewer = ({ modelConfig }) => {
 
 
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    camera.position.set(0, 75, 120); // Three-quarter view from the side. Top-bottom: (0, 150, 0). Three quarter view from side (0,100,150)
+    camera.position.set(0, 75, 150); // Three-quarter view from the side. Top-bottom: (0, 150, 0). Three quarter view from side (0,100,150)
     camera.lookAt(0, 0, 0); // Ensures the camera is looking at the model center
 
     // Renderer setup
@@ -574,6 +595,7 @@ const ThreeViewer = ({ modelConfig }) => {
     // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enablePan = false; 
+    controls.enableZoom = false; 
     controls.enableDamping = true; // Smooth movement
 
     // Animation loop

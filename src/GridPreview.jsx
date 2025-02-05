@@ -243,6 +243,7 @@ const ThreeContainer = styled.div`
   width: 100%;
   height: 100%;
   background: white; /* Ensures the container matches scene background */
+  margin-top: 20px;
 `;
 
 
@@ -441,7 +442,7 @@ const ThreeViewer = ({ modelConfig }) => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(white);
     const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
-    camera.position.set(0, 150, 0); // Three-quarter view from the side. Top-bottom: (0, 150, 0). Three quarter view from side (0,100,150)
+    camera.position.set(0, 75, 120); // Three-quarter view from the side. Top-bottom: (0, 150, 0). Three quarter view from side (0,100,150)
     camera.lookAt(0, 0, 0); // Ensures the camera is looking at the model center
 
     // Renderer setup
@@ -461,6 +462,7 @@ const ThreeViewer = ({ modelConfig }) => {
 
     // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enablePan = false; 
     controls.enableDamping = true; // Smooth movement
 
     // Animation loop
@@ -529,21 +531,50 @@ const ThreeViewer = ({ modelConfig }) => {
     //scene.add(tier1Cylinder);  // Render the cylinder for debugging
 
     // Clone and position tier1 to match cylinder's coordinate space
-    const tier1Copy = tier1.clone();
-    tier1Copy.updateMatrixWorld(true);
-    const tier1CSG = CSG.fromMesh(tier1Copy);
+    tier1.updateMatrixWorld(true); // Ensure the original object is up-to-date
+    const tier1CSG = CSG.fromMesh(tier1);
+
+
+
+
 
     // Use cylinder as is
     const tier1CylinderCopy = tier1Cylinder.clone();
     tier1CylinderCopy.updateMatrixWorld(true);
     const tier1CylinderCSG = CSG.fromMesh(tier1CylinderCopy);
 
-    // Perform subtraction
+    // ✅ Create a NEW material instance based on the original
+    const newTier1Material = new THREE.MeshStandardMaterial({
+      color: tier1Material.color,
+      transparent: tier1Material.transparent,
+      opacity: tier1Material.opacity,
+      side: THREE.DoubleSide,  // Ensure both sides render properly
+      depthWrite: false,  // Fix potential rendering order issues
+    });
+
+    // ✅ Generate the new mesh with the fresh material
     let tier1WithHole = CSG.toMesh(
-        tier1CSG.subtract(tier1CylinderCSG),
-        tier1.matrix,
-        tier1Material
+      tier1CSG.subtract(tier1CylinderCSG),
+      tier1.matrix,
+      newTier1Material
     );
+
+    // ✅ Ensure Three.js fully updates the material
+    tier1WithHole.material.needsUpdate = true;
+  
+    // ✅ Force correct rendering settings
+    tier1WithHole.material.side = THREE.DoubleSide; // Render both sides
+    tier1WithHole.material.depthWrite = false; // Prevents incorrect overwriting
+    tier1WithHole.material.transparent = true;
+    tier1WithHole.material.opacity = 1.0; // Ensure full visibility
+    tier1WithHole.geometry.deleteAttribute('normal'); // Remove old normals
+    tier1WithHole.geometry.computeVertexNormals(); // Recalculate proper shading
+    tier1WithHole.geometry.dispose();
+    tier1WithHole.geometry = tier1WithHole.geometry.clone();
+    tier1WithHole.material.needsUpdate = true;
+
+
+
 
     // Keep tier1 at original position
     tier1WithHole.position.set(0, 0, 0);
@@ -582,7 +613,7 @@ const ThreeViewer = ({ modelConfig }) => {
     tier2Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_2_hole_horizontal_constraint;
     tier2Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_depth - modelConfig.row_2_hole_vertical_constraint;
 
-    tier2Cylinder.position.y = (modelConfig.tier_1_extrusion_distance / 2) + modelConfig.tier_2_extrusion_distance - modelConfig.row_2_hole_height / 2;
+    tier2Cylinder.position.y = ((modelConfig.tier_1_extrusion_distance / 2) + modelConfig.tier_2_extrusion_distance - modelConfig.row_2_hole_height / 2);
 
     
     // Add cylinder for debugging

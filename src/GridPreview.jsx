@@ -132,7 +132,7 @@ const RightPanel = styled.div`
     flex-wrap: wrap;
     padding-left: 20px;
     padding-top: 0px;
-    margin-top: -50px;
+    margin-top: -100px;
   }
 
   

@@ -7,6 +7,16 @@ import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {CSG} from "three-csg-ts";
 
+
+
+const breakpoints = {
+  tablet: '1100px',
+  mobile: '700px',
+};
+
+
+
+
 // Styled Components
 const GridLayout = styled.div`
   display: grid;
@@ -18,6 +28,29 @@ const GridLayout = styled.div`
     "header header header"
     "left center right"
     "footer footer footer";
+
+    /* Tablet */
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
+    grid-template-columns: 2fr 2fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "header header"
+      "left center"
+      "right center"
+      "footer footer";
+  }
+
+      /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto 50px;
+    grid-template-areas:
+      "header"
+      "left"
+      "center"
+      "right"
+      "footer";
+  }
 `;
 
 const Header = styled.header`
@@ -45,6 +78,20 @@ const LeftPanel = styled.div`
   align-items: flex-end;
   padding-right: 10px;
   padding-top:20px;
+
+  /* Tablet */
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
+    align-items: flex-start;
+    padding-left: 20px;
+  }
+
+  /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
+    align-items: flex-start;
+    padding-left: 20px;
+  }
+
+
 `;
 
 const ModelInput = styled.div`
@@ -70,17 +117,39 @@ const RightPanel = styled.div`
   padding-top: 0px;
   padding-left: 10px;
   padding-top:20px;
+
+  @media (max-width: ${breakpoints.tablet}) {
+    flex-wrap: wrap;
+    padding-left: 20px;
+    
+
+  }
+
+  
 `;
 
 const ModelOutput = styled.div`
   color: black;
   display: flex;
   justify-content: flex-start;
+  flex-direction: column;
   font-size: 12px;
   span:first-child {
-    margin-right: 6px; /* ✅ Ensures space between label and value */
-    font-weight: bold; /* Optional: Makes label stand out */
+    margin-right: 6px; 
+    font-weight: bold; 
   }
+`;
+
+
+const ModelOutputLabel = styled.span`
+  color: black;
+  font-size: 12px;
+`;
+
+
+const ModelOutputValue = styled.span`
+  color: black;
+  font-size: 12px;
 `;
 
 const CenterPanel = styled.div`
@@ -92,6 +161,17 @@ const CenterPanel = styled.div`
   align-items: center;
   justify-content: flex-start;
   padding-top:20px;
+
+    /* Tablet */
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
+  }
+
+  /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
+    align-items: flex-start;
+    padding-left: 20px;
+  }
+
 `;
 
 const Model = styled.div`
@@ -100,6 +180,13 @@ const Model = styled.div`
   height: ${({ model_depth }) => model_depth}px;
   outline: 1px solid black;
   margin: 20px;
+
+  /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
+    
+    margin-left: auto;
+    margin-right: auto;
+  }
 `;
 
 const Row1 = styled.div`
@@ -169,6 +256,13 @@ const ModelProfile = styled.div`
   border-sizing: border-box;
   border-bottom: 1px solid black;
   border-right: 1px solid black;
+
+  /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
+    
+    margin-left: auto;
+    margin-right: auto;
+  }
 `;
 
 const ModelProfileTier = styled.div`
@@ -240,10 +334,18 @@ const DownloadButton = styled.button`
 `;
 
 const ThreeContainer = styled.div`
-  width: 100%;
-  height: 100%;
+  width: 100%; /* Adjust based on your layout */
+  aspect-ratio: 1 / 1; /* Ensures height always matches width */  
   background: white; /* Ensures the container matches scene background */
   margin-top: 20px;
+
+  /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+
 `;
 
 
@@ -441,7 +543,16 @@ const ThreeViewer = ({ modelConfig }) => {
     // Scene setup
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(white);
-    const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
+
+    const clientWidth = mountRef.current.clientWidth;
+    const clientHeight = mountRef.current.clientHeight;
+  
+    console.log("🔍 Three.js Container Dimensions:");
+    console.log("Client Width:", clientWidth);
+    console.log("Client Height:", clientHeight);
+
+
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     camera.position.set(0, 75, 120); // Three-quarter view from the side. Top-bottom: (0, 150, 0). Three quarter view from side (0,100,150)
     camera.lookAt(0, 0, 0); // Ensures the camera is looking at the model center
 
@@ -890,7 +1001,7 @@ const GridPreview = () => {
         <h1>HolderForge</h1>
       </Header>
       <LeftPanel>
-        <h3>Customize</h3>
+        <h2>Customize</h2>
         <ModelInput>
           <span>Model Width (mm)</span>
           <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
@@ -946,7 +1057,7 @@ const GridPreview = () => {
         </ModelInput>
       </LeftPanel>
       <CenterPanel>
-        <h3>Preview</h3>
+        <h2>Preview</h2>
         <Model
             model_width={modelConfig.model_width * modelConfig.mm2pixel}
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
@@ -1028,16 +1139,16 @@ const GridPreview = () => {
         <ThreeViewer modelConfig={modelConfig}/>
       </CenterPanel>
       <RightPanel>
-        <h3>Download</h3>
+        <h2>Download</h2>
         <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
-        <h3>Computed Values</h3>
+        <h2>Computed Values</h2>
         <ModelOutput>
           <span>Row 1 Depth: </span>
           <span>{formatNumber(modelConfig.row_1_depth)} mm</span>
         </ModelOutput>
         <ModelOutput>
-          <span>Row 2 Depth: </span>
-          <span>{formatNumber(modelConfig.row_2_depth)} mm</span>
+          <ModelOutputLabel>Row 2 Depth: </ModelOutputLabel>
+          <ModelOutputValue>{formatNumber(modelConfig.row_2_depth)} mm</ModelOutputValue>
         </ModelOutput>
         <ModelOutput>
           <span>Row 3 Depth: </span>
@@ -1080,7 +1191,7 @@ const GridPreview = () => {
           <span>{formatNumber(modelConfig.row_3_inner_gap)} mm</span>
         </ModelOutput>
 
-        <h3>Autodesk Fusion Computed Values</h3>
+        <h2>Autodesk Fusion Computed Values</h2>
         <ModelOutput>
           <span>Tier 1 rectangle dimensions: </span>
           <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.model_depth)} mm </span>

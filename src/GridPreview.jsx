@@ -125,7 +125,9 @@ const RightPanel = styled.div`
   @media (max-width: ${breakpoints.tablet}) {
     flex-wrap: wrap;
     padding-left: 20px;
-    
+    padding-top: 0px;
+    margin-top: -50px;
+
 
   }
 

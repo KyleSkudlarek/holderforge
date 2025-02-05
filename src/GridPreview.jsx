@@ -474,6 +474,8 @@ const ThreeViewer = ({ modelConfig }) => {
     // Add tier 1 - In three.js x is left/right, y is up/down (height), and z is forward/backward (depth)
     const tier1Geometry = new THREE.BoxGeometry(modelConfig.model_width, modelConfig.tier_1_extrusion_distance, modelConfig.model_depth);
     const tier1Material = new THREE.MeshStandardMaterial({ color: grey });
+    tier1Material.transparent = true;
+    tier1Material.opacity = 0.5;
     const tier1 = new THREE.Mesh(tier1Geometry, tier1Material);
     scene.add(tier1);
 
@@ -483,7 +485,9 @@ const ThreeViewer = ({ modelConfig }) => {
       modelConfig.tier_2_extrusion_distance, // Height of the tier
       modelConfig.tier_2_depth // Depth 
     );
-    const tier2Material = new THREE.MeshStandardMaterial({ color: green });
+    const tier2Material = new THREE.MeshStandardMaterial({ color: grey });
+    tier2Material.transparent = true;
+    tier2Material.opacity = 0.5;
     const tier2 = new THREE.Mesh(tier2Geometry, tier2Material);
     tier2.position.y = (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance / 2); // Position it on top of tier 1
     tier2.position.z = -(modelConfig.model_depth - modelConfig.tier_2_depth) / 2;    
@@ -495,20 +499,22 @@ const ThreeViewer = ({ modelConfig }) => {
       modelConfig.tier_3_extrusion_distance, // Height of the tier
       modelConfig.tier_3_depth // Depth
     );
-    const tier3Material = new THREE.MeshStandardMaterial({ color: blue });
+    const tier3Material = new THREE.MeshStandardMaterial({ color: grey });
+    tier3Material.transparent = true;
+    tier3Material.opacity = 0.5;
     const tier3 = new THREE.Mesh(tier3Geometry, tier3Material);
     tier3.position.y = (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance) + modelConfig.tier_3_extrusion_distance / 2;
     tier3.position.z = -(modelConfig.model_depth - modelConfig.tier_3_depth) / 2;    
     scene.add(tier3);
 
-    // Add a test cylinder
+    // Add tier 1 test cylinder
     const tier1CylinderGeometry = new THREE.CylinderGeometry(
       modelConfig.row_1_hole_diameter/2, // top radius (half the diameter)
       modelConfig.row_1_hole_diameter/2, // bottom radius
       modelConfig.row_1_hole_height, // height
       32 // segments
     );
-    const tier1CylinderMaterial = new THREE.MeshStandardMaterial({ color: blue });
+    const tier1CylinderMaterial = new THREE.MeshStandardMaterial({ color: grey });
     const tier1Cylinder = new THREE.Mesh(tier1CylinderGeometry, tier1CylinderMaterial);
 
     // Position it next to tier1
@@ -573,9 +579,11 @@ const ThreeViewer = ({ modelConfig }) => {
     // Position tier2 cylinder
     tier2Cylinder.rotation.x = Math.PI;
     tier2Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_2_hole_horizontal_constraint;
-    tier2Cylinder.position.y = (modelConfig.tier_1_extrusion_distance) + modelConfig.tier_2_extrusion_distance/2 - modelConfig.row_2_hole_height/2;
     tier2Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_depth - modelConfig.row_2_hole_vertical_constraint;
 
+    tier2Cylinder.position.y = (modelConfig.tier_1_extrusion_distance / 2) + modelConfig.tier_2_extrusion_distance - modelConfig.row_2_hole_height / 2;
+
+    
     // Add cylinder for debugging
     //scene.add(tier2Cylinder);
 
@@ -613,7 +621,7 @@ const ThreeViewer = ({ modelConfig }) => {
         );
     }
 
-    // Remove original tier2 and add tier 2 with holes
+    // // Remove original tier2 and add tier 2 with holes
     scene.remove(tier2);
     scene.add(tier2WithHole);
 
@@ -622,7 +630,7 @@ const ThreeViewer = ({ modelConfig }) => {
     const tier3CylinderGeometry = new THREE.CylinderGeometry(
       modelConfig.row_3_hole_diameter/2,
       modelConfig.row_3_hole_diameter/2,
-      modelConfig.row_3_hole_height+100,
+      modelConfig.row_3_hole_height,
       32
     );
     const tier3CylinderMaterial = new THREE.MeshStandardMaterial({ color: blue });
@@ -635,7 +643,7 @@ const ThreeViewer = ({ modelConfig }) => {
     tier3Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_depth - modelConfig.row_2_depth - modelConfig.row_3_hole_vertical_constraint;
 
     // Add cylinder for debugging
-    //scene.add(tier3Cylinder);
+    scene.add(tier3Cylinder);
 
     // Clone and position tier3 for CSG operations
     const tier3Copy = tier3.clone();
@@ -681,14 +689,6 @@ const ThreeViewer = ({ modelConfig }) => {
 
 
 
-
-
-
-
-
-    console.log('Cylinder position:', tier1Cylinder.position);
-    console.log('Copy position:', tier1Copy.position);
-    console.log('Final hole position:', tier1WithHole.position);
 
 
 

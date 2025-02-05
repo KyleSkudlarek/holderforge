@@ -1001,7 +1001,7 @@ const GridPreview = () => {
         <h1>HolderForge</h1>
       </Header>
       <LeftPanel>
-        <h3>Customize</h3>
+        <h2>Customize</h2>
         <ModelInput>
           <span>Model Width (mm)</span>
           <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
@@ -1057,7 +1057,7 @@ const GridPreview = () => {
         </ModelInput>
       </LeftPanel>
       <CenterPanel>
-        <h3>Preview</h3>
+        <h2>Preview</h2>
         <Model
             model_width={modelConfig.model_width * modelConfig.mm2pixel}
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
@@ -1139,9 +1139,9 @@ const GridPreview = () => {
         <ThreeViewer modelConfig={modelConfig}/>
       </CenterPanel>
       <RightPanel>
-        <h3>Download</h3>
+        <h2>Download</h2>
         <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
-        <h3>Computed Values</h3>
+        <h2>Computed Values</h2>
         <ModelOutput>
           <span>Row 1 Depth: </span>
           <span>{formatNumber(modelConfig.row_1_depth)} mm</span>
@@ -1191,7 +1191,7 @@ const GridPreview = () => {
           <span>{formatNumber(modelConfig.row_3_inner_gap)} mm</span>
         </ModelOutput>
 
-        <h3>Autodesk Fusion Computed Values</h3>
+        <h2>Autodesk Fusion Computed Values</h2>
         <ModelOutput>
           <span>Tier 1 rectangle dimensions: </span>
           <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.model_depth)} mm </span>

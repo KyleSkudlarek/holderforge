@@ -639,8 +639,9 @@ const ThreeViewer = ({ modelConfig }) => {
     // Position tier2 cylinder
     tier3Cylinder.rotation.x = Math.PI;
     tier3Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_3_hole_horizontal_constraint;
-    tier3Cylinder.position.y = (modelConfig.tier_1_extrusion_distance+modelConfig.tier_2_extrusion_distance) + modelConfig.tier_3_extrusion_distance/2 - modelConfig.row_3_hole_height/2;
     tier3Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_depth - modelConfig.row_2_depth - modelConfig.row_3_hole_vertical_constraint;
+    tier3Cylinder.position.y = (modelConfig.tier_1_extrusion_distance/2) + (modelConfig.tier_2_extrusion_distance) + (modelConfig.tier_3_extrusion_distance) - modelConfig.row_3_hole_height/2;
+
 
     // Add cylinder for debugging
     scene.add(tier3Cylinder);

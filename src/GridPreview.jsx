@@ -122,17 +122,17 @@ const RightPanel = styled.div`
   padding-left: 10px;
   padding-top:20px;
 
-  @media (max-width: ${breakpoints.tablet}) {
+  @media (max-width: ${breakpoints.mobile} and max-width: ${breakpoints.tablet}) {
     flex-wrap: wrap;
     padding-left: 20px;
     padding-top: 0px;
   }
 
-    @media (max-width: ${breakpoints.mobile}) {
+  @media (max-width: ${breakpoints.mobile}) {
     flex-wrap: wrap;
     padding-left: 20px;
     padding-top: 0px;
-    margin-top: -100px;
+    margin-top: -50px;
   }
 
   
@@ -358,10 +358,11 @@ const ThreeContainer = styled.div`
 
 
   /* Tablet */
-  @media (max-width: ${breakpoints.tablet}) {
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
     margin-left: auto;
     margin-right: auto;
-    padding: auto;
+    padding-left: auto;
+    padding-right: auto;
   }
 
 
@@ -369,7 +370,8 @@ const ThreeContainer = styled.div`
   @media (max-width: ${breakpoints.mobile}) {
     margin-left: auto;
     margin-right: auto;
-    padding: auto;
+    padding-left: auto;
+    padding-right: auto;
   }
 
 

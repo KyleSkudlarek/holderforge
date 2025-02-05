@@ -126,9 +126,13 @@ const RightPanel = styled.div`
     flex-wrap: wrap;
     padding-left: 20px;
     padding-top: 0px;
+  }
+
+    @media (max-width: ${breakpoints.mobile}) {
+    flex-wrap: wrap;
+    padding-left: 20px;
+    padding-top: 0px;
     margin-top: -50px;
-
-
   }
 
   

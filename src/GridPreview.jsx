@@ -78,7 +78,6 @@ const LeftPanel = styled.div`
   align-items: flex-end;
   padding-right: 10px;
   padding-top:20px;
-  outline: 1px solid black;
 
   /* Tablet */
   @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
@@ -118,7 +117,6 @@ const RightPanel = styled.div`
   padding-top: 0px;
   padding-left: 10px;
   padding-top:20px;
-  outline: 1px solid black;
 
   @media (max-width: ${breakpoints.tablet}) {
     flex-wrap: wrap;
@@ -163,7 +161,6 @@ const CenterPanel = styled.div`
   align-items: center;
   justify-content: flex-start;
   padding-top:20px;
-  outline: 1px solid black;
 
     /* Tablet */
   @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
@@ -344,7 +341,8 @@ const ThreeContainer = styled.div`
 
   /* Mobile */
   @media (max-width: ${breakpoints.mobile}) {
-    margin-left: 0px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
 

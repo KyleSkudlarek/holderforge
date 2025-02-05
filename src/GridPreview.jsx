@@ -36,7 +36,7 @@ const GridLayout = styled.div`
     /* Tablet */
   @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
     grid-template-columns: 2fr 2fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr auto 50px;
     grid-template-areas:
       "header header"
       "left center"
@@ -47,7 +47,7 @@ const GridLayout = styled.div`
       /* Mobile */
   @media (max-width: ${breakpoints.mobile}) {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto 50px;
+    grid-template-rows: auto auto 1fr auto 100px;
     grid-template-areas:
       "header"
       "left"

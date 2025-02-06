@@ -37,7 +37,7 @@ const GridLayout = styled.div`
 
   /* Large Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-    grid-template-columns: 3fr 6fr;
+    grid-template-columns: 5fr 6fr;
     grid-template-rows: auto 1fr auto 50px;
     grid-template-areas:
       "header header"
@@ -89,7 +89,7 @@ const LeftPanel = styled.div`
   /* Large Tablet (900-1250) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
     align-items: flex-start;
-    padding-left: 70px;
+    padding-left: 50px;
   }
 
   /* Mobile (<900) */
@@ -137,23 +137,24 @@ const CenterPanel = styled.div`
   }
 
   /* Large Tablet (700-900) */
-  @media (min-width: ${breakpoints.smallTablet}) and max-width: ${breakpoints.largeTablet}) {
+  @media (min-width: ${breakpoints.smallTablet}) and (max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
     padding-left: 20px;
     padding-right: 20px;
   }
 
   /* Small Tablet (500-700) */
-  @media (min-width: ${breakpoints.mobile}) and max-width: ${breakpoints.smallTablet}) {
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.smallTablet}) {
     align-items: flex-start;
-    padding-left: 20px;
     padding-right: 20px;
+    h2{
+      padding-left: 20px;
+    }
   }
     
   /* Mobile (<500) */
   @media (max-width: ${breakpoints.mobile}) {
     align-items: flex-start;
-    //padding-left: 20px;
     padding-right: 20px;
     h2{
       padding-left: 20px;
@@ -362,6 +363,15 @@ const RightPanel = styled.div`
   }
 
   
+`;
+
+const DownloadDiv = styled.div`
+  margin-bottom: 20px;
+
+  /* Tablet 900-1250*/
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+      padding-left: 50px; 
+  }
 `;
 
 const DownloadButton = styled.button`
@@ -1202,8 +1212,10 @@ const GridPreview = () => {
         <ThreeViewer modelConfig={modelConfig}/>
       </CenterPanel>
       <RightPanel>
-        <h2>Download</h2>
-        <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
+        <DownloadDiv>
+          <h2>Download</h2>
+          <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
+        </DownloadDiv>
         <h2>Computed Values</h2>
         <ModelOutput>
           <span>Row 1 Depth:</span>

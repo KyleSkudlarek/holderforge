@@ -354,7 +354,6 @@ const ThreeContainer = styled.div`
 `;
 
 const RightPanel = styled.div`
-  outline: 1px solid black;
   color: black;
   grid-area: right;
   background: white;
@@ -365,24 +364,17 @@ const RightPanel = styled.div`
   padding-left: 10px;
   padding-top:20px;
 
-  // All other <h2> (computer values)
-  h2:not(:first-of-type) {
-    padding-top: 20px;
-  }
-
-  /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+  @media (max-width: ${breakpoints.mobile} and max-width: ${breakpoints.tablet}) {
     flex-wrap: wrap;
     padding-left: 20px;
     padding-top: 0px;
   }
 
-  /* Tablet (<900)  */
-  @media (max-width: ${breakpoints.largeTablet}) {
+  @media (max-width: ${breakpoints.mobile}) {
     flex-wrap: wrap;
     padding-left: 20px;
     padding-top: 0px;
-    margin-top: 0px;
+    margin-top: -50px;
   }
 
   

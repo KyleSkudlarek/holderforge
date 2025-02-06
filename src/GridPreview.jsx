@@ -10,11 +10,8 @@ import {CSG} from "three-csg-ts";
 
 
 const breakpoints = {
-  laptop: '1250px',
-  largeTablet: '900px',
-  smallTablet: '700px',
-  mobile: '500px',
-
+  tablet: '1250px',
+  mobile: '900px',
 };
 
 
@@ -29,16 +26,16 @@ const GridLayout = styled.div`
   overflow-x: hidden;   
 
 
-  grid-template-columns: 3fr 5fr 5fr;
+  grid-template-columns: 2fr 2fr 4fr;
   grid-template-rows: 100px 1fr 100px;
   grid-template-areas:
     "header header header"
     "left center right"
     "footer footer footer";
 
-    /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-    grid-template-columns: 3fr 6fr;
+    /* Tablet */
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
+    grid-template-columns: 2fr 2fr;
     grid-template-rows: auto 1fr auto 50px;
     grid-template-areas:
       "header header"
@@ -47,8 +44,8 @@ const GridLayout = styled.div`
       "footer footer";
   }
 
-      /* Mobile <900*/
-  @media (max-width: ${breakpoints.largeTablet}) {
+      /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto 1fr auto 100px;
     grid-template-areas:
@@ -76,7 +73,6 @@ const Footer = styled.footer`
 `;
 
 const LeftPanel = styled.div`
-  outline: 1px solid black;
   color: black;
   grid-area: left;
   background: white;
@@ -85,22 +81,21 @@ const LeftPanel = styled.div`
   justify-content: flex-start;
   align-items: flex-end;
   padding-right: 10px;
-  padding-top: 20px;
+  padding-top:20px;
 
-  /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+  /* Tablet */
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
     align-items: flex-start;
-    padding-left: 70px;
+    padding-left: 20px;
   }
 
-  /* Mobile <900*/
-  @media (max-width: ${breakpoints.largeTablet}) {
+  /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
     align-items: flex-start;
     padding-left: 20px;
   }
 
 
-  }
 `;
 
 const ModelInput = styled.div`
@@ -110,20 +105,64 @@ const ModelInput = styled.div`
   padding-bottom:7px;
   font-size: 14px;
   font-weight: bold;
-  span:first-child {
-    margin-right: 6px; 
-    font-weight: bold; 
-  }
 `;
 
 const Input = styled.input`
   width: 50px;
 `;
 
+const RightPanel = styled.div`
+  color: black;
+  grid-area: right;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 0px;
+  padding-left: 10px;
+  padding-top:20px;
+
+  @media (max-width: ${breakpoints.mobile} and max-width: ${breakpoints.tablet}) {
+    flex-wrap: wrap;
+    padding-left: 20px;
+    padding-top: 0px;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    flex-wrap: wrap;
+    padding-left: 20px;
+    padding-top: 0px;
+    margin-top: -50px;
+  }
+
+  
+`;
+
+const ModelOutput = styled.div`
+  color: black;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  font-size: 12px;
+  span:first-child {
+    margin-right: 6px; 
+    font-weight: bold; 
+  }
+`;
+
+
+const ModelOutputLabel = styled.span`
+  color: black;
+  font-size: 12px;
+`;
+
+
+const ModelOutputValue = styled.span`
+  color: black;
+  font-size: 12px;
+`;
 
 const CenterPanel = styled.div`
-  outline: 1px solid black;
-
   color:black;
   grid-area: center;
   background: white;
@@ -133,50 +172,30 @@ const CenterPanel = styled.div`
   justify-content: flex-start;
   padding-top:20px;
 
-    /* Tablet (900-1250) */
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+    /* Tablet */
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
       padding-left: 20px;
-      padding-right: 150px;
+      padding-right: 20px;
   }
 
-  /* Large Tablet (700-900) */
-  @media (min-width: ${breakpoints.smallTablet}) and max-width: ${breakpoints.largeTablet}) {
-    align-items: flex-start;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-
-  /* Small Tablet (500-700) */
-  @media (min-width: ${breakpoints.mobile}) and max-width: ${breakpoints.smallTablet}) {
-    align-items: flex-start;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-
-  /* Mobile (<500) */
+  /* Mobile */
   @media (max-width: ${breakpoints.mobile}) {
     align-items: flex-start;
-    //padding-left: 20px;
+    padding-left: 20px;
     padding-right: 20px;
-    h2{
-      padding-left: 20px;
-    }
   }
-
-
 
 `;
 
 const Model = styled.div`
-  //outline: 1px solid black;
-
   background: red;
   width: ${({ model_width }) => model_width}px;
   height: ${({ model_depth }) => model_depth}px;
+  outline: 1px solid black;
   margin: 20px;
 
-  /* Mobile  (<900) */
-  @media (max-width: ${breakpoints.largeTablet}) {
+  /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
     
     margin-left: auto;
     margin-right: auto;
@@ -239,7 +258,6 @@ const Hole = styled.div`
 
 
 const ModelProfile = styled.div`
-  //outline: 1px solid black;
 
   margin-top: 20px;
 
@@ -256,7 +274,7 @@ const ModelProfile = styled.div`
   border-right: 1px solid black;
 
   /* Mobile */
-  @media (max-width: ${breakpoints.largeTablet}) {
+  @media (max-width: ${breakpoints.mobile}) {
     
     margin-left: auto;
     margin-right: auto;
@@ -312,81 +330,6 @@ const ModelProfileHole = styled.div`
   }
 `;
 
-
-
-const ThreeContainer = styled.div`
-  //outline: 1px solid black;
-
-  width: 400px;
-  border-sizing: border-box;
-  aspect-ratio: 1 / 1; /* Ensures height always matches width */  
-  background: white; 
-
-
-  /* Large Tablet(900-1250)*/
-  @media (min-width: ${breakpoints.smallTablet}) and (max-width: ${breakpoints.laptop}) {
-    width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: auto;
-    padding-right: auto;
-  }
-
-
-  /* Small Tablet (500-700)*/
-  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.smallTablet}) {
-    width: 400px;
-    margin-top: auto;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  /* Mobile (<500)*/
-  @media (max-width: ${breakpoints.mobile}) {
-    margin-top: 0px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 0px;
-    padding-right: 0px;
-  }
-
-
-`;
-
-const RightPanel = styled.div`
-  color: black;
-  grid-area: right;
-  background: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding-top: 0px;
-  padding-left: 10px;
-  padding-top:20px;
-
-  @media (max-width: ${breakpoints.mobile} and max-width: ${breakpoints.tablet}) {
-    flex-wrap: wrap;
-    padding-left: 20px;
-    padding-top: 0px;
-  }
-
-  @media (max-width: ${breakpoints.mobile}) {
-    flex-wrap: wrap;
-    padding-left: 20px;
-    padding-top: 0px;
-    margin-top: -50px;
-  }
-
-  
-`;
-
-const DownloadDiv = styled.div`
-    /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-      padding-left: 50px; 
-  }
-`;
-
 const DownloadButton = styled.button`
   padding: 5px 10px; /* Smaller padding */
   font-size: 14px; /* Adjust text size */
@@ -404,78 +347,34 @@ const DownloadButton = styled.button`
   &:hover {
     background-color: #0056b3;
   }
-
-   /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-
-  }
-
 `;
 
-const ComputedValuesDiv = styled.div`
-    /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-      padding-left: 50px; 
-  }
-`;
+const ThreeContainer = styled.div`
+  width: 100%; /* Adjust based on your layout */
+  border-sizing: border-box;
+  aspect-ratio: 1 / 1; /* Ensures height always matches width */  
+  background: white; /* Ensures the container matches scene background */
+  margin-top: 20px;
 
-const AutodeskValuesDiv = styled.div`
 
-  border: 1px solid green;
-  
-  /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-    padding-left: 50px;
-    // white-space: nowrap; /* Prevent text from wrapping */
-    overflow: visible; /* Allow text to extend past the div */
-    width: 150%; /* Forces it to extend beyond RightPanel */
-    flex-wrap: wrap;
+  /* Tablet */
+  @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.tablet}) {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: auto;
+    padding-right: auto;
   }
 
 
-  @media (max-width: ${breakpoints.largeTablet}) {
-    flex-wrap: wrap;
-    width: 100%;
-    padding-left: 0px;
-    padding-right: 0px;
-    margin-left: 0px;
-    margin-right: 0px;
-    
-    display: block; /* ✅ Ensure it behaves like a block element */
-    white-space: normal; /* ✅ Forces text wrapping */
-    word-wrap: break-word; /* ✅ Breaks long words */
-    overflow-wrap: anywhere;
-
+  /* Mobile */
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: auto;
+    padding-right: auto;
   }
 
 
-
-`;
-
-
-
-const ModelOutput = styled.div`
-  color: black;
-  display: flex;
-  justify-content: flex-start;
-  flex-direction: column;
-  font-size: 12px;
-  span:first-child {
-    margin-right: 6px; 
-    font-weight: bold; 
-  }
-`;
-
-
-const ModelOutputLabel = styled.span`
-  color: black;
-  font-size: 12px;
-`;
-
-
-const ModelOutputValue = styled.span`
-  color: black;
-  font-size: 12px;
 `;
 
 
@@ -1142,21 +1041,21 @@ const GridPreview = () => {
           <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
         </ModelInput>
         <ModelInput>
-          <span>Row 1 Hole Shape</span>
+          <span>Row 1 Hole Shape:</span>
           <select value={modelConfig.row_1_hole_shape} onChange={updateRow1HoleShape}>
             <option value="circle">Circle</option>
             <option value="square">Square</option>
           </select>
         </ModelInput>
         <ModelInput>
-          <span>Row 2 Hole Shape</span>
+          <span>Row 2 Hole Shape:</span>
           <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
             <option value="circle">Circle</option>
             <option value="square">Square</option>
           </select>
         </ModelInput>
         <ModelInput>
-          <span>Row 3 Hole Shape</span>
+          <span>Row 3 Hole Shape:</span>
           <select value={modelConfig.row_3_hole_shape} onChange={updateRow3HoleShape}>
             <option value="circle">Circle</option>
             <option value="square">Square</option>
@@ -1270,61 +1169,58 @@ const GridPreview = () => {
         <ThreeViewer modelConfig={modelConfig}/>
       </CenterPanel>
       <RightPanel>
-        <DownloadDiv>
-          <h2>Download</h2>
-          <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
-        </DownloadDiv>
-        <ComputedValuesDiv>
-          <h2>Computed Values</h2>
-          <ModelOutput>
-            <span>Row 1 Depth: </span>
-            <span>{formatNumber(modelConfig.row_1_depth)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <ModelOutputLabel>Row 2 Depth: </ModelOutputLabel>
-            <ModelOutputValue>{formatNumber(modelConfig.row_2_depth)} mm</ModelOutputValue>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 3 Depth: </span>
-            <span>{formatNumber(modelConfig.row_3_depth)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 1 Padding Top-Bottom: </span>
-            <span>{formatNumber(modelConfig.row_1_padding_top_bottom)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 2 Padding Top-Bottom: </span>
-            <span>{formatNumber(modelConfig.row_2_padding_top_bottom)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 3 Padding Top-Bottom: </span>
-            <span>{formatNumber(modelConfig.row_3_padding_top_bottom)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 1 Padding Left-Right: </span>
-            <span>{formatNumber(modelConfig.row_1_padding_left_right)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 2 Padding Left-Right:</span>
-            <span>{formatNumber(modelConfig.row_2_padding_left_right)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 3 Padding Left-Right: </span>
-            <span>{formatNumber(modelConfig.row_3_padding_left_right)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 1 Inner Gap: </span>
-            <span>{formatNumber(modelConfig.row_1_inner_gap)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 2 Inner Gap: </span>
-            <span>{formatNumber(modelConfig.row_2_inner_gap)} mm</span>
-          </ModelOutput>
-          <ModelOutput>
-            <span>Row 3 Inner Gap: </span>
-            <span>{formatNumber(modelConfig.row_3_inner_gap)} mm</span>
-          </ModelOutput>
-        </ComputedValuesDiv>
+        <h2>Download</h2>
+        <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
+        <h2>Computed Values</h2>
+        <ModelOutput>
+          <span>Row 1 Depth: </span>
+          <span>{formatNumber(modelConfig.row_1_depth)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <ModelOutputLabel>Row 2 Depth: </ModelOutputLabel>
+          <ModelOutputValue>{formatNumber(modelConfig.row_2_depth)} mm</ModelOutputValue>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 3 Depth: </span>
+          <span>{formatNumber(modelConfig.row_3_depth)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 1 Padding Top-Bottom: </span>
+          <span>{formatNumber(modelConfig.row_1_padding_top_bottom)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 2 Padding Top-Bottom: </span>
+          <span>{formatNumber(modelConfig.row_2_padding_top_bottom)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 3 Padding Top-Bottom: </span>
+          <span>{formatNumber(modelConfig.row_3_padding_top_bottom)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 1 Padding Left-Right: </span>
+          <span>{formatNumber(modelConfig.row_1_padding_left_right)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 2 Padding Left-Right:</span>
+          <span>{formatNumber(modelConfig.row_2_padding_left_right)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 3 Padding Left-Right: </span>
+          <span>{formatNumber(modelConfig.row_3_padding_left_right)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 1 Inner Gap: </span>
+          <span>{formatNumber(modelConfig.row_1_inner_gap)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 2 Inner Gap: </span>
+          <span>{formatNumber(modelConfig.row_2_inner_gap)} mm</span>
+        </ModelOutput>
+        <ModelOutput>
+          <span>Row 3 Inner Gap: </span>
+          <span>{formatNumber(modelConfig.row_3_inner_gap)} mm</span>
+        </ModelOutput>
+
         <h2>Autodesk Fusion Computed Values</h2>
         <ModelOutput>
           <span>Tier 1 rectangle dimensions: </span>
@@ -1402,6 +1298,10 @@ const GridPreview = () => {
           <span>Model Chamfer: </span>
           <span>{formatNumber(modelConfig.model_chamfer)} mm </span>
         </ModelOutput>
+
+
+
+
       </RightPanel>  
       <Footer />
     </GridLayout>

@@ -307,7 +307,7 @@ const ModelProfileHole = styled.div`
 `;
 
 const ThreeContainer = styled.div`
-  width: 100%; /* Adjust based on your layout */
+  width: min(100%, 400px);
   border-sizing: border-box;
   aspect-ratio: 1 / 1; /* Ensures height always matches width */  
   background: white; /* Ensures the container matches scene background */

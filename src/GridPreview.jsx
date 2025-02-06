@@ -89,10 +89,10 @@ const LeftPanel = styled.div`
   /* Large Tablet (900-1250) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
     align-items: flex-start;
-    padding-left: 20px;
+    padding-left: 70px;
   }
 
-  /*Mobile (<900) */
+  /* Mobile (<900) */
   @media (max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
     padding-left: 20px;
@@ -130,17 +130,34 @@ const CenterPanel = styled.div`
   justify-content: flex-start;
   padding-top:20px;
 
-  /* Large Tablet (900-1250) */
+  /* Tablet (900-1250) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
       padding-left: 20px;
-      padding-right: 20px;
+      padding-right: 150px;
   }
 
-  /* Mobile (<900) */
-  @media (max-width: ${breakpoints.largeTablet}) {
+  /* Large Tablet (700-900) */
+  @media (min-width: ${breakpoints.smallTablet}) and max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
     padding-left: 20px;
     padding-right: 20px;
+  }
+
+  /* Small Tablet (500-700) */
+  @media (min-width: ${breakpoints.mobile}) and max-width: ${breakpoints.smallTablet}) {
+    align-items: flex-start;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+    
+  /* Mobile (<500) */
+  @media (max-width: ${breakpoints.mobile}) {
+    align-items: flex-start;
+    //padding-left: 20px;
+    padding-right: 20px;
+    h2{
+      padding-left: 20px;
+    }
   }
 
 `;

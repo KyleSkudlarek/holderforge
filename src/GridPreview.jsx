@@ -28,16 +28,16 @@ const GridLayout = styled.div`
   overflow-x: hidden;   
 
 
-  grid-template-columns: 2fr 2fr 4fr;
+  grid-template-columns: 3fr 5fr 5fr;
   grid-template-rows: 100px 1fr 100px;
   grid-template-areas:
     "header header header"
     "left center right"
     "footer footer footer";
 
-  /* Large Tablet (900-1250) */
+  /* Large Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-    grid-template-columns: 2fr 2fr;
+    grid-template-columns: 3fr 6fr;
     grid-template-rows: auto 1fr auto 50px;
     grid-template-areas:
       "header header"
@@ -46,7 +46,7 @@ const GridLayout = styled.div`
       "footer footer";
   }
 
-  /* Mobile (<900) */
+      /* Mobile <900*/
   @media (max-width: ${breakpoints.largeTablet}) {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto 1fr auto 100px;

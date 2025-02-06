@@ -105,6 +105,10 @@ const ModelInput = styled.div`
   padding-bottom:7px;
   font-size: 14px;
   font-weight: bold;
+  span:first-child {
+    margin-right: 6px; 
+    font-weight: bold; 
+  }
 `;
 
 const Input = styled.input`
@@ -122,6 +126,10 @@ const RightPanel = styled.div`
   padding-left: 10px;
   padding-top:20px;
   outline: 1px solid black;
+
+  h2 {
+    padding-top: 20px;
+  }
 
   @media (max-width: ${breakpoints.mobile} and max-width: ${breakpoints.tablet}) {
     flex-wrap: wrap;
@@ -362,7 +370,7 @@ const ThreeContainer = styled.div`
   border-sizing: border-box;
   aspect-ratio: 1 / 1; /* Ensures height always matches width */  
   background: white; 
-  margin-top: 20px;
+
 
 
   /* Tablet */
@@ -376,6 +384,7 @@ const ThreeContainer = styled.div`
 
   /* Mobile */
   @media (max-width: ${breakpoints.mobile}) {
+    margin-top: 0px;
     margin-left: auto;
     margin-right: auto;
     padding-left: auto;
@@ -1049,21 +1058,21 @@ const GridPreview = () => {
           <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
         </ModelInput>
         <ModelInput>
-          <span>Row 1 Hole Shape:</span>
+          <span>Row 1 Hole Shape</span>
           <select value={modelConfig.row_1_hole_shape} onChange={updateRow1HoleShape}>
             <option value="circle">Circle</option>
             <option value="square">Square</option>
           </select>
         </ModelInput>
         <ModelInput>
-          <span>Row 2 Hole Shape:</span>
+          <span>Row 2 Hole Shape</span>
           <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
             <option value="circle">Circle</option>
             <option value="square">Square</option>
           </select>
         </ModelInput>
         <ModelInput>
-          <span>Row 3 Hole Shape:</span>
+          <span>Row 3 Hole Shape</span>
           <select value={modelConfig.row_3_hole_shape} onChange={updateRow3HoleShape}>
             <option value="circle">Circle</option>
             <option value="square">Square</option>

@@ -121,6 +121,7 @@ const RightPanel = styled.div`
   padding-top: 0px;
   padding-left: 10px;
   padding-top:20px;
+  outline: 1px solid black;
 
   @media (max-width: ${breakpoints.mobile} and max-width: ${breakpoints.tablet}) {
     flex-wrap: wrap;
@@ -132,7 +133,7 @@ const RightPanel = styled.div`
     flex-wrap: wrap;
     padding-left: 20px;
     padding-top: 0px;
-    margin-top: -50px;
+    margin-top: 0px;
   }
 
   
@@ -163,6 +164,8 @@ const ModelOutputValue = styled.span`
 `;
 
 const CenterPanel = styled.div`
+  outline: 1px solid black;
+
   color:black;
   grid-area: center;
   background: white;
@@ -188,6 +191,8 @@ const CenterPanel = styled.div`
 `;
 
 const Model = styled.div`
+  outline: 1px solid black;
+
   background: red;
   width: ${({ model_width }) => model_width}px;
   height: ${({ model_depth }) => model_depth}px;
@@ -258,6 +263,7 @@ const Hole = styled.div`
 
 
 const ModelProfile = styled.div`
+  outline: 1px solid black;
 
   margin-top: 20px;
 
@@ -350,10 +356,12 @@ const DownloadButton = styled.button`
 `;
 
 const ThreeContainer = styled.div`
-  width: 100%; /* Adjust based on your layout */
+  outline: 1px solid black;
+
+  width: 100%; 
   border-sizing: border-box;
   aspect-ratio: 1 / 1; /* Ensures height always matches width */  
-  background: white; /* Ensures the container matches scene background */
+  background: white; 
   margin-top: 20px;
 
 

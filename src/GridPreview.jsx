@@ -75,7 +75,8 @@ const Footer = styled.footer`
 `;
 
 const LeftPanel = styled.div`
-  outline: 1px solid black;
+  //outline: 1px solid black;
+  
   color: black;
   grid-area: left;
   background: white;
@@ -97,8 +98,6 @@ const LeftPanel = styled.div`
     align-items: flex-start;
     padding-left: 20px;
   }
-
-
 `;
 
 const ModelInput = styled.div`
@@ -337,7 +336,10 @@ const ThreeContainer = styled.div`
 
 
 const RightPanel = styled.div`
-  outline: 1px solid black;
+  
+  //outline: 1px solid black;
+  
+  
   color: black;
   grid-area: right;
   background: white;
@@ -370,7 +372,7 @@ const DownloadDiv = styled.div`
 
   /* Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-      padding-left: 50px; 
+      padding-left: 40px; 
   }
 `;
 
@@ -393,6 +395,24 @@ const DownloadButton = styled.button`
   }
 `;
 
+const ComputedDiv = styled.div`
+
+  /* Large Tablet 900-1250*/
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+      padding-left: 40px; 
+  }
+
+`;
+
+const AutodeskDiv = styled.div`
+
+  /* Tablet 900-1250*/
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+      padding-left: 40px; 
+      width: 150%;
+  }
+
+`;
 
 const ModelOutput = styled.div`
   color: black;
@@ -1216,137 +1236,136 @@ const GridPreview = () => {
           <h2>Download</h2>
           <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
         </DownloadDiv>
-        <h2>Computed Values</h2>
-        <ModelOutput>
-          <span>Row 1 Depth:</span>
-          <span>{formatNumber(modelConfig.row_1_depth)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <ModelOutputLabel>Row 2 Depth:</ModelOutputLabel>
-          <ModelOutputValue>{formatNumber(modelConfig.row_2_depth)} mm</ModelOutputValue>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 3 Depth: </span>
-          <span>{formatNumber(modelConfig.row_3_depth)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 1 Padding Top-Bottom:</span>
-          <span>{formatNumber(modelConfig.row_1_padding_top_bottom)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 2 Padding Top-Bottom: </span>
-          <span>{formatNumber(modelConfig.row_2_padding_top_bottom)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 3 Padding Top-Bottom: </span>
-          <span>{formatNumber(modelConfig.row_3_padding_top_bottom)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 1 Padding Left-Right: </span>
-          <span>{formatNumber(modelConfig.row_1_padding_left_right)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 2 Padding Left-Right:</span>
-          <span>{formatNumber(modelConfig.row_2_padding_left_right)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 3 Padding Left-Right: </span>
-          <span>{formatNumber(modelConfig.row_3_padding_left_right)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 1 Inner Gap: </span>
-          <span>{formatNumber(modelConfig.row_1_inner_gap)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 2 Inner Gap: </span>
-          <span>{formatNumber(modelConfig.row_2_inner_gap)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 3 Inner Gap: </span>
-          <span>{formatNumber(modelConfig.row_3_inner_gap)} mm</span>
-        </ModelOutput>
-
-        <h2>Autodesk Fusion Computed Values</h2>
-        <ModelOutput>
-          <span>Tier 1 rectangle dimensions: </span>
-          <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.model_depth)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Tier 1 extrusion distance: </span>
-          <span>{formatNumber(modelConfig.tier_1_extrusion_distance)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 1 hole height (negative extrusion distance): </span>
-          <span>{formatNumber(modelConfig.row_1_hole_height)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 1 hole horizontal constraint (hole center to model edge): </span>
-          <span>{formatNumber(modelConfig.row_1_hole_horizontal_constraint)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 1 hole vertical constraint (hole center to model edge): </span>
-          <span>{formatNumber(modelConfig.row_1_hole_vertical_constraint)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 1 rectangular repeat pattern distance: </span>
-          <span>{formatNumber(modelConfig.row_1_rectangular_repeat_pattern_distance)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Tier 2 rectangle dimensions: </span>
-          <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.tier_2_depth)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Tier 2 extrusion distance: </span>
-          <span>{formatNumber(modelConfig.tier_2_extrusion_distance)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 2 hole height (negative extrusion distance): </span>
-          <span>{formatNumber(modelConfig.row_2_hole_height)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 2 hole horizontal constraint (hole center to model edge): </span>
-          <span>{formatNumber(modelConfig.row_2_hole_horizontal_constraint)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 2 hole vertical constraint (hole center to model edge): </span>
-          <span>{formatNumber(modelConfig.row_2_hole_vertical_constraint)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 2 rectangular repeat pattern distance: </span>
-          <span>{formatNumber(modelConfig.row_2_rectangular_repeat_pattern_distance)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Tier 3 rectangle dimensions: </span>
-          <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.tier_3_depth)} mm</span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Tier 3 extrusion distance: </span>
-          <span>{formatNumber(modelConfig.tier_3_extrusion_distance)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 3 hole height (negative extrusion distance): </span>
-          <span>{formatNumber(modelConfig.row_3_hole_height)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 3 hole horizontal constraint (hole center to model edge): </span>
-          <span>{formatNumber(modelConfig.row_3_hole_horizontal_constraint)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 3 hole vertical constraint (hole center to model edge): </span>
-          <span>{formatNumber(modelConfig.row_3_hole_vertical_constraint)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Row 3 rectangular repeat pattern distance: </span>
-          <span>{formatNumber(modelConfig.row_3_rectangular_repeat_pattern_distance)} mm </span>
-        </ModelOutput>
-        <ModelOutput>
-          <span>Model Chamfer: </span>
-          <span>{formatNumber(modelConfig.model_chamfer)} mm </span>
-        </ModelOutput>
-
-
-
-
+        <ComputedDiv>
+          <h2>Computed Values</h2>
+          <ModelOutput>
+            <span>Row 1 Depth:</span>
+            <span>{formatNumber(modelConfig.row_1_depth)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <ModelOutputLabel>Row 2 Depth:</ModelOutputLabel>
+            <ModelOutputValue>{formatNumber(modelConfig.row_2_depth)} mm</ModelOutputValue>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 3 Depth: </span>
+            <span>{formatNumber(modelConfig.row_3_depth)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 1 Padding Top-Bottom:</span>
+            <span>{formatNumber(modelConfig.row_1_padding_top_bottom)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 2 Padding Top-Bottom: </span>
+            <span>{formatNumber(modelConfig.row_2_padding_top_bottom)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 3 Padding Top-Bottom: </span>
+            <span>{formatNumber(modelConfig.row_3_padding_top_bottom)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 1 Padding Left-Right: </span>
+            <span>{formatNumber(modelConfig.row_1_padding_left_right)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 2 Padding Left-Right:</span>
+            <span>{formatNumber(modelConfig.row_2_padding_left_right)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 3 Padding Left-Right: </span>
+            <span>{formatNumber(modelConfig.row_3_padding_left_right)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 1 Inner Gap: </span>
+            <span>{formatNumber(modelConfig.row_1_inner_gap)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 2 Inner Gap: </span>
+            <span>{formatNumber(modelConfig.row_2_inner_gap)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 3 Inner Gap: </span>
+            <span>{formatNumber(modelConfig.row_3_inner_gap)} mm</span>
+          </ModelOutput>
+        </ComputedDiv>
+        <AutodeskDiv>
+          <h2>Autodesk Fusion Computed Values</h2>
+          <ModelOutput>
+            <span>Tier 1 rectangle dimensions: </span>
+            <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.model_depth)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Tier 1 extrusion distance: </span>
+            <span>{formatNumber(modelConfig.tier_1_extrusion_distance)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 1 hole height (negative extrusion distance): </span>
+            <span>{formatNumber(modelConfig.row_1_hole_height)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 1 hole horizontal constraint (hole center to model edge): </span>
+            <span>{formatNumber(modelConfig.row_1_hole_horizontal_constraint)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 1 hole vertical constraint (hole center to model edge): </span>
+            <span>{formatNumber(modelConfig.row_1_hole_vertical_constraint)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 1 rectangular repeat pattern distance: </span>
+            <span>{formatNumber(modelConfig.row_1_rectangular_repeat_pattern_distance)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Tier 2 rectangle dimensions: </span>
+            <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.tier_2_depth)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Tier 2 extrusion distance: </span>
+            <span>{formatNumber(modelConfig.tier_2_extrusion_distance)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 2 hole height (negative extrusion distance): </span>
+            <span>{formatNumber(modelConfig.row_2_hole_height)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 2 hole horizontal constraint (hole center to model edge): </span>
+            <span>{formatNumber(modelConfig.row_2_hole_horizontal_constraint)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 2 hole vertical constraint (hole center to model edge): </span>
+            <span>{formatNumber(modelConfig.row_2_hole_vertical_constraint)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 2 rectangular repeat pattern distance: </span>
+            <span>{formatNumber(modelConfig.row_2_rectangular_repeat_pattern_distance)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Tier 3 rectangle dimensions: </span>
+            <span>{formatNumber(modelConfig.model_width)} mm x {formatNumber(modelConfig.tier_3_depth)} mm</span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Tier 3 extrusion distance: </span>
+            <span>{formatNumber(modelConfig.tier_3_extrusion_distance)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 3 hole height (negative extrusion distance): </span>
+            <span>{formatNumber(modelConfig.row_3_hole_height)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 3 hole horizontal constraint (hole center to model edge): </span>
+            <span>{formatNumber(modelConfig.row_3_hole_horizontal_constraint)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 3 hole vertical constraint (hole center to model edge): </span>
+            <span>{formatNumber(modelConfig.row_3_hole_vertical_constraint)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Row 3 rectangular repeat pattern distance: </span>
+            <span>{formatNumber(modelConfig.row_3_rectangular_repeat_pattern_distance)} mm </span>
+          </ModelOutput>
+          <ModelOutput>
+            <span>Model Chamfer: </span>
+            <span>{formatNumber(modelConfig.model_chamfer)} mm </span>
+          </ModelOutput>
+        </AutodeskDiv>
       </RightPanel>  
       <Footer />
     </GridLayout>

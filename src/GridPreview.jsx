@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { atom, useAtom } from "jotai";
 import { pythonTemplate } from "./template"; // Import the Python template
@@ -6,8 +6,11 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {CSG} from "three-csg-ts";
-
-
+import { STLExporter } from 'three/examples/jsm/exporters/STLExporter';
+import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
+import { cube } from '@jscad/modeling/src/primitives';
+import { serialize } from '@jscad/stl-serializer';
+import { prepareRender, drawCommands, cameras, entitiesFromSolids } from '@jscad/regl-renderer';
 
 const breakpoints = {
   laptop: '1250px',
@@ -15,9 +18,6 @@ const breakpoints = {
   smallTablet: '700px',
   mobile: '500px',
 };
-
-
-
 
 // Styled Components
 const GridLayout = styled.div`
@@ -306,7 +306,7 @@ const ModelProfileHole = styled.div`
   }
 `;
 
-const ThreeContainer = styled.div`
+const JscadContainer = styled.div`
   width: min(100%, 400px);
   border-sizing: border-box;
   aspect-ratio: 1 / 1; /* Ensures height always matches width */  
@@ -369,6 +369,8 @@ const RightPanel = styled.div`
 
 const DownloadDiv = styled.div`
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 
   /* Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
@@ -621,314 +623,69 @@ const formatNumber = (value) => {
 };
 
 
-const ThreeViewer = ({ modelConfig }) => {
+
+const JscadViewer = ({ setExportScene }) => {
   const mountRef = useRef(null);
 
   useEffect(() => {
+    if (!mountRef.current) return;
 
-    // Colors
-    const white = 0xffffff;
-    const grey = 0xd3d3d3;
-    const blue = 0x457EDE;
-    const green = 0xff0000;
+    try {
+      // Create basic geometry
+      const geometry = [cube({ size: 100 })];
+      setExportScene(geometry);
 
-    // Scene setup
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(white);
+      // Initialize the perspective camera properly
+      const perspectiveCamera = cameras.perspective;
+      const camera = Object.assign({}, perspectiveCamera.defaults);
+      perspectiveCamera.setProjection(camera, camera, { width: 400, height: 400 });
+      perspectiveCamera.update(camera, camera);
 
-    const clientWidth = mountRef.current.clientWidth;
-    const clientHeight = mountRef.current.clientHeight;
-  
-    console.log("🔍 Three.js Container Dimensions:");
-    console.log("Client Width:", clientWidth);
-    console.log("Client Height:", clientHeight);
+      // Create complete options object
+      const options = {
+        glOptions: { container: mountRef.current },
+        camera,
+        drawCommands: {
+          drawAxis: drawCommands.drawAxis,
+          drawGrid: drawCommands.drawGrid,
+          drawLines: drawCommands.drawLines,
+          drawMesh: drawCommands.drawMesh
+        },
+        entities: [
+          // Add grid
+          {
+            visuals: {
+              drawCmd: 'drawGrid',
+              show: true
+            },
+            size: [200, 200],
+            ticks: [25, 5]
+          },
+          // Add axis
+          {
+            visuals: {
+              drawCmd: 'drawAxis',
+              show: true
+            },
+            size: 150
+          },
+          // Add our geometry
+          ...entitiesFromSolids({}, geometry)
+        ]
+      };
 
+      // Create and call the renderer
+      const render = prepareRender(options);
+      render(options);
 
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    camera.position.set(0, 75, 150); // Three-quarter view from the side. Top-bottom: (0, 150, 0). Three quarter view from side (0,100,150)
-    camera.lookAt(0, 0, 0); // Ensures the camera is looking at the model center
-
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
-
-    // Append renderer to the DOM
-    mountRef.current.appendChild(renderer.domElement);
-
-    // Lighting
-    const light = new THREE.DirectionalLight(white, 1);
-    light.position.set(100, 200, 100); // Position the light at an angle
-    light.castShadow = true; // Enable shadows
-    scene.add(light);
-
-    // Orbit Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enablePan = false; 
-    controls.enableZoom = false; 
-    controls.enableDamping = true; // Smooth movement
-
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    // Add tier 1 - In three.js x is left/right, y is up/down (height), and z is forward/backward (depth)
-    const tier1Geometry = new THREE.BoxGeometry(modelConfig.model_width, modelConfig.tier_1_extrusion_distance, modelConfig.model_depth);
-    const tier1Material = new THREE.MeshStandardMaterial({ color: grey });
-    // tier1Material.transparent = true;
-    // tier1Material.opacity = 0.5;
-    const tier1 = new THREE.Mesh(tier1Geometry, tier1Material);
-    scene.add(tier1);
-
-    // Add tier 2
-    const tier2Geometry = new THREE.BoxGeometry(
-      modelConfig.model_width, // Width 
-      modelConfig.tier_2_extrusion_distance, // Height of the tier
-      modelConfig.tier_2_depth // Depth 
-    );
-    const tier2Material = new THREE.MeshStandardMaterial({ color: grey });
-    // tier2Material.transparent = true;
-    // tier2Material.opacity = 0.5;
-    const tier2 = new THREE.Mesh(tier2Geometry, tier2Material);
-    tier2.position.y = (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance / 2); // Position it on top of tier 1
-    tier2.position.z = -(modelConfig.model_depth - modelConfig.tier_2_depth) / 2;    
-    scene.add(tier2);
-
-    // Add tier 3
-    const tier3Geometry = new THREE.BoxGeometry(
-      modelConfig.model_width, // Width 
-      modelConfig.tier_3_extrusion_distance, // Height of the tier
-      modelConfig.tier_3_depth // Depth
-    );
-    const tier3Material = new THREE.MeshStandardMaterial({ color: grey });
-    // tier3Material.transparent = true;
-    // tier3Material.opacity = 0.5;
-    const tier3 = new THREE.Mesh(tier3Geometry, tier3Material);
-    tier3.position.y = (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance) + modelConfig.tier_3_extrusion_distance / 2;
-    tier3.position.z = -(modelConfig.model_depth - modelConfig.tier_3_depth) / 2;    
-    scene.add(tier3);
-
-    // Add tier 1 test cylinder
-    const tier1CylinderGeometry = new THREE.CylinderGeometry(
-      modelConfig.row_1_hole_diameter/2, // top radius (half the diameter)
-      modelConfig.row_1_hole_diameter/2, // bottom radius
-      modelConfig.row_1_hole_height, // height
-      32 // segments
-    );
-    const tier1CylinderMaterial = new THREE.MeshStandardMaterial({ color: grey });
-    const tier1Cylinder = new THREE.Mesh(tier1CylinderGeometry, tier1CylinderMaterial);
-
-    // Position it next to tier1
-    tier1Cylinder.rotation.x = Math.PI; // Make it vertical
-    // Position from left edge (X position)
-    tier1Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_1_hole_horizontal_constraint;
-    // Height position (Y position)
-    tier1Cylinder.position.y = modelConfig.tier_1_extrusion_distance/2 - modelConfig.row_1_hole_height/2;
-    // Position from front edge (Z position) - move it to the front row
-    tier1Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_hole_vertical_constraint;
-
-    //scene.add(tier1Cylinder);  // Render the cylinder for debugging
-
-    // Clone and position tier1 to match cylinder's coordinate space
-    tier1.updateMatrixWorld(true); // Ensure the original object is up-to-date
-    const tier1CSG = CSG.fromMesh(tier1);
-
-
-
-
-
-    // Use cylinder as is
-    const tier1CylinderCopy = tier1Cylinder.clone();
-    tier1CylinderCopy.updateMatrixWorld(true);
-    const tier1CylinderCSG = CSG.fromMesh(tier1CylinderCopy);
-
-    // ✅ Create a NEW material instance based on the original
-    const newTier1Material = new THREE.MeshStandardMaterial({
-      color: tier1Material.color,
-      transparent: tier1Material.transparent,
-      opacity: tier1Material.opacity,
-      side: THREE.DoubleSide,  // Ensure both sides render properly
-      depthWrite: false,  // Fix potential rendering order issues
-    });
-
-    // ✅ Generate the new mesh with the fresh material
-    let tier1WithHole = CSG.toMesh(
-      tier1CSG.subtract(tier1CylinderCSG),
-      tier1.matrix,
-      newTier1Material
-    );
-
-    // ✅ Ensure Three.js fully updates the material
-    tier1WithHole.material.needsUpdate = true;
-  
-    // ✅ Force correct rendering settings
-    tier1WithHole.material.side = THREE.DoubleSide; // Render both sides
-    tier1WithHole.material.depthWrite = false; // Prevents incorrect overwriting
-    tier1WithHole.material.transparent = true;
-    tier1WithHole.material.opacity = 1.0; // Ensure full visibility
-    tier1WithHole.geometry.deleteAttribute('normal'); // Remove old normals
-    tier1WithHole.geometry.computeVertexNormals(); // Recalculate proper shading
-    tier1WithHole.geometry.dispose();
-    tier1WithHole.geometry = tier1WithHole.geometry.clone();
-    tier1WithHole.material.needsUpdate = true;
-
-
-
-
-    // Keep tier1 at original position
-    tier1WithHole.position.set(0, 0, 0);
-
-    // Create the remaining 4 holes using the first hole as reference
-    for (let i = 1; i < 5; i++) {
-      const nextCylinder = tier1Cylinder.clone();
-      nextCylinder.position.x = tier1Cylinder.position.x + i * (modelConfig.row_1_hole_diameter + modelConfig.row_1_inner_gap);
-      // scene.add(nextCylinder);
-      nextCylinder.updateMatrixWorld(true);
-      
-      const nextCylinderCSG = CSG.fromMesh(nextCylinder);
-      tier1WithHole = CSG.toMesh(
-          CSG.fromMesh(tier1WithHole).subtract(nextCylinderCSG),
-          tier1.matrix,
-          tier1Material
-      );
+    } catch (error) {
+      console.error('JSCAD Render Error:', error);
     }
+  }, [setExportScene]);
 
-    // Remove original tier 1 pieces and add new tier1 with holes
-    scene.remove(tier1);
-    scene.add(tier1WithHole);
-
-    // Create test cylinder for tier2
-    const tier2CylinderGeometry = new THREE.CylinderGeometry(
-      modelConfig.row_2_hole_diameter/2,
-      modelConfig.row_2_hole_diameter/2,
-      modelConfig.row_2_hole_height,
-      32
-    );
-    const tier2CylinderMaterial = new THREE.MeshStandardMaterial({ color: grey });
-    const tier2Cylinder = new THREE.Mesh(tier2CylinderGeometry, tier2CylinderMaterial);
-
-    // Position tier2 cylinder
-    tier2Cylinder.rotation.x = Math.PI;
-    tier2Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_2_hole_horizontal_constraint;
-    tier2Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_depth - modelConfig.row_2_hole_vertical_constraint;
-
-    tier2Cylinder.position.y = ((modelConfig.tier_1_extrusion_distance / 2) + modelConfig.tier_2_extrusion_distance - modelConfig.row_2_hole_height / 2);
-
-    
-    // Add cylinder for debugging
-    //scene.add(tier2Cylinder);
-
-    // Clone and position tier2 for CSG operations
-    const tier2Copy = tier2.clone();
-    tier2Copy.updateMatrixWorld(true);
-    const tier2CSG = CSG.fromMesh(tier2Copy);
-
-    // Use cylinder as is
-    const tier2CylinderCopy = tier2Cylinder.clone();
-    tier2CylinderCopy.updateMatrixWorld(true);
-    const tier2CylinderCSG = CSG.fromMesh(tier2CylinderCopy);
-
-    // Perform subtraction
-    let tier2WithHole = CSG.toMesh(
-        tier2CSG.subtract(tier2CylinderCSG),
-        tier2.matrix,
-        tier2Material
-    );
-
-    // Keep tier2 at original position
-    tier2WithHole.position.set(0, (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance / 2), -(modelConfig.model_depth - modelConfig.tier_2_depth) / 2);
-
-    // Create the remaining 4 holes using the first hole as reference
-    for (let i = 1; i < 5; i++) {
-        const nextCylinder = tier2Cylinder.clone();
-        nextCylinder.position.x = tier2Cylinder.position.x + i * (modelConfig.row_2_hole_diameter + modelConfig.row_2_inner_gap);
-        //scene.add(nextCylinder);
-        nextCylinder.updateMatrix();
-        
-        const nextCylinderCSG = CSG.fromMesh(nextCylinder);
-        tier2WithHole = CSG.toMesh(
-            CSG.fromMesh(tier2WithHole).subtract(nextCylinderCSG),
-            tier2.matrix,
-            tier2Material
-        );
-    }
-
-    // Remove original tier2 and add tier 2 with holes
-    scene.remove(tier2);
-    scene.add(tier2WithHole);
-
-
-    // Create test cylinder for tier3
-    const tier3CylinderGeometry = new THREE.CylinderGeometry(
-      modelConfig.row_3_hole_diameter/2,
-      modelConfig.row_3_hole_diameter/2,
-      modelConfig.row_3_hole_height,
-      32
-    );
-    const tier3CylinderMaterial = new THREE.MeshStandardMaterial({ color: grey });
-    const tier3Cylinder = new THREE.Mesh(tier3CylinderGeometry, tier3CylinderMaterial);
-
-    // Position tier2 cylinder
-    tier3Cylinder.rotation.x = Math.PI;
-    tier3Cylinder.position.x = -modelConfig.model_width/2 + modelConfig.row_3_hole_horizontal_constraint;
-    tier3Cylinder.position.z = modelConfig.model_depth/2 - modelConfig.row_1_depth - modelConfig.row_2_depth - modelConfig.row_3_hole_vertical_constraint;
-    tier3Cylinder.position.y = (modelConfig.tier_1_extrusion_distance/2) + (modelConfig.tier_2_extrusion_distance) + (modelConfig.tier_3_extrusion_distance) - modelConfig.row_3_hole_height/2;
-
-
-    // Add cylinder for debugging
-    //scene.add(tier3Cylinder);
-
-    // Clone and position tier3 for CSG operations
-    const tier3Copy = tier3.clone();
-    tier3Copy.updateMatrix();
-    const tier3CSG = CSG.fromMesh(tier3Copy);
-
-    // Use cylinder as is
-    const tier3CylinderCopy = tier3Cylinder.clone();
-    tier3CylinderCopy.updateMatrix();
-    const tier3CylinderCSG = CSG.fromMesh(tier3CylinderCopy);
-
-    // Perform subtraction
-    let tier3WithHole = CSG.toMesh(
-        tier3CSG.subtract(tier3CylinderCSG),
-        tier3.matrix,
-        tier3Material
-    );
-
-    // Keep tier3 at original position
-    tier3WithHole.position.set(0, (modelConfig.tier_1_extrusion_distance / 2) + (modelConfig.tier_2_extrusion_distance / 2), -(modelConfig.model_depth - modelConfig.tier_2_depth) / 2);
-
-    // Create the remaining 4 holes using the first hole as reference
-    for (let i = 1; i < 5; i++) {
-        const nextCylinder = tier3Cylinder.clone();
-        nextCylinder.position.x = tier3Cylinder.position.x + i * (modelConfig.row_3_hole_diameter + modelConfig.row_3_inner_gap);
-        nextCylinder.updateMatrix();
-        
-        const nextCylinderCSG = CSG.fromMesh(nextCylinder);
-        tier3WithHole = CSG.toMesh(
-            CSG.fromMesh(tier3WithHole).subtract(nextCylinderCSG),
-            tier3.matrix,
-            tier3Material
-        );
-    }
-
-    // Remove original tier3 and add tier 3 with holes
-    scene.remove(tier3);
-    scene.add(tier3WithHole);
-
-    // Cleanup
-    return () => {
-      mountRef.current.removeChild(renderer.domElement);
-    };
-  }, [modelConfig]);
-
-  return <ThreeContainer ref={mountRef} />;
+  return <div ref={mountRef} style={{ width: "400px", height: "400px", background: "#eee" }} />;
 };
+
 
 
 
@@ -936,14 +693,13 @@ const GridPreview = () => {
 
   const [userConfig, setUserConfig] = useAtom(baseModelConfigAtom);
   const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
+  const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
 
   useEffect(() => {
     document.title = "HolderForge"; 
   }, []);
 
   const generatePythonFile = () => {
-
-    console.log("Download button clicked!");
   
   
     // Replace placeholders with actual computed values
@@ -995,6 +751,29 @@ const GridPreview = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url); // Clean up memory
+  };
+
+
+
+  const downloadSTLFile = () => {
+    if (!exportScene) {
+      console.warn("No scene available for export.");
+      return;
+    }
+  
+    const exporter = new STLExporter();
+    const stlData = exporter.parse(exportScene); // ✅ Uses the correct scene
+  
+    const blob = new Blob([stlData], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+  
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "model.stl";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
 
@@ -1238,12 +1017,13 @@ const GridPreview = () => {
             />
           </ModelProfileTier>  
         </ModelProfile>
-        <ThreeViewer modelConfig={modelConfig}/>
+        <JscadViewer modelConfig={modelConfig} setExportScene={setExportScene}/>
       </CenterPanel>
       <RightPanel>
         <DownloadDiv>
           <h2>Download</h2>
           <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
+          <DownloadButton onClick={downloadSTLFile} style={{ marginTop: "10px" }}>Download STL File</DownloadButton>
         </DownloadDiv>
         <ComputedDiv>
           <h2>Computed Values</h2>

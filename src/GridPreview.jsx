@@ -14,6 +14,7 @@ import { serialize } from '@jscad/stl-serializer';
 import { prepareRender, drawCommands, cameras, entitiesFromSolids } from '@jscad/regl-renderer';
 import { cuboid, cylinder } from "@jscad/modeling/src/primitives"; // Import cuboid
 import { subtract } from "@jscad/modeling/src/operations/booleans";
+import { union } from "@jscad/modeling/src/operations/booleans";
 import { translate } from "@jscad/modeling/src/operations/transforms";
 
 
@@ -471,7 +472,7 @@ const baseModelConfigAtom = atom({
   row_2_bottle_height: 120,
   row_3_bottle_height: 120,
 
-  row_1_hole_shape: "circle", // Options: "circle" or "square"
+  row_1_hole_shape: "square", // Options: "circle" or "square"
   row_2_hole_shape: "circle",
   row_3_hole_shape: "circle",
 
@@ -663,26 +664,214 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
       console.log("Model Width:", modelConfig.model_width);
       console.log("Model Depth:", modelConfig.model_depth);
 
-      // GEOMETRY
+      /////////////////////////////////////////////
+      //  CREATE GEOMETRY
       // Create a rectangular representation (base)
+      /////////////////////////////////////////////
+
       const base = cuboid({ size: [modelConfig.model_width, modelConfig.model_depth, modelConfig.tier_1_extrusion_distance] });
 
-      // Create a single hole
-      const hole = cylinder({
-        height: modelConfig.row_1_hole_height, 
-        radius: modelConfig.row_1_hole_diameter / 2,
-        segments: 32
-      });
+      // Create a single hole for row 1
+      let row1Hole;
+      if (modelConfig.row_1_hole_shape === "square") {
+        row1Hole = cuboid({
+          size: [
+            modelConfig.row_1_hole_diameter,  // width (using diameter for square size)
+            modelConfig.row_1_hole_diameter,  // depth (same as width for square)
+            modelConfig.row_1_hole_height     // height (same as before)
+          ]
+        });
+      } else {
+        row1Hole = cylinder({
+          height: modelConfig.row_1_hole_height, 
+          radius: modelConfig.row_1_hole_diameter / 2,
+          segments: 32
+        });
+    }
+
+      const row1holePositionX =  -modelConfig.model_width / 2 + modelConfig.row_1_hole_horizontal_constraint // X position: 0 is center, positive is right, negative is left. Left Edge: -model width / 2, Right Edge: model width / 2
+      const row1holePositionY = -modelConfig.model_depth / 2 +  modelConfig.row_1_hole_vertical_constraint // Y position: 0 is center, positive is up, negative is down. Bottom Edge: -model depth / 2, Top Edge: model depth / 2
+      const row1holePositionZ =  modelConfig.tier_1_extrusion_distance / 2 - modelConfig.row_1_hole_height / 2 // Z position: 0 is center, positive is up, negative is down
 
       // Position the hole visually first. Position refers to center of circle
-      const holePositioned = translate([
-        -modelConfig.model_width / 2 + modelConfig.row_1_hole_horizontal_constraint, // X position: 0 is center, positive is right, negative is left. Left Edge: -model width / 2, Right Edge: model width / 2
-        -modelConfig.model_depth / 2 +  modelConfig.row_1_hole_vertical_constraint, // Y position: 0 is center, positive is up, negative is down. Bottom Edge: -model depth / 2, Top Edge: model depth / 2, 
-        modelConfig.tier_1_extrusion_distance / 2 - modelConfig.row_1_hole_height / 2+10, // Z position: 0 is center, positive is up, negative is down
-      ], hole);
+      const row1HolePositioned = translate([
+        row1holePositionX, // X position: 0 is center, positive is right, negative is left. Left Edge: -model width / 2, Right Edge: model width / 2
+        row1holePositionY, // Y position: 0 is center, positive is up, negative is down. Bottom Edge: -model depth / 2, Top Edge: model depth / 2, 
+        row1holePositionZ, // Z position: 0 is center, positive is up, negative is down
+      ], row1Hole);
 
-      // For now, render both the base and the hole
-      const geometry = [base, holePositioned];
+      // Create holes using the gap distance
+      const row1Holes = [];
+      row1Holes.push(row1HolePositioned);
+
+      for(let i = 1; i<5; i++) {
+
+        // Calculate the x position for this hole
+        const holeX = row1holePositionX + (modelConfig.row_1_hole_diameter * i) + (modelConfig.row_1_inner_gap * i);
+
+        // Create the hole
+        let hole;
+        if (modelConfig.row_1_hole_shape === "square") {
+          hole = cuboid({
+            size: [
+              modelConfig.row_1_hole_diameter,  // width (using diameter for square size)
+              modelConfig.row_1_hole_diameter,  // depth (same as width for square)
+              modelConfig.row_1_hole_height     // height (same as before)
+            ]
+          });
+        } else {
+          hole = cylinder({
+            height: modelConfig.row_1_hole_height, 
+            radius: modelConfig.row_1_hole_diameter / 2,
+            segments: 32
+          });
+      }
+
+        // Position the cylinder
+        const positionedHole = translate(
+          [
+            holeX,                  // X position moves by gap distance each time
+            row1holePositionY,    // Y position stays the same
+            row1holePositionZ     // Z position stays the same
+          ],
+          hole
+        );
+        
+        // Add this hole to our array
+        row1Holes.push(positionedHole);
+      }
+
+
+      // Subtract row 1 holes from base geometry
+      let geometry = subtract(base, ...row1Holes);
+
+
+      // Create second tier (smaller rectangle on top)
+      const tier2Base = cuboid({
+        size: [
+          modelConfig.model_width,          // Same width as base
+          modelConfig.tier_2_depth,         // Use tier 2 depth from config
+          modelConfig.tier_2_extrusion_distance // Height of second tier
+        ]
+      });
+
+
+      // Position tier2 on top of first tier and toward back
+      const tier2Positioned = translate([
+        0,                                              // Center X (same as base)
+        modelConfig.model_depth/2 - modelConfig.tier_2_depth/2,  // Y position (align with back)
+        modelConfig.tier_1_extrusion_distance/2 + modelConfig.tier_2_extrusion_distance/2   // Z position (top of first tier)
+      ], tier2Base);
+
+      // Union tier2 with our base geometry to create a single solid
+      geometry = union(geometry, tier2Positioned);
+
+      // Create a single hole for row 2
+      let row2Hole;
+      if (modelConfig.row_2_hole_shape === "square") {
+        row2Hole = cuboid({
+          size: [
+            modelConfig.row_2_hole_diameter,  // width (using diameter for square size)
+            modelConfig.row_2_hole_diameter,  // depth (same as width for square)
+            modelConfig.row_2_hole_height     // height (same as before)
+          ]
+        });
+      } else {
+        row2Hole = cylinder({
+          height: modelConfig.row_2_hole_height, 
+          radius: modelConfig.row_2_hole_diameter / 2,
+          segments: 32
+        });
+    }
+
+      const row2holePositionX =  -modelConfig.model_width / 2 + modelConfig.row_2_hole_horizontal_constraint // X position: 0 is center, positive is right, negative is left. Left Edge: -model width / 2, Right Edge: model width / 2
+      const row2holePositionY = -modelConfig.model_depth / 2 + modelConfig.row_1_depth + modelConfig.row_2_hole_vertical_constraint // Y position: 0 is center, positive is up, negative is down. Bottom Edge: -model depth / 2, Top Edge: model depth / 2
+      const row2holePositionZ =  modelConfig.tier_1_extrusion_distance / 2 + modelConfig.tier_2_extrusion_distance - modelConfig.row_2_hole_height / 2 // Z position: 0 is center, positive is up, negative is down
+
+
+      // Position the hole visually first. Position refers to center of circle
+      const row2HolePositioned = translate([
+        row2holePositionX, // X position: 0 is center, positive is right, negative is left. Left Edge: -model width / 2, Right Edge: model width / 2
+        row2holePositionY, // Y position: 0 is center, positive is up, negative is down. Bottom Edge: -model depth / 2, Top Edge: model depth / 2, 
+        row2holePositionZ, // Z position: 0 is center, positive is up, negative is down
+      ], row2Hole);
+
+      const row2Holes = [];
+      row2Holes.push(row2HolePositioned);
+
+      for(let i = 1; i<5; i++) {
+
+        // Calculate the x position for this hole
+        const holeX = row2holePositionX + (modelConfig.row_2_hole_diameter * i) + (modelConfig.row_2_inner_gap * i);
+
+        // Create the hole
+        let hole;
+        if (modelConfig.row_2_hole_shape === "square") {
+          hole = cuboid({
+            size: [
+              modelConfig.row_2_hole_diameter,  // width (using diameter for square size)
+              modelConfig.row_2_hole_diameter,  // depth (same as width for square)
+              modelConfig.row_2_hole_height     // height (same as before)
+            ]
+          });
+        } else {
+          hole = cylinder({
+            height: modelConfig.row_2_hole_height, 
+            radius: modelConfig.row_2_hole_diameter / 2,
+            segments: 32
+          });
+      }
+
+        // Position the cylinder
+        const positionedHole = translate(
+          [
+            holeX,                  // X position moves by gap distance each time
+            row2holePositionY,    // Y position stays the same
+            row2holePositionZ     // Z position stays the same
+          ],
+          hole
+        );
+        
+        // Add this hole to our array
+        row2Holes.push(positionedHole);
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      geometry = subtract(geometry, ...row2Holes);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       setExportScene(geometry);
 
@@ -739,7 +928,7 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
     } catch (error) {
       console.error('JSCAD Render Error:', error);
     }
-  }, [setExportScene]);
+  }, [setExportScene, modelConfig]);
 
   return <div ref={mountRef} style={{ width: "400px", height: "400px", background: "#eee" }} />;
 };

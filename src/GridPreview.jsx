@@ -7,10 +7,12 @@ import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {CSG} from "three-csg-ts";
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter';
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import { cube } from '@jscad/modeling/src/primitives';
 import { serialize } from '@jscad/stl-serializer';
 import { prepareRender, drawCommands, cameras, entitiesFromSolids } from '@jscad/regl-renderer';
+
 
 const breakpoints = {
   laptop: '1250px',
@@ -622,20 +624,47 @@ const formatNumber = (value) => {
   return (Math.ceil(value * 10) / 10).toFixed(1);  // Round up to nearest 0.1 mm
 };
 
-
-
-const JscadViewer = ({ setExportScene }) => {
+const JscadViewer = ({ setExportScene, setStlURL }) => {
   const mountRef = useRef(null);
+
+  // generateSTL inside JscadViewer
+  const generateSTL = (jscadModel) => {
+    if (!jscadModel) return null;
+
+    // Convert to STL format (binary)
+    const rawData = serialize({ binary: true }, [jscadModel]);
+
+    // Create a Blob URL
+    const blob = new Blob(rawData, { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+
+    console.log("Generated STL URL:", url); // Debugging
+    setStlURL(url); // Pass STL URL to parent component
+    return url;
+  };
 
   useEffect(() => {
     if (!mountRef.current) return;
+
+    
+
+      // Clear previous canvas to prevent duplicates
+    while (mountRef.current.firstChild) {
+      mountRef.current.removeChild(mountRef.current.firstChild);
+    }
+
 
     try {
       // Create basic geometry
       const geometry = [cube({ size: 100 })];
       setExportScene(geometry);
 
-      // Initialize the perspective camera properly
+      // Generate STL for Three.js rendering
+      const stlURL = generateSTL(geometry[0]);
+      console.log("STL URL:", stlURL); // Debugging log
+      
+
+      // Initialize the JSCAD camera 
       const perspectiveCamera = cameras.perspective;
       const camera = Object.assign({}, perspectiveCamera.defaults);
       perspectiveCamera.setProjection(camera, camera, { width: 400, height: 400 });
@@ -646,9 +675,6 @@ const JscadViewer = ({ setExportScene }) => {
         glOptions: { container: mountRef.current },
         camera,
         drawCommands: {
-          drawAxis: drawCommands.drawAxis,
-          drawGrid: drawCommands.drawGrid,
-          drawLines: drawCommands.drawLines,
           drawMesh: drawCommands.drawMesh
         },
         entities: [
@@ -687,13 +713,70 @@ const JscadViewer = ({ setExportScene }) => {
 };
 
 
+const ThreeJSViewer = ({ stlURL }) => {
+  const mountRef = useRef(null);
+  console.log("Attempting to load STL from:", stlURL); // Debug: Confirm STL URL is passed
 
+  useEffect(() => {
+    if (!mountRef.current || !stlURL) return;
+
+    console.log("Attempting to load STL from:", stlURL); // Debug: Confirm STL URL is passed
+
+
+    // Create Three.js Scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    camera.position.set(0, 0, 100);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(400, 400);
+    mountRef.current.appendChild(renderer.domElement);
+
+    // Load STL Model
+    const loader = new STLLoader();
+    loader.load(stlURL, (geometry) => {
+      const material = new THREE.MeshStandardMaterial({ color: 0x007bff, metalness: 0.3, roughness: 0.6 });
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+    });
+
+    // Lighting
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 5, 5).normalize();
+    scene.add(light);
+
+    // Orbit Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
+    controls.minDistance = 10;
+    controls.maxDistance = 200;
+
+    // Animation Loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    // Cleanup on unmount
+    return () => {
+      mountRef.current.removeChild(renderer.domElement);
+    };
+  }, [stlURL]);
+
+  return <div ref={mountRef} style={{ width: "400px", height: "400px", background: "#eee" }} />;
+};
 
 const GridPreview = () => {
 
   const [userConfig, setUserConfig] = useAtom(baseModelConfigAtom);
   const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
+  const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
 
   useEffect(() => {
     document.title = "HolderForge"; 
@@ -756,24 +839,19 @@ const GridPreview = () => {
 
 
   const downloadSTLFile = () => {
-    if (!exportScene) {
-      console.warn("No scene available for export.");
+    if (!stlURL) {
+      console.warn("No STL file available for download.");
       return;
     }
   
-    const exporter = new STLExporter();
-    const stlData = exporter.parse(exportScene); // ✅ Uses the correct scene
-  
-    const blob = new Blob([stlData], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-  
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "model.stl";
+    a.href = stlURL;
+    a.download = "model.stl"; // Default filename
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  
+    console.log("✅ Downloading STL file:", stlURL); // Debugging
   };
 
 
@@ -1017,7 +1095,10 @@ const GridPreview = () => {
             />
           </ModelProfileTier>  
         </ModelProfile>
-        <JscadViewer modelConfig={modelConfig} setExportScene={setExportScene}/>
+        <h2>JSCAD Viewer</h2>
+        <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} />
+        <h2>Three.js STL Viewer</h2>
+        <ThreeJSViewer stlURL={stlURL} />
       </CenterPanel>
       <RightPanel>
         <DownloadDiv>

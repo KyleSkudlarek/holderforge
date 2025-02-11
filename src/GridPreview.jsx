@@ -12,6 +12,10 @@ import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import { cube } from '@jscad/modeling/src/primitives';
 import { serialize } from '@jscad/stl-serializer';
 import { prepareRender, drawCommands, cameras, entitiesFromSolids } from '@jscad/regl-renderer';
+import { cuboid, cylinder } from "@jscad/modeling/src/primitives"; // Import cuboid
+import { subtract } from "@jscad/modeling/src/operations/booleans";
+import { translate } from "@jscad/modeling/src/operations/transforms";
+
 
 
 const breakpoints = {
@@ -624,7 +628,7 @@ const formatNumber = (value) => {
   return (Math.ceil(value * 10) / 10).toFixed(1);  // Round up to nearest 0.1 mm
 };
 
-const JscadViewer = ({ setExportScene, setStlURL }) => {
+const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
   const mountRef = useRef(null);
 
   // generateSTL inside JscadViewer
@@ -655,12 +659,35 @@ const JscadViewer = ({ setExportScene, setStlURL }) => {
 
 
     try {
-      // Create basic geometry
-      const geometry = [cube({ size: 100 })];
+
+      console.log("Model Width:", modelConfig.model_width);
+      console.log("Model Depth:", modelConfig.model_depth);
+
+      // GEOMETRY
+      // Create a rectangular representation (base)
+      const base = cuboid({ size: [modelConfig.model_width, modelConfig.model_depth, modelConfig.tier_1_extrusion_distance] });
+
+      // Create a single hole
+      const hole = cylinder({
+        height: modelConfig.row_1_hole_height, 
+        radius: modelConfig.row_1_hole_diameter / 2,
+        segments: 32
+      });
+
+      // Position the hole visually first. Position refers to center of circle
+      const holePositioned = translate([
+        -modelConfig.model_width / 2 + modelConfig.row_1_hole_horizontal_constraint, // X position: 0 is center, positive is right, negative is left. Left Edge: -model width / 2, Right Edge: model width / 2
+        -modelConfig.model_depth / 2 +  modelConfig.row_1_hole_vertical_constraint, // Y position: 0 is center, positive is up, negative is down. Bottom Edge: -model depth / 2, Top Edge: model depth / 2, 
+        modelConfig.tier_1_extrusion_distance / 2 - modelConfig.row_1_hole_height / 2+10, // Z position: 0 is center, positive is up, negative is down
+      ], hole);
+
+      // For now, render both the base and the hole
+      const geometry = [base, holePositioned];
+
       setExportScene(geometry);
 
       // Generate STL for Three.js rendering
-      const stlURL = generateSTL(geometry[0]);
+      const stlURL = generateSTL(geometry);
       console.log("STL URL:", stlURL); // Debugging log
       
 
@@ -668,7 +695,12 @@ const JscadViewer = ({ setExportScene, setStlURL }) => {
       const perspectiveCamera = cameras.perspective;
       const camera = Object.assign({}, perspectiveCamera.defaults);
       perspectiveCamera.setProjection(camera, camera, { width: 400, height: 400 });
+      camera.position = [0, -400, 400]; 
+      camera.up = [0, 1, 0];  
+      camera.target = [0, 0, 0]; 
       perspectiveCamera.update(camera, camera);
+      console.log("JSCAD Camera Position:", camera.position);
+      console.log("JSCAD Camera Target:", camera.target);
 
       // Create complete options object
       const options = {
@@ -722,36 +754,57 @@ const ThreeJSViewer = ({ stlURL }) => {
 
     console.log("Attempting to load STL from:", stlURL); // Debug: Confirm STL URL is passed
 
-
+    // Colors
+    const white = 0xffffff;
+    const grey = 0xd3d3d3;
+    
     // Create Three.js Scene
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    camera.position.set(0, 0, 100);
+    scene.background = new THREE.Color(white);
 
+    // Set up camera 
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    camera.position.set(0, 200, 200);
+    camera.lookAt(0, 0, 50);
+
+    // Renderer setup
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(400, 400);
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
 
-    // Load STL Model
-    const loader = new STLLoader();
-    loader.load(stlURL, (geometry) => {
-      const material = new THREE.MeshStandardMaterial({ color: 0x007bff, metalness: 0.3, roughness: 0.6 });
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-    });
-
     // Lighting
-    const light = new THREE.DirectionalLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(white, 1);
     light.position.set(5, 5, 5).normalize();
     scene.add(light);
 
     // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enablePan = true;
+    controls.enableZoom = false;
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.screenSpacePanning = false;
-    controls.minDistance = 10;
-    controls.maxDistance = 200;
+
+
+
+    // Load STL Model
+    const loader = new STLLoader();
+    loader.load(stlURL, (geometry) => {
+      const material = new THREE.MeshStandardMaterial({ color: grey, roughness: 0.6 });
+      const mesh = new THREE.Mesh(geometry, material);
+
+      // Center the model
+      geometry.computeBoundingBox();
+      const bbox = geometry.boundingBox;
+      const center = new THREE.Vector3();
+      bbox.getCenter(center);
+
+      mesh.rotation.x = -Math.PI / 2; // Rotate STL to match JSCAD/CAD coordinate system
+      mesh.position.set(-center.x, -center.y, -center.z);
+
+
+      scene.add(mesh);
+    });
 
     // Animation Loop
     const animate = () => {
@@ -1096,7 +1149,7 @@ const GridPreview = () => {
           </ModelProfileTier>  
         </ModelProfile>
         <h2>JSCAD Viewer</h2>
-        <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} />
+        <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} />
         <h2>Three.js STL Viewer</h2>
         <ThreeJSViewer stlURL={stlURL} />
       </CenterPanel>

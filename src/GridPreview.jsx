@@ -169,14 +169,16 @@ const CenterPanel = styled.div`
   /* Large Tablet (700-900) */
   @media (min-width: ${breakpoints.smallTablet}) and (max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: auto;
+    padding-right: auto;
+    h2{
+      padding-left: 20px;
+    }
   }
 
   /* Small Tablet (500-700) */
   @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.smallTablet}) {
     align-items: flex-start;
-    padding-right: 20px;
     h2{
       padding-left: 20px;
     }
@@ -185,7 +187,8 @@ const CenterPanel = styled.div`
   /* Mobile (<500) */
   @media (max-width: ${breakpoints.mobile}) {
     align-items: flex-start;
-    padding-right: 20px;
+    padding-left: auto;
+    padding-right: auto;
     h2{
       padding-left: 20px;
     }

@@ -175,11 +175,13 @@ const CenterPanel = styled.div`
 `;
 
 const Model = styled.div`
-  background: red;
+  background: lightgrey;
   width: ${({ model_width }) => model_width}px;
   height: ${({ model_depth }) => model_depth}px;
-  outline: 1px solid black;
+  outline: 2px solid black;
   margin: 20px;
+  border-radius: 15px; /* Add this line */
+
 
   /* Mobile (<900) */
   @media (max-width: ${breakpoints.largeTablet}) {
@@ -187,13 +189,18 @@ const Model = styled.div`
     margin-left: auto;
     margin-right: auto;
   }
+
+  overflow: hidden; /* Ensure children don't overflow */
+  z-index: 0;
+  position: relative; /* Ensure z-index works */
 `;
 
 const Row1 = styled.div`
   background: lightgrey;
   width: 100%;
   height: ${({ depth }) => depth}px;
-  outline: 1px solid black;
+  // outline: 1px solid black;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
   display: flex;
   box-sizing: border-box; /* Ensures padding is part of the width */
   padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;
@@ -201,6 +208,10 @@ const Row1 = styled.div`
   padding-top:${({ paddingTopBottom }) => paddingTopBottom}px;
   padding-bottom:${({ paddingTopBottom }) => paddingTopBottom}px;
   gap: ${({ holeGap }) => holeGap}px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  position: relative; /* Allows z-index to work */
+  z-index: 1;
 
  
 
@@ -210,7 +221,8 @@ const Row2 = styled.div`
   background: lightgrey;
   width: 100%;
   height: ${({ depth }) => depth}px;
-  outline: 1px solid black;
+  // outline: 1px solid black;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
   display: flex;
   box-sizing: border-box; /* Ensures padding is part of the width */
   padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;
@@ -218,13 +230,18 @@ const Row2 = styled.div`
   padding-top:${({ paddingTopBottom }) => paddingTopBottom}px;
   padding-bottom:${({ paddingTopBottom }) => paddingTopBottom}px;
   gap: ${({ holeGap }) => holeGap}px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  position: relative; /* Allows z-index to work */
+  z-index: 2;
 `;
 
 const Row3 = styled.div`
   background: lightgrey;
   width: 100%;
   height: ${({ depth }) => depth}px;
-  outline: 1px solid black;
+  // outline: 1px solid black;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
   display: flex;
   box-sizing: border-box; /* Ensures padding is part of the width */
   padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;
@@ -232,6 +249,9 @@ const Row3 = styled.div`
   padding-top:${({ paddingTopBottom }) => paddingTopBottom}px;
   padding-bottom:${({ paddingTopBottom }) => paddingTopBottom}px;
   gap: ${({ holeGap }) => holeGap}px;
+  border-radius: 10px;
+  position: relative; /* Allows z-index to work */
+  z-index: 3;
 `;
 
 const Hole = styled.div`

@@ -475,9 +475,10 @@ const ModelOutputValue = styled.span`
 const ThreeContainer = styled.div`
   width: min(100%, 400px);
   border-sizing: border-box;
+  // outline: 1px solid black;
   aspect-ratio: 1 / 1; /* Ensures height always matches width */  
   background: white; /* Ensures the container matches scene background */
-  margin-top: 20px;
+  margin-top: 40px;
 
 
   /* Large Tablet (900-1250) */
@@ -1071,91 +1072,84 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
 
 const ThreeViewer = ({ stlURL }) => {
   const mountRef = useRef(null);
-  console.log("Attempting to load STL from:", stlURL); // Debug: Confirm STL URL is passed
+  const sceneRef = useRef(null);
+  const modelRef = useRef(null);
+  const rendererRef = useRef(null);
 
   useEffect(() => {
     if (!mountRef.current || !stlURL) return;
 
-    console.log("Attempting to load STL from:", stlURL); // Debug: Confirm STL URL is passed
+    // Initialize Three.js scene only once
+    if (!sceneRef.current) {
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xffffff);
+      sceneRef.current = scene;
 
-    // Colors
-    const white = 0xffffff;
-    const grey = 0xd3d3d3;
-    
-    // Create Three.js Scene
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(white);
+      // Camera setup
+      const camera = new THREE.PerspectiveCamera(65, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 2000);
+      camera.position.set(0, 150, 150); // Move camera further back
+      camera.lookAt(0, 0, 0);
+      sceneRef.current.camera = camera;
 
+      // Renderer setup
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      mountRef.current.appendChild(renderer.domElement);
+      rendererRef.current = renderer;
 
-    // Set up camera 
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    camera.position.set(0, 200, 200);
-    camera.lookAt(0, 0, 50);
+      // Lighting
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(100, 200, 100);
+      light.castShadow = true;
+      scene.add(light);
 
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    mountRef.current.appendChild(renderer.domElement);
-  
+      // Orbit Controls
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enablePan = false;
+      controls.enableZoom = false;
+      controls.enableDamping = true;
 
-    // Lighting
-    const light = new THREE.DirectionalLight(white, 1);
-    light.position.set(100, 200, 100);
-    light.castShadow = true;
-    scene.add(light);
+      // Animation loop
+      const animate = () => {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      };
+      animate();
+    }
 
-    // Orbit Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enablePan = false;
-    controls.enableZoom = false;
-    controls.enableDamping = true;
+    const scene = sceneRef.current;
 
-
-
-    // Load STL Model
+    // Load new STL in the background while keeping the old model
     const loader = new STLLoader();
-    loader.load(stlURL, (geometry) => {
-      const material = new THREE.MeshStandardMaterial({ color: grey, roughness: 0.6 });
-      const mesh = new THREE.Mesh(geometry, material);
+    loader.load(stlURL,(geometry) => {
+        const material = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, roughness: 0.6 });
+        const newMesh = new THREE.Mesh(geometry, material);
+        newMesh.rotation.x = -Math.PI / 2; // Rotate STL to match JSCAD/CAD coordinate system
+      
 
-      // Center the model
-      geometry.computeBoundingBox();
-      const bbox = geometry.boundingBox;
-      const center = new THREE.Vector3();
-      bbox.getCenter(center);
-
-      mesh.rotation.x = -Math.PI / 2; // Rotate STL to match JSCAD/CAD coordinate system
-      mesh.position.set(-center.x, -center.y, -center.z);
-
-      // **Apply scaling to enlarge the model**
-      const scaleFactor = 1.5; // Adjust this value to control the scaling size
-      mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-
-
-      scene.add(mesh);
-    });
-
-    // Animation Loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    // Cleanup on unmount
-    // return () => {
-    //   mountRef.current.removeChild(renderer.domElement);
-    // };
+        // Only replace the model once the new one is ready
+        requestAnimationFrame(() => {
+          if (modelRef.current) {
+            scene.remove(modelRef.current);
+            modelRef.current.geometry.dispose();
+            modelRef.current.material.dispose();
+          }
+          modelRef.current = newMesh;
+          scene.add(newMesh);
+        });
+      },
+      undefined, // Progress callback (optional)
+      (error) => {
+        console.error("Error loading STL:", error);
+      }
+    );
   }, [stlURL]);
 
   return <ThreeContainer ref={mountRef} />;
 };
-
 const GridPreview = () => {
 
   const [userConfig, setUserConfig] = useAtom(baseModelConfigAtom);

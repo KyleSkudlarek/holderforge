@@ -79,7 +79,7 @@ const Header = styled.header`
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 40px;
+  padding-left: 0px;
   color: black;
   h1 {
     margin-bottom: 0px;

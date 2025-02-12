@@ -560,6 +560,8 @@ class ModelCalculator {
     this.row_3_inner_gap = (this.config.model_width - (this.row_3_padding_left_right * 2) - this.row_3_min_width) / (this.config.number_holes_per_row - 1);
   
     this.row_1_hole_height = this.getHoleHeight(null, this.config.row_1_hole_diameter, this.config.row_1_bottle_height);
+    this.tier_1_depth = this.row_1_depth;
+    this.tier_1_total_depth = this.config.model_depth;
     this.tier_1_extrusion_distance = this.getTier1ExtrusionDistance(null, this.row_1_hole_height);
     this.row_1_hole_horizontal_constraint = this.row_1_padding_left_right + (this.config.row_1_hole_diameter / 2);
     this.row_1_hole_vertical_constraint = this.row_1_padding_top_bottom + (this.config.row_1_hole_diameter / 2);
@@ -568,7 +570,8 @@ class ModelCalculator {
 
       
     this.row_2_hole_height = this.getHoleHeight(null, this.config.row_2_hole_diameter, this.config.row_2_bottle_height);
-    this.tier_2_depth = this.row_2_depth + this.row_3_depth ;
+    this.tier_2_depth = this.row_2_depth;
+    this.tier_2_total_depth = this.row_2_depth + this.row_3_depth ;
     this.tier_2_extrusion_distance = this.getTier23ExtrusionDistance(null, this.tier_1_extrusion_distance);
     this.row_2_hole_horizontal_constraint = this.row_2_padding_left_right + (this.config.row_2_hole_diameter / 2);
     this.row_2_hole_vertical_constraint = this.row_2_padding_top_bottom + (this.config.row_2_hole_diameter / 2);
@@ -602,17 +605,21 @@ class ModelCalculator {
       row_2_inner_gap: this.row_2_inner_gap,
       row_3_inner_gap: this.row_3_inner_gap,
       tier_1_extrusion_distance: this.tier_1_extrusion_distance,
+      tier_1_depth: this.tier_1_depth,
+      tier_1_total_depth: this.tier_1_total_depth,
       row_1_hole_height: this.row_1_hole_height,
       row_1_hole_horizontal_constraint: this.row_1_hole_horizontal_constraint,
       row_1_hole_vertical_constraint: this.row_1_hole_vertical_constraint,
       row_1_rectangular_repeat_pattern_distance: this.row_1_rectangular_repeat_pattern_distance,
       tier_2_depth: this.tier_2_depth,
+      tier_2_total_depth: this.tier_2_total_depth,
       tier_2_extrusion_distance: this.tier_2_extrusion_distance,
       row_2_hole_height: this.row_2_hole_height,
       row_2_hole_horizontal_constraint: this.row_2_hole_horizontal_constraint,
       row_2_hole_vertical_constraint: this.row_2_hole_vertical_constraint,
       row_2_rectangular_repeat_pattern_distance: this.row_2_rectangular_repeat_pattern_distance,
       tier_3_depth: this.tier_3_depth,
+      tier_3_total_depth: this.tier_3_total_depth,
       tier_3_extrusion_distance: this.tier_3_extrusion_distance,
       row_3_hole_height: this.row_3_hole_height,
       row_3_hole_horizontal_constraint: this.row_3_hole_horizontal_constraint,
@@ -665,10 +672,15 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
       console.log("Model Depth:", modelConfig.model_depth);
 
       /////////////////////////////////////////////
-      //  CREATE GEOMETRY
-      // Create a rectangular representation (base)
+      //  CREATE GEOMETRY 
       /////////////////////////////////////////////
 
+   
+      /////////////////////////////////////////////
+      //  Tier 1 / Row 1
+      /////////////////////////////////////////////
+
+      // Create a rectangular representation (base) for tier / row 1
       const base = cuboid({ size: [modelConfig.model_width, modelConfig.model_depth, modelConfig.tier_1_extrusion_distance] });
 
       // Create a single hole for row 1
@@ -746,20 +758,28 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
       let geometry = subtract(base, ...row1Holes);
 
 
+      /////////////////////////////////////////////
+      //  Tier 2 / Row 2
+      /////////////////////////////////////////////
+
       // Create second tier (smaller rectangle on top)
       const tier2Base = cuboid({
         size: [
           modelConfig.model_width,          // Same width as base
-          modelConfig.tier_2_depth,         // Use tier 2 depth from config
+          modelConfig.tier_2_total_depth,         // Use tier 2 depth from config
           modelConfig.tier_2_extrusion_distance // Height of second tier
         ]
       });
 
 
+      // modelConfig.model_depth / 2 - modelConfig.tier_3_depth / 2
+      console.log("Model Depth:", modelConfig.model_depth);
+      console.log("Tier 2 Depth:", modelConfig.tier_2_depth);
+  
       // Position tier2 on top of first tier and toward back
       const tier2Positioned = translate([
         0,                                              // Center X (same as base)
-        modelConfig.model_depth/2 - modelConfig.tier_2_depth/2,  // Y position (align with back)
+        modelConfig.model_depth/2 - modelConfig.tier_2_total_depth/2,  // Y position (align with back)
         modelConfig.tier_1_extrusion_distance/2 + modelConfig.tier_2_extrusion_distance/2   // Z position (top of first tier)
       ], tier2Base);
 
@@ -836,27 +856,36 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
         row2Holes.push(positionedHole);
       }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       geometry = subtract(geometry, ...row2Holes);
 
 
+      /////////////////////////////////////////////
+      //  Tier 3 / Row 3
+      /////////////////////////////////////////////
+      
+      // Create second tier (smaller rectangle on top)
+      const tier3Base = cuboid({
+        size: [
+          modelConfig.model_width,          // Same width as base
+          modelConfig.tier_3_depth,         // Use tier 3 depth from config
+          modelConfig.tier_3_extrusion_distance // Height of second tier
+        ]
+      });
 
+      console.log("Tier 3 Depth:", modelConfig.tier_3_depth);
+      console.log("Model Depth:", modelConfig.model_depth);
+      console.log("Model Depth:", modelConfig.model_depth);
+      let y = modelConfig.model_depth/2 - modelConfig.tier_3_depth/2;
+      console.log("Y:", y);
+      // Position tier 3 on top of second tier and toward back
+      const tier3Positioned = translate([
+        0,                                              // Center X (same as base)
+        modelConfig.model_depth / 2 - modelConfig.tier_3_depth / 2,  // Y position (align with back)
+        modelConfig.tier_1_extrusion_distance/2 + modelConfig.tier_2_extrusion_distance + modelConfig.tier_3_extrusion_distance/2   // Z position (top of first tier)
+      ], tier3Base);
 
-
+      // Union tier3 with our base geometry to create a single solid
+      geometry = union(geometry, tier3Positioned);
 
 
 

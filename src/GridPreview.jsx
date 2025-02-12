@@ -200,7 +200,7 @@ const Row1 = styled.div`
   width: 100%;
   height: ${({ depth }) => depth}px;
   // outline: 1px solid black;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
+  box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
   display: flex;
   box-sizing: border-box; /* Ensures padding is part of the width */
   padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;
@@ -222,7 +222,7 @@ const Row2 = styled.div`
   width: 100%;
   height: ${({ depth }) => depth}px;
   // outline: 1px solid black;
-  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
+  box-shadow: 0px 5px 3px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
   display: flex;
   box-sizing: border-box; /* Ensures padding is part of the width */
   padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;
@@ -241,7 +241,7 @@ const Row3 = styled.div`
   width: 100%;
   height: ${({ depth }) => depth}px;
   // outline: 1px solid black;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
+  box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.3); /* Casts shadow over Tier 1 */
   display: flex;
   box-sizing: border-box; /* Ensures padding is part of the width */
   padding-left: ${({ paddingLeftRight }) => paddingLeftRight}px;

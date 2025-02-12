@@ -472,6 +472,33 @@ const ModelOutputValue = styled.span`
   font-size: 12px;
 `;
 
+const ThreeContainer = styled.div`
+  width: min(100%, 400px);
+  border-sizing: border-box;
+  aspect-ratio: 1 / 1; /* Ensures height always matches width */  
+  background: white; /* Ensures the container matches scene background */
+  margin-top: 20px;
+
+
+  /* Large Tablet (900-1250) */
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: auto;
+    padding-right: auto;
+  }
+
+
+  /* Mobile (<900) */
+  @media (max-width: ${breakpoints.largeTablet}) {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: auto;
+    padding-right: auto;
+  }
+
+
+`;
 
 
 
@@ -686,10 +713,10 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
 
     
 
-      // Clear previous canvas to prevent duplicates
-    while (mountRef.current.firstChild) {
-      mountRef.current.removeChild(mountRef.current.firstChild);
-    }
+    //   // Clear previous canvas to prevent duplicates
+    // while (mountRef.current.firstChild) {
+    //   mountRef.current.removeChild(mountRef.current.firstChild);
+    // }
 
 
     try {
@@ -981,13 +1008,6 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
       geometry = subtract(geometry, ...row3Holes);
 
 
-
-
-
-
-
-
-
       setExportScene(geometry);
 
       // Generate STL for Three.js rendering
@@ -995,61 +1015,61 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
       console.log("STL URL:", stlURL); // Debugging log
       
 
-      // Initialize the JSCAD camera 
-      const perspectiveCamera = cameras.perspective;
-      const camera = Object.assign({}, perspectiveCamera.defaults);
-      perspectiveCamera.setProjection(camera, camera, { width: 400, height: 400 });
-      camera.position = [0, -400, 400]; 
-      camera.up = [0, 1, 0];  
-      camera.target = [0, 0, 0]; 
-      perspectiveCamera.update(camera, camera);
-      console.log("JSCAD Camera Position:", camera.position);
-      console.log("JSCAD Camera Target:", camera.target);
+      // // Initialize the JSCAD camera 
+      // const perspectiveCamera = cameras.perspective;
+      // const camera = Object.assign({}, perspectiveCamera.defaults);
+      // perspectiveCamera.setProjection(camera, camera, { width: 400, height: 400 });
+      // camera.position = [0, -400, 400]; 
+      // camera.up = [0, 1, 0];  
+      // camera.target = [0, 0, 0]; 
+      // perspectiveCamera.update(camera, camera);
+      // console.log("JSCAD Camera Position:", camera.position);
+      // console.log("JSCAD Camera Target:", camera.target);
 
-      // Create complete options object
-      const options = {
-        glOptions: { container: mountRef.current },
-        camera,
-        drawCommands: {
-          drawMesh: drawCommands.drawMesh
-        },
-        entities: [
-          // Add grid
-          {
-            visuals: {
-              drawCmd: 'drawGrid',
-              show: true
-            },
-            size: [200, 200],
-            ticks: [25, 5]
-          },
-          // Add axis
-          {
-            visuals: {
-              drawCmd: 'drawAxis',
-              show: true
-            },
-            size: 150
-          },
-          // Add our geometry
-          ...entitiesFromSolids({}, geometry)
-        ]
-      };
+      // // Create complete options object
+      // const options = {
+      //   glOptions: { container: mountRef.current },
+      //   camera,
+      //   drawCommands: {
+      //     drawMesh: drawCommands.drawMesh
+      //   },
+      //   entities: [
+      //     // Add grid
+      //     {
+      //       visuals: {
+      //         drawCmd: 'drawGrid',
+      //         show: true
+      //       },
+      //       size: [200, 200],
+      //       ticks: [25, 5]
+      //     },
+      //     // Add axis
+      //     {
+      //       visuals: {
+      //         drawCmd: 'drawAxis',
+      //         show: true
+      //       },
+      //       size: 150
+      //     },
+      //     // Add our geometry
+      //     ...entitiesFromSolids({}, geometry)
+      //   ]
+      // };
 
-      // Create and call the renderer
-      const render = prepareRender(options);
-      render(options);
+      // // Create and call the renderer
+      // const render = prepareRender(options);
+      // render(options);
 
     } catch (error) {
       console.error('JSCAD Render Error:', error);
     }
   }, [setExportScene, modelConfig]);
 
-  return <div ref={mountRef} style={{ width: "400px", height: "400px", background: "#eee" }} />;
+  return <div ref={mountRef} />;
 };
 
 
-const ThreeJSViewer = ({ stlURL }) => {
+const ThreeViewer = ({ stlURL }) => {
   const mountRef = useRef(null);
   console.log("Attempting to load STL from:", stlURL); // Debug: Confirm STL URL is passed
 
@@ -1066,6 +1086,7 @@ const ThreeJSViewer = ({ stlURL }) => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(white);
 
+
     // Set up camera 
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     camera.position.set(0, 200, 200);
@@ -1077,15 +1098,17 @@ const ThreeJSViewer = ({ stlURL }) => {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
+  
 
     // Lighting
     const light = new THREE.DirectionalLight(white, 1);
-    light.position.set(5, 5, 5).normalize();
+    light.position.set(100, 200, 100);
+    light.castShadow = true;
     scene.add(light);
 
     // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enablePan = true;
+    controls.enablePan = false;
     controls.enableZoom = false;
     controls.enableDamping = true;
 
@@ -1106,6 +1129,11 @@ const ThreeJSViewer = ({ stlURL }) => {
       mesh.rotation.x = -Math.PI / 2; // Rotate STL to match JSCAD/CAD coordinate system
       mesh.position.set(-center.x, -center.y, -center.z);
 
+      // **Apply scaling to enlarge the model**
+      const scaleFactor = 1.5; // Adjust this value to control the scaling size
+      mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+
 
       scene.add(mesh);
     });
@@ -1120,12 +1148,12 @@ const ThreeJSViewer = ({ stlURL }) => {
     animate();
 
     // Cleanup on unmount
-    return () => {
-      mountRef.current.removeChild(renderer.domElement);
-    };
+    // return () => {
+    //   mountRef.current.removeChild(renderer.domElement);
+    // };
   }, [stlURL]);
 
-  return <div ref={mountRef} style={{ width: "400px", height: "400px", background: "#eee" }} />;
+  return <ThreeContainer ref={mountRef} />;
 };
 
 const GridPreview = () => {
@@ -1452,10 +1480,8 @@ const GridPreview = () => {
             />
           </ModelProfileTier>  
         </ModelProfile>
-        <h2>JSCAD Viewer</h2>
         <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} />
-        <h2>Three.js STL Viewer</h2>
-        <ThreeJSViewer stlURL={stlURL} />
+        <ThreeViewer stlURL={stlURL} />
       </CenterPanel>
       <RightPanel>
         <DownloadDiv>

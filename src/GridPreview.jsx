@@ -1070,7 +1070,7 @@ const GridPreview = () => {
       .replace("{{input_row_1_padding_left_right}}", modelConfig.row_1_padding_left_right/10)
       .replace("{{input_row_1_padding_top_bottom}}", modelConfig.row_1_padding_top_bottom/10)
       .replace("{{input_row_1_hole_shape}}", modelConfig.row_1_hole_shape)
-      .replace("{{input_tier_2_total_depth}}", modelConfig.tier_2_depth/10)
+      .replace("{{input_tier_2_total_depth}}", modelConfig.tier_2_total_depth/10)
       .replace("{{input_tier_2_extrusion_distance}}", modelConfig.tier_2_extrusion_distance/10)
       .replace("{{input_row_2_hole_diameter}}", modelConfig.row_2_hole_diameter/10)
       .replace("{{input_row_2_hole_horizontal_constraint}}", modelConfig.row_2_hole_horizontal_constraint/10)
@@ -1345,7 +1345,7 @@ const GridPreview = () => {
           </ModelProfileTier>  
           <ModelProfileTier
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
-            tier_depth={modelConfig.tier_2_depth * modelConfig.mm2pixel}
+            tier_depth={modelConfig.tier_2_total_depth * modelConfig.mm2pixel}
             tier_extrusion_distance={modelConfig.tier_2_extrusion_distance * modelConfig.mm2pixel}
           >
             <ModelProfileHole
@@ -1356,7 +1356,7 @@ const GridPreview = () => {
           </ModelProfileTier>  
           <ModelProfileTier
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
-            tier_depth={modelConfig.tier_1_depth * modelConfig.mm2pixel}
+            tier_depth={modelConfig.tier_1_total_depth * modelConfig.mm2pixel}
             tier_extrusion_distance={modelConfig.tier_1_extrusion_distance * modelConfig.mm2pixel}
           >
             <ModelProfileHole

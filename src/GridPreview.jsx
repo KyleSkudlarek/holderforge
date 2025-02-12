@@ -20,6 +20,7 @@ import { roundEdges } from '@jscad/modeling/src/operations/modifiers';
 import { measureBounds } from '@jscad/modeling/src/measurements';
 import { geom3 } from '@jscad/modeling/src/geometries';
 import { extrudeLinear } from '@jscad/modeling/src/operations/extrusions'
+import { Helmet } from "react-helmet";
 
 
 
@@ -1157,9 +1158,6 @@ const GridPreview = () => {
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
   const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
 
-  useEffect(() => {
-    document.title = "HolderForge"; 
-  }, []);
 
   const generatePythonFile = () => {
   
@@ -1334,6 +1332,13 @@ const GridPreview = () => {
 
 
   return (
+    <>
+      <Helmet>
+        <title>HolderForge - Custom 3D Printed Holder Generator</title>
+        <meta name="description" content="HolderForge lets you design and customize 3D printed holders and organizers for cologne, perfume, makeup, lipstick, concealers, bottles and more. Custom fit organization. Perfect for travel, home organization, and keeping your fragrance and cosmetics collection secure and organized. " />
+        <meta name="keywords" content="3D printed model generator for bottle holders, custom cologne holders, custom perfume holders, custom bottle holders, makeup organizers, travel cologne holders, lipstick organizer" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
     <GridLayout>
       <Header>
         <h1>HolderForge</h1>
@@ -1616,6 +1621,7 @@ const GridPreview = () => {
       </RightPanel>  
       <Footer />
     </GridLayout>
+    </>
   );
 };
 

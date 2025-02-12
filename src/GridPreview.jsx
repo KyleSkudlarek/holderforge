@@ -42,7 +42,7 @@ const GridLayout = styled.div`
 
 
   grid-template-columns: 3fr 5fr 5fr;
-  grid-template-rows: 100px 1fr 100px;
+  grid-template-rows: auto 1fr 100px;
   grid-template-areas:
     "header header header"
     "left center right"
@@ -76,10 +76,20 @@ const Header = styled.header`
   grid-area: header;
   background: white;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   padding-left: 40px;
   color: black;
+  h1 {
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+  }
+  h2 {
+    color: grey;
+    margin-top: 0px;
+    padding-top: 0px;
+  }
 `;
 
 const Footer = styled.footer`
@@ -89,6 +99,10 @@ const Footer = styled.footer`
 
 const LeftPanel = styled.div`
   //outline: 1px solid black;
+
+  h2 {
+    color: black;
+  }
   
   color: black;
   grid-area: left;
@@ -133,6 +147,10 @@ const Input = styled.input`
 `;
 
 const CenterPanel = styled.div`
+  h2 {
+    color: black;
+  }
+
   color:black;
   grid-area: center;
   background: white;
@@ -372,6 +390,13 @@ const RightPanel = styled.div`
   
   //outline: 1px solid black;
   
+  h2 {
+    color: black;
+  }
+
+  span {
+    color: black;
+  }
   
   color: black;
   grid-area: right;
@@ -1334,14 +1359,15 @@ const GridPreview = () => {
   return (
     <>
       <Helmet>
-        <title>HolderForge - Custom 3D Printed Holder Generator</title>
-        <meta name="description" content="HolderForge lets you design and customize 3D printed holders and organizers for cologne, perfume, makeup, lipstick, concealers, bottles and more. Custom fit organization. Perfect for travel, home organization, and keeping your fragrance and cosmetics collection secure and organized. " />
-        <meta name="keywords" content="3D printed model generator for bottle holders, custom cologne holders, custom perfume holders, custom bottle holders, makeup organizers, travel cologne holders, lipstick organizer" />
+        <title>HolderForge - Custom Bottle Holder</title>
+        <meta name="description" content="HolderForge lets you design and customize holders and organizers for cologne, perfume, makeup, lipstick, concealers, bottles and more. Custom fit organization. Perfect for travel, home organization, and keeping your fragrance and cosmetics collection secure and organized. " />
+        <meta name="keywords" content="custom holder, custom organizer, 3D printed model generator for bottle holders, custom cologne holders, custom perfume holders, custom bottle holders, makeup organizers, travel cologne holders, lipstick organizer" />
         <meta name="robots" content="index, follow" />
       </Helmet>
     <GridLayout>
       <Header>
         <h1>HolderForge</h1>
+        <h2>Custom Bottle Holder</h2>
       </Header>
       <LeftPanel>
         <h2>Customize</h2>

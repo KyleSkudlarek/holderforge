@@ -1261,17 +1261,56 @@ const GridPreview = () => {
 
 
   const updateModelWidth = (e) => {
-    setUserConfig((prev) => ({
-      ...prev,
-      model_width: parseInt(e.target.value) || 0, // Ensure it's a number
-    }));
+    setUserConfig((prev) => {
+      let newWidth = parseInt(e.target.value, 10) || 0;
+      const { number_holes_per_row, edge_gap_scale_factor, row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter } = prev;
+      const n = number_holes_per_row;
+  
+      // Get the largest hole diameter among all rows
+      const maxHoleDiameter = Math.max(row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter);
+  
+      // Compute the left-right padding dynamically
+      const leftRightPadding = edge_gap_scale_factor * ((newWidth - (n * maxHoleDiameter)) / (n + 1));
+  
+      // Compute the minimum model width required
+      const minModelWidth = (2.5 * (n - 1)) + (2 * leftRightPadding) + (n * maxHoleDiameter);
+  
+      // Ensure width is at least the minimum required value
+      newWidth = Math.max(newWidth, Math.ceil(minModelWidth));
+  
+      console.log("Computed Min Model Width:", minModelWidth);
+      console.log("Clamped Model Width:", newWidth);
+  
+      return {
+        ...prev,
+        model_width: newWidth,
+      };
+    });
   };
 
   const updateModelDepth = (e) => {
-    setUserConfig((prev) => ({
-      ...prev,
-      model_depth: parseInt(e.target.value) || 0,
-    }));
+    setUserConfig((prev) => {
+      let newDepth = parseInt(e.target.value, 10) || 0;
+      const { row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter } = prev;
+  
+      // Compute the minimum required model depth ensuring at least 4mm padding in all rows
+      const minModelDepth = 3 * Math.max(
+        8 + row_1_hole_diameter,
+        8 + row_2_hole_diameter,
+        8 + row_3_hole_diameter
+      );
+  
+      // Ensure model depth is at least the computed minimum
+      newDepth = Math.max(newDepth, Math.ceil(minModelDepth));
+  
+      console.log("Computed Min Model Depth:", minModelDepth);
+      console.log("Clamped Model Depth:", newDepth);
+  
+      return {
+        ...prev,
+        model_depth: newDepth,
+      };
+    });
   };
 
   const updateRow1Depth = (e) => {
@@ -1296,24 +1335,84 @@ const GridPreview = () => {
   };
 
   const updateRow1HoleDiameter = (e) => {
-    setUserConfig((prev) => ({
-      ...prev,
-      row_1_hole_diameter: parseInt(e.target.value) || 0,
-    }));
+    setUserConfig((prev) => {
+      const newDiameter = parseInt(e.target.value) || 0;
+
+      const { model_width, number_holes_per_row, edge_gap_scale_factor } = prev;
+      const maxDiameter = (model_width - (2.5 * (number_holes_per_row - 1)) / (1 - (2 * edge_gap_scale_factor / (number_holes_per_row + 1)))) / number_holes_per_row;
+      const roundedMaxDiameter = Math.floor(maxDiameter);
+
+      // Minimum allowable diameter
+      const minDiameter = 12;
+      
+      // Clamp the input value to be within [minDiameter, roundedMaxDiameter]
+      const clampedDiameter = Math.min(Math.max(newDiameter, minDiameter), roundedMaxDiameter);
+      
+      console.log("Clamped Diameter:", clampedDiameter);
+      console.log("Min Diameter:", minDiameter);
+      console.log("Max Diameter:", roundedMaxDiameter);
+    
+
+      
+      return {
+        ...prev, // Preserve existing state
+        row_1_hole_diameter: clampedDiameter,
+      };
+    });
   };
 
   const updateRow2HoleDiameter = (e) => {
-    setUserConfig((prev) => ({
-      ...prev,
-      row_2_hole_diameter: parseInt(e.target.value) || 0,
-    }));
+    setUserConfig((prev) => {
+      const newDiameter = parseInt(e.target.value) || 0;
+
+      const { model_width, number_holes_per_row, edge_gap_scale_factor } = prev;
+      const maxDiameter = (model_width - (2.5 * (number_holes_per_row - 1)) / (1 - (2 * edge_gap_scale_factor / (number_holes_per_row + 1)))) / number_holes_per_row;
+      const roundedMaxDiameter = Math.floor(maxDiameter);
+
+      // Minimum allowable diameter
+      const minDiameter = 12;
+      
+      // Clamp the input value to be within [minDiameter, roundedMaxDiameter]
+      const clampedDiameter = Math.min(Math.max(newDiameter, minDiameter), roundedMaxDiameter);
+      
+      console.log("Clamped Diameter:", clampedDiameter);
+      console.log("Min Diameter:", minDiameter);
+      console.log("Max Diameter:", roundedMaxDiameter);
+    
+
+      
+      return {
+        ...prev, // Preserve existing state
+        row_2_hole_diameter: clampedDiameter,
+      };
+    });
   };
 
   const updateRow3HoleDiameter = (e) => {
-    setUserConfig((prev) => ({
-      ...prev,
-      row_3_hole_diameter: parseInt(e.target.value) || 0,
-    }));
+    setUserConfig((prev) => {
+      const newDiameter = parseInt(e.target.value) || 0;
+
+      const { model_width, number_holes_per_row, edge_gap_scale_factor } = prev;
+      const maxDiameter = (model_width - (2.5 * (number_holes_per_row - 1)) / (1 - (2 * edge_gap_scale_factor / (number_holes_per_row + 1)))) / number_holes_per_row;
+      const roundedMaxDiameter = Math.floor(maxDiameter);
+
+      // Minimum allowable diameter
+      const minDiameter = 12;
+      
+      // Clamp the input value to be within [minDiameter, roundedMaxDiameter]
+      const clampedDiameter = Math.min(Math.max(newDiameter, minDiameter), roundedMaxDiameter);
+      
+      console.log("Clamped Diameter:", clampedDiameter);
+      console.log("Min Diameter:", minDiameter);
+      console.log("Max Diameter:", roundedMaxDiameter);
+    
+
+      
+      return {
+        ...prev, // Preserve existing state
+        row_3_hole_diameter: clampedDiameter,
+      };
+    });
   };
 
   const updateRow1BottleHeight = (e) => {

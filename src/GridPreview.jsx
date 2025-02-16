@@ -652,6 +652,56 @@ const JscadContainer = styled.div`
 
 `;
 
+const ThreeContainer = styled.div`
+  width: min(100%, 400px);
+  border-sizing: border-box;
+  // outline: 1px solid black;
+  aspect-ratio: 1 / 1; /* Ensures height always matches width */  
+  background: white; /* Ensures the container matches scene background */
+  margin-top: 40px;
+
+
+  /* Large Tablet (900-1250) */
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: auto;
+    padding-right: auto;
+  }
+
+
+  /* Mobile (<900) */
+  @media (max-width: ${breakpoints.largeTablet}) {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: auto;
+    padding-right: auto;
+  }
+
+
+`;
+
+const PreviewCheckbox = styled.div`
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  
+  label {
+    color: black;
+    font-size: 14px;
+    cursor: pointer;
+  }
+`;
 
 const RightPanel = styled.div`
   
@@ -765,34 +815,7 @@ const ModelOutputValue = styled.span`
   font-size: 12px;
 `;
 
-const ThreeContainer = styled.div`
-  width: min(100%, 400px);
-  border-sizing: border-box;
-  // outline: 1px solid black;
-  aspect-ratio: 1 / 1; /* Ensures height always matches width */  
-  background: white; /* Ensures the container matches scene background */
-  margin-top: 40px;
 
-
-  /* Large Tablet (900-1250) */
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: auto;
-    padding-right: auto;
-  }
-
-
-  /* Mobile (<900) */
-  @media (max-width: ${breakpoints.largeTablet}) {
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: auto;
-    padding-right: auto;
-  }
-
-
-`;
 
 
 
@@ -983,7 +1006,7 @@ const formatNumber = (value) => {
   return (Math.ceil(value * 10) / 10).toFixed(1);  // Round up to nearest 0.1 mm
 };
 
-const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
+const JscadViewer = ({ setExportScene, setStlURL, modelConfig, showBottles }) => {
   const mountRef = useRef(null);
 
   // generateSTL inside JscadViewer
@@ -1110,7 +1133,14 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
       let geometry = subtract(base, ...row1Holes);
 
 
-
+      // Create mock preview bottles for row 1
+      if (showBottles) {
+        console.log("Creating bottle geometries...");
+        const bottleGeometries = [];
+        // ... rest of bottle creation code ...
+      } else {
+        console.log("Bottles disabled - skipping bottle creation");
+      }
       /////////////////////////////////////////////
       //  Tier 2 / Row 2
       /////////////////////////////////////////////
@@ -1357,7 +1387,7 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
     } catch (error) {
       console.error('JSCAD Render Error:', error);
     }
-  }, [setExportScene, modelConfig]);
+  }, [setExportScene, modelConfig, showBottles]);
 
   return <div ref={mountRef} />;
 };
@@ -1449,6 +1479,8 @@ const GridPreview = () => {
   const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
   const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
+  const [showBottles, setShowBottles] = useState(false); // Add this line
+
 
 
   const generatePythonFile = () => {
@@ -1920,8 +1952,17 @@ const GridPreview = () => {
             </ModelProfileHole>
           </ModelProfileTier>  
         </ModelProfile>
-        <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} />
+        <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} showBottles={showBottles} />
         <ThreeViewer stlURL={stlURL} />
+        <PreviewCheckbox>
+          <input
+            type="checkbox"
+            id="showBottles"
+            checked={showBottles}
+            onChange={(e) => setShowBottles(e.target.checked)}
+          />
+          <label htmlFor="showBottles">Show Bottle Previews</label>
+        </PreviewCheckbox>
       </CenterPanel>
       <RightPanel>
         <DownloadDiv>

@@ -59,7 +59,7 @@ const GridLayout = styled.div`
       "footer footer";
   }
 
-  /* Mobile <900*/
+      /* Mobile <900*/
   @media (max-width: ${breakpoints.largeTablet}) {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto 1fr auto 100px;
@@ -98,7 +98,7 @@ const Footer = styled.footer`
 `;
 
 const LeftPanel = styled.div`
-  outline: 1px solid black;
+  //outline: 1px solid black;
 
   h2 {
     color: black;
@@ -111,7 +111,7 @@ const LeftPanel = styled.div`
   flex-direction: column; 
   justify-content: flex-start;
   align-items: flex-end;
-  padding-right: 20px;
+  padding-right: 10px;
   padding-top:20px;
 
   /* Large Tablet (900-1250) */
@@ -124,119 +124,13 @@ const LeftPanel = styled.div`
   @media (max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
     padding-left: 20px;
-    padding-bottom: 20px;
   }
 `;
 
-const AccordionContainer = styled.div`
-  outline: 5px solid red;
-  width: 100%;
-`;
-
-const AccordionItem = styled.div`
-  outline: 3px solid orange;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-`;
-
-const AccordionItemLeft = styled.div`
-  outline: 3px solid green;
-  width: 50%;
-`;
-
-const AccordionItemRight = styled.div`
-  outline: 3px solid purple;
-  background: pink;
-  width: 50%;
-  height: 100%; /* Ensure it fills the parent */
-`;
-
-const BottleThreeContainer = styled.div`
-  width: 100%;
-  height: 200px;
-  border: 2px solid pink; /* Optional border for visualization */
-`;
-
-const BottleThreeViewer = () => {
-  const mountRef = useRef(null);
-  
-
-  useEffect(() => {
-    if (!mountRef.current) return;
-
-    // Scene Setup
-    const scene = new THREE.Scene();
-    const backgroundColor = 0xffffff;
-    scene.background = new THREE.Color(backgroundColor);
-
-    // Camera Setup
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.set(0, 0, 30);
-
-
-    // Renderer Setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    mountRef.current.appendChild(renderer.domElement);
-
-    // Cylinder Geometry (Bottle Shape)
-    const geometry = new THREE.CylinderGeometry(5, 5, 20, 32);
-    const material = new THREE.MeshStandardMaterial({ 
-      color:0x325AC9, 
-      transparent: true,   
-      opacity: 0.6,       // Reduce opacity for a more translucent look
-      roughness: 1.0,     // Lower roughness for a glossier look   
-      side: THREE.DoubleSide ,
-    });
-    const cylinder = new THREE.Mesh(geometry, material);
-    scene.add(cylinder);
-
-    // Lighting
-    // 3. Hemisphere Light (Sky-Ground Soft Lighting)
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x552200, 0.6); 
-    // First color = sky, Second color = ground reflection
-    scene.add(hemiLight);
-
-
-    // Orbit Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.enableRotate = false; // Disable rotation
-    controls.enableZoom = false;   // Disable zoom
-    controls.enablePan = false;    // Disable panning
-
-    // Animation Loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    // Cleanup on unmount
-    return () => {
-      renderer.dispose();
-      mountRef.current.removeChild(renderer.domElement);
-    };
-  }, []);
-
-  return <BottleThreeContainer ref={mountRef} />;
-};
-
-
-
 const ModelInput = styled.div`
-
-  outline: 1px solid blue;
   color: black;
   display: flex;
+  flex-direction: column;
   justify-content: flex-end;
   padding-bottom:7px;
   font-size: 14px;
@@ -250,12 +144,20 @@ const ModelInput = styled.div`
 `;
 
 const Input = styled.input`
-  outline: 1px solid red;
   width: 50px;
 `;
 
+const SliderInput = styled.input`
+      display: 'flex', 
+      justifyContent: 'space-between',
+      fontSize: '12px',
+      color: '#666',
+      marginTop: '4px'
+`;
+
+
+
 const CenterPanel = styled.div`
-  outline: 1px solid black;
   h2 {
     color: black;
   }
@@ -500,7 +402,7 @@ const JscadContainer = styled.div`
 
 const RightPanel = styled.div`
   
-  outline: 1px solid black;
+  //outline: 1px solid black;
   
   h2 {
     color: black;
@@ -1570,7 +1472,7 @@ const GridPreview = () => {
   return (
     <>
       <Helmet>
-        <title>HolderForge</title>
+        <title>HolderForge - Custom Bottle Holder</title>
         <meta name="description" content="HolderForge lets you design and customize holders and organizers for cologne, perfume, makeup, lipstick, concealers, bottles and more. Custom fit organization. Perfect for travel, home organization, and keeping your fragrance and cosmetics collection secure and organized. " />
         <meta name="keywords" content="custom holder, custom organizer, 3D printed model generator for bottle holders, custom cologne holders, custom perfume holders, custom bottle holders, makeup organizers, travel cologne holders, lipstick organizer" />
         <meta name="robots" content="index, follow" />
@@ -1578,93 +1480,109 @@ const GridPreview = () => {
     <GridLayout>
       <Header>
         <h1>HolderForge</h1>
-        <h2>Make a Custom Bottle Holder</h2>
+        <h2>Custom Bottle Holder</h2>
       </Header>
       <LeftPanel>
         <h2>Customize</h2>
-        <AccordionContainer>
-          <AccordionItem>
-          <AccordionItemLeft>
-            <h3>Bottle 1</h3>
-            <ModelInput>
-              <span>Hole Diameter (mm)</span>
-              <Input type="number" value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
-            </ModelInput>
-            <ModelInput>
-              <span>Bottle Height (mm)</span>
-              <Input type="number" value={modelConfig.row_1_bottle_height} onChange={updateRow1BottleHeight} />
-            </ModelInput>
-            <ModelInput>
-              <span>Hole Shape</span>
-              <select value={modelConfig.row_1_hole_shape} onChange={updateRow1HoleShape}>
-                <option value="circle">Circle</option>
-                <option value="square">Square</option>
-              </select>
-            </ModelInput>
-            </AccordionItemLeft>
-            <AccordionItemRight>
-              <BottleThreeViewer/>
-            </AccordionItemRight>
-          </AccordionItem>
-          <AccordionItem>
-          <AccordionItemLeft>
-            <h3>Bottle 2</h3>
-              <ModelInput>
-                <span>Hole Diameter (mm)</span>
-                <Input type="number" value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
-              </ModelInput>
-              <ModelInput>
-                <span>Bottle Height (mm)</span>
-                <Input type="number" value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
-              </ModelInput>
-              <ModelInput>
-                <span>Hole Shape</span>
-                <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
-                  <option value="circle">Circle</option>
-                  <option value="square">Square</option>
-                </select>
-              </ModelInput>
-          </AccordionItemLeft>  
-          <AccordionItemRight>
-          </AccordionItemRight>
-          </AccordionItem>
-          <AccordionItem>
-            <AccordionItemLeft>
-            <h3>Bottle 3</h3>
-            <ModelInput>
-              <span>Row 3 Hole Diameter (mm)</span>
-              <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
-            </ModelInput>
-            <ModelInput>
-              <span>Row 3 Bottle Height (mm)</span>
-              <Input type="number" value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
-            </ModelInput>
-            <ModelInput>
-              <span>Row 3 Hole Shape</span>
-              <select value={modelConfig.row_3_hole_shape} onChange={updateRow3HoleShape}>
-                <option value="circle">Circle</option>
-                <option value="square">Square</option>
-              </select>
-            </ModelInput>
-            </AccordionItemLeft>
-            <AccordionItemRight>
-            </AccordionItemRight>
-            </AccordionItem>
-            </AccordionContainer>
-
-
-
-
-          <h2>Customize Holder</h2>
-          <ModelInput>
-            <span>Model Width (mm)</span>
-            <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
-          </ModelInput>
-          <ModelInput>
-            <span>Model Depth (mm)</span>
-            <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
-          </ModelInput>
-
+        <ModelInput>
+          <span>Model Width (mm)</span>
+          <div style={{ width: '200px', padding: '10px 0' }}>
+            {/* Current value display */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              fontSize: '12px',
+              marginBottom: '8px'
+            }}>
+              <span>Current: {modelConfig.model_width}mm</span>
+            </div>
+            
+            {/* Slider input */}
+            <input
+              type="range"
+              value={modelConfig.model_width}
+              min={(() => {
+                const { number_holes_per_row, edge_gap_scale_factor, row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter } = modelConfig;
+                const n = number_holes_per_row;
+                const maxHoleDiameter = Math.max(row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter);
+                const leftRightPadding = edge_gap_scale_factor * ((modelConfig.model_width - (n * maxHoleDiameter)) / (n + 1));
+                return Math.ceil((2.5 * (n - 1)) + (2 * leftRightPadding) + (n * maxHoleDiameter));
+              })()}
+              max={200}
+              onChange={(e) => updateModelWidth({ target: { value: e.target.value }})}
+              style={{
+                width: '100%',
+                marginBottom: '8px'
+              }}
+            />
+            
+            {/* Min/Max display */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              fontSize: '12px',
+              color: '#666'
+            }}>
+              <span>Min: {(() => {
+                const { number_holes_per_row, edge_gap_scale_factor, row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter } = modelConfig;
+                const n = number_holes_per_row;
+                const maxHoleDiameter = Math.max(row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter);
+                const leftRightPadding = edge_gap_scale_factor * ((modelConfig.model_width - (n * maxHoleDiameter)) / (n + 1));
+                return Math.ceil((2.5 * (n - 1)) + (2 * leftRightPadding) + (n * maxHoleDiameter));
+              })()}mm</span>
+              <span>Max: 200mm</span>
+            </div>
+          </div>
+        </ModelInput>
+        <ModelInput>
+          <span>Model Depth (mm)</span>
+          <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 1 Hole Shape</span>
+          <select value={modelConfig.row_1_hole_shape} onChange={updateRow1HoleShape}>
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+          </select>
+        </ModelInput>
+        <ModelInput>
+          <span>Row 2 Hole Shape</span>
+          <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+          </select>
+        </ModelInput>
+        <ModelInput>
+          <span>Row 3 Hole Shape</span>
+          <select value={modelConfig.row_3_hole_shape} onChange={updateRow3HoleShape}>
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+          </select>
+        </ModelInput>
+        <ModelInput>
+          <span>Row 1 Hole Diameter (mm)</span>
+          <Input type="number" value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 2 Hole Diameter (mm)</span>
+          <Input type="number" value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 3 Hole Diameter (mm)</span>
+          <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 1 Bottle Height (mm)</span>
+          <Input type="number" value={modelConfig.row_1_bottle_height} onChange={updateRow1BottleHeight} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 2 Bottle Height (mm)</span>
+          <Input type="number" value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
+        </ModelInput>
+        <ModelInput>
+          <span>Row 3 Bottle Height (mm)</span>
+          <Input type="number" value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
+        </ModelInput>
       </LeftPanel>
       <CenterPanel>
         <h2>Preview</h2>

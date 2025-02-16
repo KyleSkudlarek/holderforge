@@ -158,8 +158,10 @@ const BottleThreeContainer = styled.div`
   border: 2px solid pink; /* Optional border for visualization */
 `;
 
-const BottleThreeViewer = () => {
+const BottleThreeViewer = ({modelConfig, rowIndex}) => {
   const mountRef = useRef(null);
+  const rendererRef = useRef(null);
+
   
 
   useEffect(() => {
@@ -177,20 +179,41 @@ const BottleThreeViewer = () => {
       0.1,
       1000
     );
-    camera.position.set(0, 0, 30);
+    camera.position.set(0, 0, 100);
 
 
     // Renderer Setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    mountRef.current.appendChild(renderer.domElement);
+    if (!rendererRef.current) {
+      rendererRef.current = new THREE.WebGLRenderer({ antialias: true });
+      rendererRef.current.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    }
+
+    // Ensure the renderer is attached to the DOM
+    if (!mountRef.current.contains(rendererRef.current.domElement)) {
+      mountRef.current.appendChild(rendererRef.current.domElement);
+    }
+
+    // Use rendererRef.current instead of a new variable
+    const renderer = rendererRef.current;
+
+
+
+
+    
 
     // Cylinder Geometry (Bottle Shape)
-    const geometry = new THREE.CylinderGeometry(5, 5, 20, 32);
+    const diameterKey = `row_${rowIndex}_hole_diameter`;
+    const heightKey = `row_${rowIndex}_bottle_height`;
+
+    const radius = modelConfig[diameterKey] / 2;
+    const height = modelConfig[heightKey];
+
+    const geometry = new THREE.CylinderGeometry(radius, radius, height, 32);
+    const cylinderColor = 0x006FFF;
     const material = new THREE.MeshStandardMaterial({ 
-      color:0x325AC9, 
+      color:cylinderColor, 
       transparent: true,   
-      opacity: 0.6,       // Reduce opacity for a more translucent look
+      opacity: 0.5,       // Reduce opacity for a more translucent look
       roughness: 1.0,     // Lower roughness for a glossier look   
       side: THREE.DoubleSide ,
     });
@@ -199,8 +222,9 @@ const BottleThreeViewer = () => {
 
     // Lighting
     // 3. Hemisphere Light (Sky-Ground Soft Lighting)
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x552200, 0.6); 
-    // First color = sky, Second color = ground reflection
+    const skyColor = 0xffffff; // White Light
+    const groundColor = 0xffffff; // White Light
+    const hemiLight = new THREE.HemisphereLight(skyColor, groundColor, 1);  // First color = sky, Second color = ground reflection
     scene.add(hemiLight);
 
 
@@ -225,7 +249,7 @@ const BottleThreeViewer = () => {
       renderer.dispose();
       mountRef.current.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [modelConfig]);
 
   return <BottleThreeContainer ref={mountRef} />;
 };
@@ -1603,7 +1627,7 @@ const GridPreview = () => {
             </ModelInput>
             </AccordionItemLeft>
             <AccordionItemRight>
-              <BottleThreeViewer/>
+              <BottleThreeViewer modelConfig={modelConfig} rowIndex={1}/>
             </AccordionItemRight>
           </AccordionItem>
           <AccordionItem>
@@ -1626,6 +1650,7 @@ const GridPreview = () => {
               </ModelInput>
           </AccordionItemLeft>  
           <AccordionItemRight>
+          <BottleThreeViewer modelConfig={modelConfig} rowIndex={2}/>
           </AccordionItemRight>
           </AccordionItem>
           <AccordionItem>
@@ -1648,6 +1673,7 @@ const GridPreview = () => {
             </ModelInput>
             </AccordionItemLeft>
             <AccordionItemRight>
+            <BottleThreeViewer modelConfig={modelConfig} rowIndex={3}/>
             </AccordionItemRight>
             </AccordionItem>
             </AccordionContainer>

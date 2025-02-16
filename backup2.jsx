@@ -215,7 +215,7 @@ const BottleThreeViewer = ({modelConfig, rowIndex}) => {
     // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.enableRotate = false; // Disable rotation
+    controls.enableRotate = true; // Disable rotation
     controls.enableZoom = false;   // Disable zoom
     controls.enablePan = false;    // Disable panning
 

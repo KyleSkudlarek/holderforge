@@ -21,6 +21,7 @@ import { measureBounds } from '@jscad/modeling/src/measurements';
 import { geom3 } from '@jscad/modeling/src/geometries';
 import { extrudeLinear } from '@jscad/modeling/src/operations/extrusions'
 import { Helmet } from "react-helmet";
+import Cuboid from './Cuboid'; 
 
 
 
@@ -136,20 +137,64 @@ const AccordionContainer = styled.div`
 const AccordionItem = styled.div`
   width: 100%;
   display: flex;
+  flex-direction: column;
+  height: auto;
+  
+`;
+
+const ShapeSummaryIcon = styled.div`
+  width: 20px;  
+  height: 20px;
+  display: flex;          
+  align-items: center;   
+  justify-content: center;
+
+
+  ${({ shape }) => shape === "circle" && `
+    border-radius: 50%;
+  `}
+
+  background: black;
+
+  margin-left: 5px;
+`;
+
+const AccordionHeader = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  background:white;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+
+  &:hover {
+    background: #eeeeee;
+  }
+`;
+
+const AccordionContent = styled.div`
+  display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
   flex-direction: row;
   height: 280px;
-  
+`;
+
+const AccordionSummary = styled.div`
+  display: flex;
+  gap: 10px;
+  color: grey;
 `;
 
 const AccordionItemLeft = styled.div`
   outline: 1px solid black; 
-  width: 50%;
+  width: 60%;
 `;
 
 const AccordionItemRight = styled.div`
   outline: 1px solid black;
   background: white;
-  width: 50%;
+  width: 40%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -160,10 +205,54 @@ const AccordionItemRight = styled.div`
 const BottleThreeContainer = styled.div`
   height: min(100%, 120px);
   aspect-ratio: 1 / 1; /* Ensures height always matches width */
-  background: grey; /* Ensures the container matches scene background */
+  background: white; /* Ensures the container matches scene background */
   outline: 1px solid black;
 
 `;
+
+
+const BottlePreviewContainer = styled.div`
+  height: min(100%, 120px);
+  aspect-ratio: 1 / 1; 
+  background: white; 
+  // outline: 1px solid black;
+  display: flex;
+  justify-content: center;
+
+`;
+
+
+const Rod = styled.div`
+  width: ${({ radius }) => radius * 2}px;
+  height: ${({ height }) => height}px;
+  background: radial-gradient(
+      ${({ radius }) => radius}px ${({ radius }) => radius / 2}px ellipse at 50% ${({ radius }) => radius / 2}px, 
+      #60a5fa 95%, 
+      transparent 100%, 
+      transparent
+    ),
+    #3b82f6;
+  border-radius: ${({ radius }) => radius * 2}px / ${({ radius }) => radius}px;
+
+`;
+
+
+
+const BottlePreview = ({ modelConfig, rowIndex }) => {
+  const diameter = modelConfig[`row_${rowIndex}_hole_diameter`];
+  const height = modelConfig[`row_${rowIndex}_bottle_height`];
+  const shape = modelConfig[`row_${rowIndex}_hole_shape`];
+
+  return (
+    <BottlePreviewContainer>
+      {shape === 'square' ? (
+        <Cuboid width={diameter} height={height} depth={diameter} />
+      ) : (
+        <Rod radius={diameter/2} height={height} />
+      )}
+    </BottlePreviewContainer>
+  );
+};
 
 const BottleThreeViewer = ({modelConfig, rowIndex}) => {
   const mountRef = useRef(null);
@@ -181,12 +270,12 @@ const BottleThreeViewer = ({modelConfig, rowIndex}) => {
 
     // Camera Setup
     const camera = new THREE.PerspectiveCamera(
-      75,
+      50,
       mountRef.current.clientWidth / mountRef.current.clientHeight,
       0.1,
       1000
     );
-    camera.position.set(0, 0, 100);
+    camera.position.set(50, 50, 150);
 
 
     // Renderer Setup
@@ -207,22 +296,22 @@ const BottleThreeViewer = ({modelConfig, rowIndex}) => {
 
 
     // Lighting
-    // const skyColor = 0xffffff; // White Light
-    // const groundColor = 0xffffff; // White Light
-    // const light = new THREE.HemisphereLight(skyColor, groundColor, 1);  // First color = sky, Second color = ground reflection
-    
-    
-    // const light = new THREE.DirectionalLight(0xffffff, 1);
-    // light.position.set(10, 90, 50);
-    // light.castShadow = true;
-
-    const light = new THREE.AmbientLight(0xffffff, 1); // soft white light
-    light.position.set(0, 0, 0);
-
-
-
-    
+    const skyColor = 0xffffff; // White Light
+    const groundColor = 0xffffff; // White Light
+    const light = new THREE.HemisphereLight(skyColor, groundColor, 1);  // First color = sky, Second color = ground reflection
     scene.add(light);
+    
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(10, 10, 10);
+    directionalLight.castShadow = true;
+       
+    scene.add(directionalLight);
+
+    // const ambientLight = new THREE.AmbientLight(0xffffff, 1); // soft white light
+    // ambientLight.position.set(10, 10, 10);
+
+    // scene.add(ambientLight);
 
 
 
@@ -266,8 +355,9 @@ const BottleThreeViewer = ({modelConfig, rowIndex}) => {
 
     // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableRotate = false;
     controls.enablePan = false;
-    controls.enableZoom = true;
+    controls.enableZoom = false;
     controls.enableDamping = true;
 
     // Animation Loop
@@ -310,7 +400,8 @@ const ModelInput = styled.div`
 `;
 
 const Input = styled.input`
-  width: 50px;
+  width: 40px;
+  margin-left: 6px;
 `;
 
 const InputRange = styled.input`
@@ -322,18 +413,23 @@ const InputSpan = styled.span`
 `;
 
 
-const InputShape = ({ modelConfig, onChange }) => {
+const InputShape = ({ modelConfig, onChange, rowIndex }) => {
+  
+      // Get row hole shape by rowIndex
+      const shapeKey = `row_${rowIndex}_hole_shape`;
+      const shape = modelConfig[shapeKey];
+
   return (
     <ShapeSelector>
       <ShapeOption 
-        $selected={modelConfig.row_1_hole_shape === "circle"} 
+        $selected={shape === "circle"} 
         onClick={() => onChange({ target: { value: "circle" } })}
       >
         <CircleIcon />
       </ShapeOption>
 
       <ShapeOption 
-        $selected={modelConfig.row_1_hole_shape === "square"} 
+        $selected={shape === "square"} 
         onClick={() => onChange({ target: { value: "square" } })}
       >
         <SquareIcon />
@@ -346,6 +442,7 @@ const InputShape = ({ modelConfig, onChange }) => {
 const ShapeSelector = styled.div`
   display: flex;
   gap: 10px;
+  margin-top: 5px;
 `;
 
 const ShapeOption = styled.div`
@@ -365,9 +462,6 @@ const ShapeOption = styled.div`
   }
 `;
 
-const HiddenRadio = styled.input`
-  display: none;
-`;
 
 const CircleIcon = styled.div`
   width: 20px;
@@ -383,6 +477,14 @@ const SquareIcon = styled.div`
 `;
 
 
+const HolderModelInputConntainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 40px; /* Adjust this value for custom spacing */
+
+  `;
 
 const CenterPanel = styled.div`
   outline: 1px solid black;
@@ -434,6 +536,19 @@ const CenterPanel = styled.div`
   }
 
 `;
+
+const ModelContainer = styled.div`
+  position: relative;  /* Creates positioning context for sliders */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
+const ModelWrapper = styled.div`
+
+`;
+
+
 
 const Model = styled.div`
   background: lightgrey;
@@ -533,7 +648,7 @@ const Hole = styled.div`
 
 const ModelProfile = styled.div`
 
-  margin-top: 20px;
+  margin-top: 70px;
 
   width: ${({ model_depth }) => model_depth}px;
   height: ${({ model_height }) => model_height}px;
@@ -1006,7 +1121,7 @@ const formatNumber = (value) => {
   return (Math.ceil(value * 10) / 10).toFixed(1);  // Round up to nearest 0.1 mm
 };
 
-const JscadViewer = ({ setExportScene, setStlURL, modelConfig, showBottles }) => {
+const JscadViewer = ({ setExportScene, setStlURL, modelConfig}) => {
   const mountRef = useRef(null);
 
   // generateSTL inside JscadViewer
@@ -1133,14 +1248,7 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig, showBottles }) =>
       let geometry = subtract(base, ...row1Holes);
 
 
-      // Create mock preview bottles for row 1
-      if (showBottles) {
-        console.log("Creating bottle geometries...");
-        const bottleGeometries = [];
-        // ... rest of bottle creation code ...
-      } else {
-        console.log("Bottles disabled - skipping bottle creation");
-      }
+      
       /////////////////////////////////////////////
       //  Tier 2 / Row 2
       /////////////////////////////////////////////
@@ -1387,7 +1495,7 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig, showBottles }) =>
     } catch (error) {
       console.error('JSCAD Render Error:', error);
     }
-  }, [setExportScene, modelConfig, showBottles]);
+  }, [setExportScene, modelConfig]);
 
   return <div ref={mountRef} />;
 };
@@ -1449,6 +1557,10 @@ const ThreeViewer = ({ stlURL }) => {
     const loader = new STLLoader();
     loader.load(stlURL,(geometry) => {
         const material = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, roughness: 0.6 });
+
+
+
+        
         const newMesh = new THREE.Mesh(geometry, material);
         newMesh.rotation.x = -Math.PI / 2; // Rotate STL to match JSCAD/CAD coordinate system
       
@@ -1479,8 +1591,13 @@ const GridPreview = () => {
   const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
   const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
-  const [showBottles, setShowBottles] = useState(false); // Add this line
+  const [openAccordions, setOpenAccordions] = useState({
+    bottle1: true,
+    bottle2: true,
+    bottle3: true
+  });
 
+  
 
 
   const generatePythonFile = () => {
@@ -1771,8 +1888,21 @@ const GridPreview = () => {
         <h2>Bottles To Hold</h2>
         <AccordionContainer>
           <AccordionItem>
+            <AccordionHeader onClick={() => setOpenAccordions(prev => ({
+              ...prev,
+              bottle1: !prev.bottle1
+            }))}>
+              <h3>Bottle 1</h3>
+              {!openAccordions.bottle1 && (
+                <AccordionSummary>
+                  {`${modelConfig.row_1_hole_diameter}mm × ${modelConfig.row_1_bottle_height}mm`}
+                  <ShapeSummaryIcon shape={modelConfig.row_1_hole_shape} />
+                </AccordionSummary>
+              )}
+              {openAccordions.bottle1 ? '▲' : '▼'}
+          </AccordionHeader>
+          <AccordionContent isOpen={openAccordions.bottle1}>
           <AccordionItemLeft>
-            <h3>Bottle 1</h3>
             <ModelInput>
               <InputSpan>
                 Diameter
@@ -1795,61 +1925,114 @@ const GridPreview = () => {
                 <option value="square">Square</option>
               </select>
               </InputSpan>
-              <InputShape modelConfig={modelConfig} onChange={updateRow1HoleShape} />
+              <InputShape modelConfig={modelConfig} onChange={updateRow1HoleShape} rowIndex={1} />
             </ModelInput>
               <InputSpan>
                 <span> Quantity: 5</span>
               </InputSpan>
             </AccordionItemLeft>
             <AccordionItemRight>
-              <BottleThreeViewer modelConfig={modelConfig} rowIndex={1}/>
+              <BottlePreview modelConfig={modelConfig} rowIndex={1} />
             </AccordionItemRight>
+            </AccordionContent>
           </AccordionItem>
           <AccordionItem>
-          <AccordionItemLeft>
-            <h3>Bottle 2</h3>
-              <ModelInput>
-                <span>Diameter</span>
-                <Input type="number" value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
-              </ModelInput>
-              <ModelInput>
-                <span>Height</span>
-                <Input type="number" value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
-              </ModelInput>
-              <ModelInput>
-                <span>Shape</span>
-                <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
-                  <option value="circle">Circle</option>
-                  <option value="square">Square</option>
-                </select>
-              </ModelInput>
-          </AccordionItemLeft>  
-          <AccordionItemRight>
-          <BottleThreeViewer modelConfig={modelConfig} rowIndex={2}/>
-          </AccordionItemRight>
+            <AccordionHeader onClick={() => setOpenAccordions(prev => ({
+                ...prev,
+                bottle2: !prev.bottle2
+              }))}>
+                <h3>Bottle 2</h3>
+                {!openAccordions.bottle2 && (
+                  <AccordionSummary>
+                    {`${modelConfig.row_2_hole_diameter}mm × ${modelConfig.row_2_bottle_height}mm`}
+                    <ShapeSummaryIcon shape={modelConfig.row_2_hole_shape} />
+                  </AccordionSummary>
+                )}
+                {openAccordions.bottle2 ? '▲' : '▼'}
+            </AccordionHeader>
+            <AccordionContent isOpen={openAccordions.bottle2}>
+              <AccordionItemLeft>
+                  <ModelInput>
+                    <InputSpan>
+                      Diameter
+                      <Input type="number" value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
+                    </InputSpan>
+                    <InputRange type ="range" min={12} max={25} value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
+                  </ModelInput>
+                  <ModelInput>
+                  <InputSpan>
+                    Height  
+                    <Input type="number" value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
+                  </InputSpan>
+                  <InputRange type="range" min={40} max={135} value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
+                </ModelInput>
+                <ModelInput>
+                  <InputSpan>
+                  <span>Shape</span>
+                  <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
+                    <option value="circle">Circle</option>
+                    <option value="square">Square</option>
+                  </select>
+                  </InputSpan>
+                  <InputShape modelConfig={modelConfig} onChange={updateRow2HoleShape} rowIndex={2} />
+                </ModelInput>
+                <InputSpan>
+                    <span> Quantity: 5</span>
+                  </InputSpan>
+              </AccordionItemLeft>  
+              <AccordionItemRight>
+              <BottlePreview modelConfig={modelConfig} rowIndex={2} />
+              </AccordionItemRight>
+          </AccordionContent>
           </AccordionItem>
           <AccordionItem>
+          <AccordionHeader onClick={() => setOpenAccordions(prev => ({
+              ...prev,
+              bottle3: !prev.bottle3
+            }))}>
+              <h3>Bottle 3</h3>
+              {!openAccordions.bottle3 && (
+                <AccordionSummary>
+                  {`${modelConfig.row_3_hole_diameter}mm × ${modelConfig.row_3_bottle_height}mm`}
+                  <ShapeSummaryIcon shape={modelConfig.row_3_hole_shape} />
+                </AccordionSummary>
+              )}
+              {openAccordions.bottle3 ? '▲' : '▼'}
+          </AccordionHeader>
+          <AccordionContent isOpen={openAccordions.bottle3}>
             <AccordionItemLeft>
-            <h3>Bottle 3</h3>
             <ModelInput>
-              <span>Diameter</span>
-              <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
+              <InputSpan>
+                Diameter
+                <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
+              </InputSpan>
+              <InputRange type ="range" min={12} max={25} value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
             </ModelInput>
             <ModelInput>
-              <span>Height</span>
-              <Input type="number" value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
+              <InputSpan>
+                Height  
+                <Input type="number" value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
+              </InputSpan>
+              <InputRange type="range" min={40} max={135} value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
             </ModelInput>
             <ModelInput>
+              <InputSpan>
               <span>Shape</span>
               <select value={modelConfig.row_3_hole_shape} onChange={updateRow3HoleShape}>
                 <option value="circle">Circle</option>
                 <option value="square">Square</option>
               </select>
+              </InputSpan>
+              <InputShape modelConfig={modelConfig} onChange={updateRow3HoleShape} rowIndex={3} />
             </ModelInput>
+              <InputSpan>
+                <span> Quantity: 5</span>
+              </InputSpan>
             </AccordionItemLeft>
             <AccordionItemRight>
-            <BottleThreeViewer modelConfig={modelConfig} rowIndex={3}/>
+              <BottlePreview modelConfig={modelConfig} rowIndex={3} />
             </AccordionItemRight>
+            </AccordionContent>
             </AccordionItem>
             </AccordionContainer>
 
@@ -1857,57 +2040,68 @@ const GridPreview = () => {
 
 
           <h2>Customize Holder</h2>
-          <ModelInput>
-            <span>Model Width (mm)</span>
-            <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
-          </ModelInput>
-          <ModelInput>
-            <span>Model Depth (mm)</span>
-            <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
-          </ModelInput>
+          <HolderModelInputConntainer>
+            <ModelInput>
+                <InputSpan>
+                  Holder Width  
+                  <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
+                </InputSpan>
+                <InputRange type="range" min={50} max={200} value={modelConfig.model_width} onChange={updateModelWidth} />
+              </ModelInput>
+              <ModelInput>
+                <InputSpan>
+                  Holder Depth  
+                  <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
+                </InputSpan>
+                <InputRange type="range" min={50} max={200} value={modelConfig.model_depth} onChange={updateModelDepth} />
+              </ModelInput>
+            </HolderModelInputConntainer>
 
       </LeftPanel>
       <CenterPanel>
         <h2>Preview</h2>
-        <Model
-            model_width={modelConfig.model_width * modelConfig.mm2pixel}
-            model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
-        >
-          <Row3 depth={modelConfig.row_3_depth * modelConfig.mm2pixel} 
-                paddingLeftRight={modelConfig.row_3_padding_left_right * modelConfig.mm2pixel}
-                paddingTopBottom={modelConfig.row_3_padding_top_bottom * modelConfig.mm2pixel}
-                holeGap={modelConfig.row_3_inner_gap * modelConfig.mm2pixel}
+        <ModelContainer>
+          <ModelWrapper>
+            <Model
+              model_width={modelConfig.model_width * modelConfig.mm2pixel}
+              model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
           >
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-          </Row3>
-          <Row2 depth={modelConfig.row_2_depth * modelConfig.mm2pixel}
-                paddingLeftRight={modelConfig.row_2_padding_left_right * modelConfig.mm2pixel}
-                paddingTopBottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
-                holeGap={modelConfig.row_2_inner_gap * modelConfig.mm2pixel}
-          >
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-          </Row2>
-          <Row1 depth={modelConfig.row_1_depth * modelConfig.mm2pixel} 
-                paddingLeftRight={modelConfig.row_1_padding_left_right * modelConfig.mm2pixel}
-                paddingTopBottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
-                holeGap={modelConfig.row_1_inner_gap * modelConfig.mm2pixel}
-          >
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-          </Row1>  
-
-        </Model>
+            <Row3 depth={modelConfig.row_3_depth * modelConfig.mm2pixel} 
+                  paddingLeftRight={modelConfig.row_3_padding_left_right * modelConfig.mm2pixel}
+                  paddingTopBottom={modelConfig.row_3_padding_top_bottom * modelConfig.mm2pixel}
+                  holeGap={modelConfig.row_3_inner_gap * modelConfig.mm2pixel}
+            >
+              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
+              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
+              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
+              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
+              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
+            </Row3>
+            <Row2 depth={modelConfig.row_2_depth * modelConfig.mm2pixel}
+                  paddingLeftRight={modelConfig.row_2_padding_left_right * modelConfig.mm2pixel}
+                  paddingTopBottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
+                  holeGap={modelConfig.row_2_inner_gap * modelConfig.mm2pixel}
+            >
+              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
+              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
+              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
+              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
+              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
+            </Row2>
+            <Row1 depth={modelConfig.row_1_depth * modelConfig.mm2pixel} 
+                  paddingLeftRight={modelConfig.row_1_padding_left_right * modelConfig.mm2pixel}
+                  paddingTopBottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
+                  holeGap={modelConfig.row_1_inner_gap * modelConfig.mm2pixel}
+            >
+              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
+              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
+              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
+              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
+              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
+            </Row1>  
+            </Model>
+          </ModelWrapper>
+        </ModelContainer>
         <ModelProfile
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
             model_height={modelConfig.model_height * modelConfig.mm2pixel}
@@ -1952,17 +2146,8 @@ const GridPreview = () => {
             </ModelProfileHole>
           </ModelProfileTier>  
         </ModelProfile>
-        <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} showBottles={showBottles} />
+        <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} />
         <ThreeViewer stlURL={stlURL} />
-        <PreviewCheckbox>
-          <input
-            type="checkbox"
-            id="showBottles"
-            checked={showBottles}
-            onChange={(e) => setShowBottles(e.target.checked)}
-          />
-          <label htmlFor="showBottles">Show Bottle Previews</label>
-        </PreviewCheckbox>
       </CenterPanel>
       <RightPanel>
         <DownloadDiv>

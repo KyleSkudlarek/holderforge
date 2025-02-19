@@ -1,6 +1,8 @@
 import React, {useEffect} from "react";
 import { Provider } from "jotai";
 import GridPreview from "./GridPreview";
+import { ThemeProvider } from "styled-components";
+import { theme } from "./theme";
 
 function App() {
 
@@ -17,9 +19,11 @@ function App() {
 
 
   return (
-    <Provider>
-        <GridPreview />
-    </Provider>
+    <ThemeProvider theme={theme}> {/* Wrap ThemeProvider around Jotai Provider */}
+      <Provider>
+          <GridPreview />
+      </Provider>
+    </ThemeProvider>
   );
 }
 

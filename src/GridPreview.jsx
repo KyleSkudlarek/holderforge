@@ -170,7 +170,12 @@ const AccordionItem = styled.div`
   background: ${({ theme }) => theme.colors.background};
   border-bottom: 1px solid ${({ theme }) => theme.colors.outline};
   padding-top: 10px;
-  padding-bottom: 10px;
+  padding-bottom: 20px;
+  border-sizing: border-box;
+
+  span {
+    padding-bottom: 10px;
+  }
   
 `;
 
@@ -227,13 +232,15 @@ const AccordionSummary = styled.div`
 `;
 
 const AccordionItemLeft = styled.div`
-  outline: 1px solid black; 
+
   width: 60%;
   color: ${({ theme }) => theme.colors.headerSecondary};
+  padding-left: 40px;
+  padding-top: 20px;
 `;
 
 const AccordionItemRight = styled.div`
-  outline: 1px solid black;
+
   background: ${({ theme }) => theme.colors.background};
   width: 40%;
   display: flex;
@@ -249,7 +256,6 @@ const BottleThreeContainer = styled.div`
   height: min(100%, 120px);
   aspect-ratio: 1 / 1; /* Ensures height always matches width */
   background: white; /* Ensures the container matches scene background */
-  outline: 1px solid black;
 
 `;
 
@@ -323,7 +329,7 @@ const BottleThreeViewer = ({modelConfig, rowIndex}) => {
 
     // Scene Setup
     const scene = new THREE.Scene();
-    const backgroundColor = 0xffffff;
+    const backgroundColor = 0x272727;
     scene.background = new THREE.Color(backgroundColor);
 
     // Camera Setup
@@ -446,7 +452,7 @@ const ModelInput = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-bottom:7px;
+  padding-bottom:10px;
   font-size: 14px;
   font-weight: bold;
 
@@ -466,10 +472,12 @@ const Input = styled.input`
 const InputRange = styled.input`
   width: 90%;
   color: ${({ theme }) => theme.colors.headerSecondary};
+
 `;
 
 const InputSpan = styled.span`
   margin-right: 6px;
+  padding-bottom: 10px;
   color: ${({ theme }) => theme.colors.headerSecondary};
 `;
 
@@ -504,6 +512,8 @@ const ShapeSelector = styled.div`
   display: flex;
   gap: 10px;
   margin-top: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 `;
 
 const ShapeOption = styled.div`
@@ -544,15 +554,19 @@ const HolderModelInputConntainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
+
   align-items: center;
-  gap: 40px; /* Adjust this value for custom spacing */
   padding-top: 20px;
   padding-left: 20px;
+  padding-right: 20px;
+  box-sizing: border-box;
+  
 
   `;
 
 const HolderModelInput = styled.div`
   color: ${({ theme }) => theme.colors.headerSecondary};
+  padding-left: 20px;
 
 `;
 
@@ -917,7 +931,7 @@ const DownloadDiv = styled.div`
   flex-direction: column;
   border-top: 4px solid ${({ theme }) => theme.colors.outline};
   border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
-  padding-bottom: 20px;
+  padding-bottom: 40px;
   padding-left: 20px;
 
   /* Tablet 900-1250*/
@@ -2022,7 +2036,7 @@ const GridPreview = () => {
                   Diameter
                   <Input type="number" value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
                 </InputSpan>
-                <InputRange type ="range" min={10} max={40} value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
+                <InputRange type ="range" min={10} max={30} value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
               </ModelInput>
               <ModelInput>
                 <InputSpan>
@@ -2034,10 +2048,6 @@ const GridPreview = () => {
               <ModelInput>
                 <InputSpan>
                 <span>Shape</span>
-                <select value={modelConfig.row_1_hole_shape} onChange={updateRow1HoleShape}>
-                  <option value="circle">Circle</option>
-                  <option value="square">Square</option>
-                </select>
                 </InputSpan>
                 <InputShape modelConfig={modelConfig} onChange={updateRow1HoleShape} rowIndex={1} />
               </ModelInput>
@@ -2071,7 +2081,7 @@ const GridPreview = () => {
                         Diameter
                         <Input type="number" value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
                       </InputSpan>
-                      <InputRange type ="range" min={10} max={40} value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
+                      <InputRange type ="range" min={10} max={30} value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
                     </ModelInput>
                     <ModelInput>
                     <InputSpan>
@@ -2083,10 +2093,6 @@ const GridPreview = () => {
                   <ModelInput>
                     <InputSpan>
                     <span>Shape</span>
-                    <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
-                      <option value="circle">Circle</option>
-                      <option value="square">Square</option>
-                    </select>
                     </InputSpan>
                     <InputShape modelConfig={modelConfig} onChange={updateRow2HoleShape} rowIndex={2} />
                   </ModelInput>
@@ -2120,7 +2126,7 @@ const GridPreview = () => {
                   Diameter
                   <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
                 </InputSpan>
-                <InputRange type ="range" min={10} max={40} value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
+                <InputRange type ="range" min={10} max={30} value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
               </ModelInput>
               <ModelInput>
                 <InputSpan>
@@ -2132,10 +2138,6 @@ const GridPreview = () => {
               <ModelInput>
                 <InputSpan>
                 <span>Shape</span>
-                <select value={modelConfig.row_3_hole_shape} onChange={updateRow3HoleShape}>
-                  <option value="circle">Circle</option>
-                  <option value="square">Square</option>
-                </select>
                 </InputSpan>
                 <InputShape modelConfig={modelConfig} onChange={updateRow3HoleShape} rowIndex={3} />
               </ModelInput>

@@ -160,6 +160,12 @@ const AccordionContainer = styled.div`
   padding-top: 20px;
 `;
 
+
+const AccordionHolderContainer = styled.div`
+  width: 100%;
+  padding-top: 20px;
+`;
+
 const AccordionItem = styled.div`
   width: 100%;
   display: flex;
@@ -179,6 +185,23 @@ const AccordionItem = styled.div`
   
 `;
 
+const AccordionHolderItem = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 20px;
+  max-height: 200px;
+  background: ${({ theme }) => theme.colors.background};
+ 
+  border-sizing: border-box;
+
+  span {
+    padding-bottom: 10px;
+  }
+  
+`;
+
 const ShapeSummaryIcon = styled.div`
   width: 20px;  
   height: 20px;
@@ -190,6 +213,20 @@ const ShapeSummaryIcon = styled.div`
   ${({ shape }) => shape === "circle" && `
     border-radius: 50%;
   `}
+
+  background: ${({ theme }) => theme.colors.headerSecondary};
+
+  margin-left: 5px;
+`;
+
+
+const HolderSummaryIcon = styled.div`
+  width: ${({ width }) => width/3}px;  
+  height: ${({ height }) => height/3}px;
+  border-radius: 5%;
+  display: flex;          
+  align-items: center;   
+  justify-content: center;
 
   background: ${({ theme }) => theme.colors.headerSecondary};
 
@@ -219,17 +256,57 @@ const AccordionHeader = styled.div`
   }
 `;
 
+const AccordionHolderHeader = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  color: ${({ theme }) => theme.colors.headerSecondary};
+  height: auto;
+  min-height: 40px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: ${({ theme }) => theme.colors.background};
+  padding-right: 20px;
+
+  h3 {
+    color: ${({ theme }) => theme.colors.headerSecondary};
+    padding: 0;
+    padding-left: 40px;
+    margin: 0;
+    font-size: 16px;
+  }
+`;
+
 const AccordionContent = styled.div`
   display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
   flex-direction: row;
   height: 280px;
 `;
 
+const AccordionHolderContent = styled.div`
+  display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
+  flex-direction: row;
+  height: 100px;
+`;
+
 const AccordionSummary = styled.div`
   display: flex;
+  align-items: center;
   gap: 10px;
   color: ${({ theme }) => theme.colors.headerSecondary};
 `;
+
+const AccordionHolderSummary = styled.div`
+  display: flex;
+  margin-left: -10px;
+  gap: 10px;
+  align-items: center;
+  color: ${({ theme }) => theme.colors.headerSecondary};
+`;
+
+
 
 const AccordionItemLeft = styled.div`
 
@@ -239,7 +316,27 @@ const AccordionItemLeft = styled.div`
   padding-top: 20px;
 `;
 
+const AccordionHolderItemLeft = styled.div`
+
+  width: 60%;
+  color: ${({ theme }) => theme.colors.headerSecondary};
+  padding-left: 20px;
+  padding-top: 20px;
+`;
+
 const AccordionItemRight = styled.div`
+
+  background: ${({ theme }) => theme.colors.background};
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+`;
+
+
+const AccordionHolderItemRight = styled.div`
 
   background: ${({ theme }) => theme.colors.background};
   width: 40%;
@@ -549,24 +646,26 @@ const SquareIcon = styled.div`
 `;
 
 
-const HolderModelInputConntainer = styled.div`
+const HolderModelInputContainer = styled.div`
   width: 100%;
   display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-
-  align-items: center;
+  flex-direction: column;
   padding-top: 20px;
   padding-left: 20px;
   padding-right: 20px;
   box-sizing: border-box;
-  
+
+  h3  {
+    padding-left: 20px;
+  }
+
 
   `;
 
 const HolderModelInput = styled.div`
   color: ${({ theme }) => theme.colors.headerSecondary};
   padding-left: 20px;
+  padding-bottom: 20px;
 
 `;
 
@@ -1676,7 +1775,8 @@ const GridPreview = () => {
   const [openAccordions, setOpenAccordions] = useState({
     bottle1: false,
     bottle2: false,
-    bottle3: false
+    bottle3: false,
+    holder: false 
   });
 
   // Add the function here, before any event handlers
@@ -2154,21 +2254,42 @@ const GridPreview = () => {
         </BottleInputContainer>
 
 
-        <HolderModelInputConntainer>     
+        <HolderModelInputContainer>     
           <h2>Holder</h2>
-            <HolderModelInput>
-                <InputSpan>
-                  Holder Width  
-                  <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
-                </InputSpan>             
-            </HolderModelInput>
-            <HolderModelInput>
-                <InputSpan>
-                  Holder Depth  
-                  <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
-                </InputSpan>
-              </HolderModelInput>
-          </HolderModelInputConntainer>
+          <AccordionHolderContainer>
+            <AccordionHolderItem>
+              <AccordionHolderHeader onClick={() => setOpenAccordions(prev => ({
+                ...prev,
+                holder: !prev.holder
+              }))}>
+                <h3>Dimensions</h3>
+                {!openAccordions.holder && (
+                  <AccordionHolderSummary>
+                    {`${modelConfig.model_width}mm × ${modelConfig.model_depth}mm`}
+                    <HolderSummaryIcon width={modelConfig.model_width} height={modelConfig.model_height} />
+                  </AccordionHolderSummary>
+                )}
+                {openAccordions.holder ? '▲' : '▼'}
+              </AccordionHolderHeader>
+              <AccordionHolderContent isOpen={openAccordions.holder}>
+                <AccordionHolderItemLeft>
+                  <ModelInput>
+                    <InputSpan>
+                      Width  
+                      <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
+                    </InputSpan>
+                  </ModelInput>
+                  <ModelInput>
+                    <InputSpan>
+                      Depth  
+                      <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
+                    </InputSpan>
+                  </ModelInput>
+                </AccordionHolderItemLeft>
+              </AccordionHolderContent>
+            </AccordionHolderItem>
+          </AccordionHolderContainer>
+        </HolderModelInputContainer>
 
       </LeftPanel>
       <CenterPanel>

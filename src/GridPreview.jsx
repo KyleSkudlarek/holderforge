@@ -103,6 +103,143 @@ const Header = styled.header`
   }
 `;
 
+
+// NEW: Container for the number input with increment/decrement buttons
+const NumberInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 6px;
+  padding-top: 10px;
+`;
+
+// NEW: Modified input style specifically for number inputs
+const StyledInput = styled.input`
+  width: 40px;
+  text-align: center;
+  -moz-appearance: textfield; /* Firefox */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+`;
+
+// NEW: Button style for increment/decrement buttons
+const IncrementButton = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid ${({ theme }) => theme.colors.outline || '#ccc'};
+  background: ${({ theme }) => theme.colors.background || 'white'};
+  color: ${({ theme }) => theme.colors.headerSecondary || 'black'};
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none; /* Safari support */
+  -webkit-touch-callout: none; /* iOS Safari */
+  border-radius: 2px;
+  touch-action: manipulation; /* Optimize for touch */
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.highlightSecondary || '#e0e0e0'};
+  }
+  
+  &:active {
+    background: ${({ theme }) => theme.colors.highlightPrimary || '#d0d0d0'};
+  }
+`;
+
+
+// NEW: Reusable NumberInput component with increment/decrement buttons
+// UPDATED: NumberInput component with continuous increment/decrement on button hold
+// UPDATED: Simplified NumberInput component with continuous increment/decrement
+const NumberInput = ({ value, onChange, min, max, step = 1 }) => {
+  const [intervalId, setIntervalId] = useState(null);
+  const currentValueRef = useRef(value);
+  
+  // Update ref when value changes
+  useEffect(() => {
+    currentValueRef.current = value;
+  }, [value]);
+  
+  const handleIncrement = () => {
+    const currentValue = currentValueRef.current;
+    const newValue = Math.min(max || Infinity, parseInt(currentValue) + step);
+    onChange({ target: { value: newValue } });
+  };
+
+  const handleDecrement = () => {
+    const currentValue = currentValueRef.current;
+    const newValue = Math.max(min || 0, parseInt(currentValue) - step);
+    onChange({ target: { value: newValue } });
+  };
+  
+  const startIncrement = (e) => {
+    // Prevent default behavior (text selection, context menu, etc.)
+    e.preventDefault();
+    
+    handleIncrement();
+    const id = setInterval(handleIncrement, 150);
+    setIntervalId(id);
+  };
+  
+  const startDecrement = (e) => {
+    // Prevent default behavior
+    e.preventDefault();
+    
+    handleDecrement();
+    const id = setInterval(handleDecrement, 150);
+    setIntervalId(id);
+  };
+  
+  const stopContinuous = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  };
+  
+  // Clear interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [intervalId]);
+
+  return (
+    <NumberInputContainer>
+      <IncrementButton 
+        onMouseDown={startDecrement}
+        onMouseUp={stopContinuous}
+        onMouseLeave={stopContinuous}
+        onTouchStart={startDecrement}
+        onTouchEnd={stopContinuous}
+        onTouchCancel={stopContinuous}
+      >
+        −
+      </IncrementButton>
+      <StyledInput 
+        type="text"
+        value={value} 
+        readOnly={true}
+      />
+      <IncrementButton 
+        onMouseDown={startIncrement}
+        onMouseUp={stopContinuous}
+        onMouseLeave={stopContinuous}
+        onTouchStart={startIncrement}
+        onTouchEnd={stopContinuous}
+        onTouchCancel={stopContinuous}
+      >
+        +
+      </IncrementButton>
+    </NumberInputContainer>
+  );
+};
+
 const Footer = styled.footer`
   grid-area: footer;
   background: ${({ theme }) => theme.colors.background};
@@ -172,7 +309,7 @@ const AccordionItem = styled.div`
   flex-direction: column;
   height: auto;
   min-height: 40px;
-  max-height: 300px;
+  max-height: 450px;
   background: ${({ theme }) => theme.colors.background};
   border-bottom: 1px solid ${({ theme }) => theme.colors.outline};
   padding-top: 10px;
@@ -191,7 +328,7 @@ const AccordionHolderItem = styled.div`
   flex-direction: column;
   height: auto;
   min-height: 20px;
-  max-height: 200px;
+  max-height: 250px;
   background: ${({ theme }) => theme.colors.background};
  
   border-sizing: border-box;
@@ -221,8 +358,8 @@ const ShapeSummaryIcon = styled.div`
 
 
 const HolderSummaryIcon = styled.div`
-  width: ${({ width }) => width/3}px;  
-  height: ${({ height }) => height/3}px;
+  width: 30px;  
+  height: 20px;
   border-radius: 5%;
   display: flex;          
   align-items: center;   
@@ -282,13 +419,13 @@ const AccordionHolderHeader = styled.div`
 const AccordionContent = styled.div`
   display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
   flex-direction: row;
-  height: 280px;
+  height: 340px;
 `;
 
 const AccordionHolderContent = styled.div`
   display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
   flex-direction: row;
-  height: 100px;
+  height: 400px;
 `;
 
 const AccordionSummary = styled.div`
@@ -345,6 +482,23 @@ const AccordionHolderItemRight = styled.div`
   align-items: center;
   justify-content: center;
 
+`;
+
+
+const AutofitButton = styled.button`
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: ${({ theme }) => theme.colors.highlightPrimary};
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.3s;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.highlightSecondary};
+  }
 `;
 
 
@@ -1810,18 +1964,30 @@ const GridPreview = () => {
   };
 
   const autoFitHolderDimensions = () => {
-    // Ensure we use the latest state
-    const { model_width, model_depth } = computeRequiredModelDimensions(modelConfig.row_1_hole_diameter, modelConfig);
-  
-    console.log("Computed Width:", model_width);
-    console.log("Computed Depth:", model_depth);
-    console.log("Current Width:", modelConfig.model_width);
-    console.log("Current Depth:", modelConfig.model_depth);
-  
+    // Get the largest hole diameter among all rows
+    const maxHoleDiameter = Math.max(
+      modelConfig.row_1_hole_diameter, 
+      modelConfig.row_2_hole_diameter, 
+      modelConfig.row_3_hole_diameter
+    );
+    
+    // Calculate minimum dimensions directly
+    const n = modelConfig.number_holes_per_row;
+    const minInnerGap = 2.75;
+    const minLeftRightPadding = minInnerGap * modelConfig.edge_gap_scale_factor;
+    
+    const minModelWidth = Math.ceil((minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter));
+    const minModelDepth = Math.ceil(3 * (8 + maxHoleDiameter));
+    
+    console.log("Autofit - Max Hole Diameter:", maxHoleDiameter);
+    console.log("Autofit - Calculated Min Width:", minModelWidth);
+    console.log("Autofit - Calculated Min Depth:", minModelDepth);
+    
+    // Directly update the state with calculated minimum values
     setUserConfig((prev) => ({
       ...prev,
-      model_width,  // Force update with computed width
-      model_depth,  // Force update with computed depth
+      model_width: minModelWidth,
+      model_depth: minModelDepth,
     }));
   };
   
@@ -2101,6 +2267,13 @@ const GridPreview = () => {
   return (
     <>
       <Helmet>
+        <style>
+          {`
+            * {
+              -webkit-tap-highlight-color: transparent;
+            }
+          `}
+        </style>
         <title>HolderForge</title>
         <meta name="description" content="HolderForge lets you design and customize holders and organizers for cologne, perfume, makeup, lipstick, concealers, bottles and more. Custom fit organization. Perfect for travel, home organization, and keeping your fragrance and cosmetics collection secure and organized. " />
         <meta name="keywords" content="custom holder, custom organizer, 3D printed model generator for bottle holders, custom cologne holders, custom perfume holders, custom bottle holders, makeup organizers, travel cologne holders, lipstick organizer" />
@@ -2113,7 +2286,7 @@ const GridPreview = () => {
       </Header>
       <LeftPanel>
         <BottleInputContainer>
-          <h2>Bottles To Hold</h2>
+          <h2>Bottle Sizes To Hold</h2>
           <AccordionContainer>
             <AccordionItem>
               <AccordionHeader onClick={() => setOpenAccordions(prev => ({
@@ -2131,20 +2304,32 @@ const GridPreview = () => {
             </AccordionHeader>
             <AccordionContent isOpen={openAccordions.bottle1}>
             <AccordionItemLeft>
-              <ModelInput>
-                <InputSpan>
-                  Diameter
-                  <Input type="number" value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
-                </InputSpan>
-                <InputRange type ="range" min={10} max={30} value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
-              </ModelInput>
-              <ModelInput>
-                <InputSpan>
-                  Height  
-                  <Input type="number" value={modelConfig.row_1_bottle_height} onChange={updateRow1BottleHeight} />
-                </InputSpan>
-                <InputRange type="range" min={40} max={135} value={modelConfig.row_1_bottle_height} onChange={updateRow1BottleHeight} />
-              </ModelInput>
+            <ModelInput>
+              <InputSpan>
+                Diameter
+                <NumberInput 
+                  value={modelConfig.row_1_hole_diameter} 
+                  onChange={updateRow1HoleDiameter} 
+                  min={10} 
+                  max={30}
+                  step={1}
+                />
+              </InputSpan>
+              <InputRange type="range" min={10} max={30} value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
+            </ModelInput>
+            <ModelInput>
+              <InputSpan>
+                Height  
+                <NumberInput 
+                  value={modelConfig.row_1_bottle_height} 
+                  onChange={updateRow1BottleHeight} 
+                  min={40} 
+                  max={135}
+                  step={1}
+                />
+              </InputSpan>
+              <InputRange type="range" min={40} max={135} value={modelConfig.row_1_bottle_height} onChange={updateRow1BottleHeight} />
+            </ModelInput>
               <ModelInput>
                 <InputSpan>
                 <span>Shape</span>
@@ -2176,20 +2361,32 @@ const GridPreview = () => {
               </AccordionHeader>
               <AccordionContent isOpen={openAccordions.bottle2}>
                 <AccordionItemLeft>
-                    <ModelInput>
-                      <InputSpan>
-                        Diameter
-                        <Input type="number" value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
-                      </InputSpan>
-                      <InputRange type ="range" min={10} max={30} value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
-                    </ModelInput>
-                    <ModelInput>
-                    <InputSpan>
-                      Height  
-                      <Input type="number" value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
-                    </InputSpan>
-                    <InputRange type="range" min={40} max={135} value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
-                  </ModelInput>
+                <ModelInput>
+                  <InputSpan>
+                    Diameter
+                    <NumberInput 
+                      value={modelConfig.row_2_hole_diameter} 
+                      onChange={updateRow2HoleDiameter} 
+                      min={10} 
+                      max={30}
+                      step={1}
+                    />
+                  </InputSpan>
+                  <InputRange type="range" min={10} max={30} value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
+                </ModelInput>
+                <ModelInput>
+                  <InputSpan>
+                    Height  
+                    <NumberInput 
+                      value={modelConfig.row_2_bottle_height} 
+                      onChange={updateRow2BottleHeight} 
+                      min={40} 
+                      max={135}
+                      step={1}
+                    />
+                  </InputSpan>
+                  <InputRange type="range" min={40} max={135} value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
+                </ModelInput>
                   <ModelInput>
                     <InputSpan>
                     <span>Shape</span>
@@ -2224,14 +2421,26 @@ const GridPreview = () => {
               <ModelInput>
                 <InputSpan>
                   Diameter
-                  <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
+                  <NumberInput 
+                    value={modelConfig.row_3_hole_diameter} 
+                    onChange={updateRow3HoleDiameter} 
+                    min={10} 
+                    max={30}
+                    step={1}
+                  />
                 </InputSpan>
-                <InputRange type ="range" min={10} max={30} value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
+                <InputRange type="range" min={10} max={30} value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
               </ModelInput>
               <ModelInput>
                 <InputSpan>
                   Height  
-                  <Input type="number" value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
+                  <NumberInput 
+                    value={modelConfig.row_3_bottle_height} 
+                    onChange={updateRow3BottleHeight} 
+                    min={40} 
+                    max={135}
+                    step={1}
+                  />
                 </InputSpan>
                 <InputRange type="range" min={40} max={135} value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
               </ModelInput>
@@ -2276,15 +2485,28 @@ const GridPreview = () => {
                   <ModelInput>
                     <InputSpan>
                       Width  
-                      <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
+                      <NumberInput 
+                        value={modelConfig.model_width} 
+                        onChange={updateModelWidth} 
+                        min={10} 
+                        max={300} 
+                      />
                     </InputSpan>
                   </ModelInput>
                   <ModelInput>
                     <InputSpan>
                       Depth  
-                      <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
+                      <NumberInput 
+                        value={modelConfig.model_depth} 
+                        onChange={updateModelDepth} 
+                        min={10} 
+                        max={300}
+                      />
                     </InputSpan>
                   </ModelInput>
+                  <AutofitButton onClick={autoFitHolderDimensions}>
+                    Autofit
+                  </AutofitButton>
                 </AccordionHolderItemLeft>
               </AccordionHolderContent>
             </AccordionHolderItem>

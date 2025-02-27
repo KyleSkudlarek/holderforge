@@ -21,14 +21,13 @@ import { measureBounds } from '@jscad/modeling/src/measurements';
 import { geom3 } from '@jscad/modeling/src/geometries';
 import { extrudeLinear } from '@jscad/modeling/src/operations/extrusions'
 import { Helmet } from "react-helmet";
-import Cuboid from './Cuboid'; 
 
 
 
 
 const breakpoints = {
-  laptop: '1300px',
-  largeTablet: '1000px',
+  laptop: '1250px',
+  largeTablet: '900px',
   smallTablet: '700px',
   mobile: '500px',
 };
@@ -42,8 +41,8 @@ const GridLayout = styled.div`
   overflow-x: hidden;   
 
 
-  grid-template-columns: 4fr 5fr 5fr;
-  grid-template-rows: auto 1fr 0px;
+  grid-template-columns: 3fr 5fr 5fr;
+  grid-template-rows: auto 1fr 100px;
   grid-template-areas:
     "header header header"
     "left center right"
@@ -52,18 +51,18 @@ const GridLayout = styled.div`
   /* Large Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
     grid-template-columns: 5fr 6fr;
-    grid-template-rows: auto 1fr auto 100px;
+    grid-template-rows: auto 1fr auto 50px;
     grid-template-areas:
       "header header"
       "left center"
       "right center"
-      "right center";
+      "footer footer";
   }
 
   /* Mobile <900*/
   @media (max-width: ${breakpoints.largeTablet}) {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto 0px;
+    grid-template-rows: auto auto 1fr auto 100px;
     grid-template-areas:
       "header"
       "left"
@@ -75,509 +74,92 @@ const GridLayout = styled.div`
 
 const Header = styled.header`
   grid-area: header;
-  min-height: 90px;
-
-
-  background: ${({ theme }) => theme.colors.background};
-  border-bottom: 8px solid ${({ theme }) => theme.colors.outline};
-  box-sizing: border-box;
-
+  background: white;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   padding-left: 0px;
-
+  color: black;
   h1 {
-    color: ${({ theme }) => theme.colors.headerLogo};
-    margin: 0;
-    padding-bottom: 0;
-    padding-top: 10px;
-    padding-left: 20px;
-    font-size: 34px;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
   }
-
   h2 {
-    color: ${({ theme }) => theme.colors.headerSecondary};
-    margin: 0;
-    padding: 0;
-    font-size: 14px;
-    padding-left: 20px;
+    color: grey;
+    margin-top: 0px;
+    padding-top: 0px;
   }
 `;
-
-
-// NEW: Container for the number input with increment/decrement buttons
-const NumberInputContainer = styled.div`
-  display: flex;
-  align-items: center;
-  margin-left: 6px;
-  padding-top: 10px;
-`;
-
-// NEW: Modified input style specifically for number inputs
-const StyledInput = styled.input`
-  width: 40px;
-  text-align: center;
-  -moz-appearance: textfield; /* Firefox */
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-`;
-
-// NEW: Button style for increment/decrement buttons
-const IncrementButton = styled.button`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 20px;
-  height: 20px;
-  border: 1px solid ${({ theme }) => theme.colors.outline || '#ccc'};
-  background: ${({ theme }) => theme.colors.background || 'white'};
-  color: ${({ theme }) => theme.colors.headerSecondary || 'black'};
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none; /* Safari support */
-  -webkit-touch-callout: none; /* iOS Safari */
-  border-radius: 2px;
-  touch-action: manipulation; /* Optimize for touch */
-  
-  &:hover {
-    background: ${({ theme }) => theme.colors.highlightSecondary || '#e0e0e0'};
-  }
-  
-  &:active {
-    background: ${({ theme }) => theme.colors.highlightPrimary || '#d0d0d0'};
-  }
-`;
-
-
-// NEW: Reusable NumberInput component with increment/decrement buttons
-// UPDATED: NumberInput component with continuous increment/decrement on button hold
-// UPDATED: Simplified NumberInput component with continuous increment/decrement
-const NumberInput = ({ value, onChange, min, max, step = 1 }) => {
-  const [intervalId, setIntervalId] = useState(null);
-  const currentValueRef = useRef(value);
-  
-  // Update ref when value changes
-  useEffect(() => {
-    currentValueRef.current = value;
-  }, [value]);
-  
-  const handleIncrement = () => {
-    const currentValue = currentValueRef.current;
-    const newValue = Math.min(max || Infinity, parseInt(currentValue) + step);
-    onChange({ target: { value: newValue } });
-  };
-
-  const handleDecrement = () => {
-    const currentValue = currentValueRef.current;
-    const newValue = Math.max(min || 0, parseInt(currentValue) - step);
-    onChange({ target: { value: newValue } });
-  };
-  
-  const startIncrement = (e) => {
-    // Prevent default behavior (text selection, context menu, etc.)
-    e.preventDefault();
-    
-    handleIncrement();
-    const id = setInterval(handleIncrement, 150);
-    setIntervalId(id);
-  };
-  
-  const startDecrement = (e) => {
-    // Prevent default behavior
-    e.preventDefault();
-    
-    handleDecrement();
-    const id = setInterval(handleDecrement, 150);
-    setIntervalId(id);
-  };
-  
-  const stopContinuous = () => {
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-  };
-  
-  // Clear interval on unmount
-  useEffect(() => {
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [intervalId]);
-
-  return (
-    <NumberInputContainer>
-      <IncrementButton 
-        onMouseDown={startDecrement}
-        onMouseUp={stopContinuous}
-        onMouseLeave={stopContinuous}
-        onTouchStart={startDecrement}
-        onTouchEnd={stopContinuous}
-        onTouchCancel={stopContinuous}
-      >
-        −
-      </IncrementButton>
-      <StyledInput 
-        type="text"
-        value={value} 
-        readOnly={true}
-      />
-      <IncrementButton 
-        onMouseDown={startIncrement}
-        onMouseUp={stopContinuous}
-        onMouseLeave={stopContinuous}
-        onTouchStart={startIncrement}
-        onTouchEnd={stopContinuous}
-        onTouchCancel={stopContinuous}
-      >
-        +
-      </IncrementButton>
-    </NumberInputContainer>
-  );
-};
 
 const Footer = styled.footer`
   grid-area: footer;
-  background: ${({ theme }) => theme.colors.background};
+  background: white;
 `;
 
 const LeftPanel = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-
+  outline: 1px solid black;
 
   h2 {
-    color: ${({ theme }) => theme.colors.headerPrimary};
-    margin: 0;
-    padding: 0;
+    color: black;
   }
   
   color: black;
   grid-area: left;
+  background: white;
   display: flex;
   flex-direction: column; 
   justify-content: flex-start;
   align-items: flex-end;
-  padding-right: 0px;
-
+  padding-right: 20px;
+  padding-top:20px;
 
   /* Large Tablet (900-1250) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
     align-items: flex-start;
-    padding-right: 0;
-    padding-bottom: 20px;
-    border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
+    padding-left: 50px;
   }
 
   /* Mobile (<900) */
   @media (max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
+    padding-left: 20px;
     padding-bottom: 20px;
-    padding-right: 0;
-    border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
-  }
-`;
-
-const BottleInputContainer = styled.div`
-  width: 100%;
-  border-bottom: 2px solid ${({ theme }) => theme.colors.outline};
-
-
-  h2 {
-    padding-top: 20px;
-    padding-left:20px;
-    font-size: 20px;
-
   }
 `;
 
 const AccordionContainer = styled.div`
+  outline: 5px solid red;
   width: 100%;
-  padding-top: 20px;
-`;
-
-
-const AccordionHolderContainer = styled.div`
-  width: 100%;
-  padding-top: 20px;
 `;
 
 const AccordionItem = styled.div`
+  outline: 3px solid orange;
   width: 100%;
   display: flex;
-  flex-direction: column;
-  height: auto;
-  min-height: 40px;
-  max-height: 450px;
-  background: ${({ theme }) => theme.colors.background};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.outline};
-  padding-top: 10px;
-  padding-bottom: 20px;
-  border-sizing: border-box;
-
-  span {
-    padding-bottom: 10px;
-  }
-  
-`;
-
-const AccordionHolderItem = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  height: auto;
-  min-height: 20px;
-  max-height: 250px;
-  background: ${({ theme }) => theme.colors.background};
- 
-  border-sizing: border-box;
-
-  span {
-    padding-bottom: 10px;
-  }
-  
-`;
-
-const ShapeSummaryIcon = styled.div`
-  width: 20px;  
-  height: 20px;
-  display: flex;          
-  align-items: center;   
-  justify-content: center;
-
-
-  ${({ shape }) => shape === "circle" && `
-    border-radius: 50%;
-  `}
-
-  background: ${({ theme }) => theme.colors.headerSecondary};
-
-  margin-left: 5px;
-`;
-
-
-const HolderSummaryIcon = styled.div`
-  width: 30px;  
-  height: 20px;
-  border-radius: 5%;
-  display: flex;          
-  align-items: center;   
-  justify-content: center;
-
-  background: ${({ theme }) => theme.colors.headerSecondary};
-
-  margin-left: 5px;
-`;
-
-const AccordionHeader = styled.div`
-  width: 100%;
-  box-sizing: border-box;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-  height: auto;
-  min-height: 40px;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  background: ${({ theme }) => theme.colors.background};
-  padding-right: 40px;
-
-  h3 {
-    color: ${({ theme }) => theme.colors.headerSecondary};
-    padding: 0;
-    padding-left: 40px;
-    margin: 0;
-    font-size: 16px;
-  }
-`;
-
-const AccordionHolderHeader = styled.div`
-  width: 100%;
-  box-sizing: border-box;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-  height: auto;
-  min-height: 40px;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  background: ${({ theme }) => theme.colors.background};
-  padding-right: 20px;
-
-  h3 {
-    color: ${({ theme }) => theme.colors.headerSecondary};
-    padding: 0;
-    padding-left: 40px;
-    margin: 0;
-    font-size: 16px;
-  }
-`;
-
-const AccordionContent = styled.div`
-  display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
   flex-direction: row;
-  height: 340px;
 `;
-
-const AccordionHolderContent = styled.div`
-  display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
-  flex-direction: row;
-  height: 400px;
-`;
-
-const AccordionSummary = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-`;
-
-const AccordionHolderSummary = styled.div`
-  display: flex;
-  margin-left: -10px;
-  gap: 10px;
-  align-items: center;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-`;
-
-
 
 const AccordionItemLeft = styled.div`
-
-  width: 60%;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-  padding-left: 40px;
-  padding-top: 20px;
-`;
-
-const AccordionHolderItemLeft = styled.div`
-
-  width: 60%;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-  padding-left: 20px;
-  padding-top: 20px;
+  outline: 3px solid green;
+  width: 50%;
 `;
 
 const AccordionItemRight = styled.div`
-
-  background: ${({ theme }) => theme.colors.background};
-  width: 40%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
+  outline: 3px solid purple;
+  background: pink;
+  width: 50%;
+  height: 100%; /* Ensure it fills the parent */
 `;
-
-
-const AccordionHolderItemRight = styled.div`
-
-  background: ${({ theme }) => theme.colors.background};
-  width: 40%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-`;
-
-
-const AutofitButton = styled.button`
-  margin-top: 10px;
-  padding: 5px 10px;
-  background-color: ${({ theme }) => theme.colors.highlightPrimary};
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background 0.3s;
-  
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.highlightSecondary};
-  }
-`;
-
-
 
 const BottleThreeContainer = styled.div`
-  height: min(100%, 120px);
-  aspect-ratio: 1 / 1; /* Ensures height always matches width */
-  background: white; /* Ensures the container matches scene background */
-
-`;
-
-
-const BottlePreviewContainer = styled.div`
-  height: min(100%, 120px);
-  aspect-ratio: 1 / 1; 
-  background: ${({ theme }) => theme.colors.background};
-  // outline: 1px solid black;
-  display: flex;
-  justify-content: center;
-
-`;
-
-
-const Rod = styled.div`
-  width: ${({ radius }) => radius * 2}px;
-  height: ${({ height }) => height}px;
-  background: radial-gradient(
-      ${({ radius }) => radius}px ${({ radius }) => radius / 2}px ellipse at 50% ${({ radius }) => radius / 2}px, 
-      #60a5fa 95%, 
-      transparent 100%, 
-      transparent
-    ),
-    #3b82f6;
-  border-radius: ${({ radius }) => radius * 2}px / ${({ radius }) => radius}px;
-
-`;
-
-
-const BottlePreview = ({ modelConfig, rowIndex }) => {
-  const diameter = modelConfig[`row_${rowIndex}_hole_diameter`];
-  const height = modelConfig[`row_${rowIndex}_bottle_height`];
-  const shape = modelConfig[`row_${rowIndex}_hole_shape`];
-
-  return (
-    <BottlePreviewContainer>
-      {shape === 'square' ? (
-        <Cuboid width={diameter} height={height} depth={diameter} />
-      ) : (
-        <Rod radius={diameter/2} height={height} />
-      )}
-    </BottlePreviewContainer>
-  );
-};
-
-
-const HolderInputContainer = styled.div`
   width: 100%;
-  border-top: 4px solid ${({ theme }) => theme.colors.outline};
-  border-bottom: 2px solid ${({ theme }) => theme.colors.outline};
-
-
-  h2 {
-    padding-top: 20px;
-    padding-left:20px;
-    font-size: 20px;
-
-  }
+  height: 200px;
+  border: 2px solid pink; /* Optional border for visualization */
 `;
-
 
 const BottleThreeViewer = ({modelConfig, rowIndex}) => {
   const mountRef = useRef(null);
-  const rendererRef = useRef(null);
-
   
 
   useEffect(() => {
@@ -585,100 +167,57 @@ const BottleThreeViewer = ({modelConfig, rowIndex}) => {
 
     // Scene Setup
     const scene = new THREE.Scene();
-    const backgroundColor = 0x272727;
+    const backgroundColor = 0xffffff;
     scene.background = new THREE.Color(backgroundColor);
 
     // Camera Setup
     const camera = new THREE.PerspectiveCamera(
-      50,
+      75,
       mountRef.current.clientWidth / mountRef.current.clientHeight,
       0.1,
       1000
     );
-    camera.position.set(50, 50, 150);
+    camera.position.set(0, 0, 100);
 
 
     // Renderer Setup
-    if (!rendererRef.current) {
-      rendererRef.current = new THREE.WebGLRenderer({ antialias: true });
-      rendererRef.current.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    }
-
-    // Ensure the renderer is attached to the DOM
-    if (!mountRef.current.contains(rendererRef.current.domElement)) {
-      mountRef.current.appendChild(rendererRef.current.domElement);
-    }
-
-    // Use rendererRef.current instead of a new variable
-    const renderer = rendererRef.current;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-
-    // Lighting
-    const skyColor = 0xffffff; // White Light
-    const groundColor = 0xffffff; // White Light
-    const light = new THREE.HemisphereLight(skyColor, groundColor, 1);  // First color = sky, Second color = ground reflection
-    scene.add(light);
-    
-    
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(10, 10, 10);
-    directionalLight.castShadow = true;
-       
-    scene.add(directionalLight);
-
-    // const ambientLight = new THREE.AmbientLight(0xffffff, 1); // soft white light
-    // ambientLight.position.set(10, 10, 10);
-
-    // scene.add(ambientLight);
-
-
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    mountRef.current.appendChild(renderer.domElement);
 
     // Cylinder Geometry (Bottle Shape)
-    const shapeKey = `row_${rowIndex}_hole_shape`;
     const diameterKey = `row_${rowIndex}_hole_diameter`;
     const heightKey = `row_${rowIndex}_bottle_height`;
 
-
-    const shape = modelConfig[shapeKey];
-    const diameter = modelConfig[diameterKey];
     const radius = modelConfig[diameterKey] / 2;
     const height = modelConfig[heightKey];
 
-    // Create geometry based on selected shape
-    let geometry;
-    if (shape === "square") {
-      geometry = new THREE.BoxGeometry(diameter, height, diameter);
-    } else {
-      const radius = diameter / 2;
-      geometry = new THREE.CylinderGeometry(radius, radius, height, 32);
-    }
-    
-    
-    
-    
-    const bottleColor = 0x006FFF;
+    const geometry = new THREE.CylinderGeometry(radius, radius, height, 32);
+    const cylinderColor = 0x006FFF;
     const material = new THREE.MeshStandardMaterial({ 
-      color: bottleColor, 
+      color:cylinderColor, 
       transparent: true,   
-      opacity: 0.47,       // Reduce opacity for a more translucent look
-      roughness: 1,     // Lower roughness for a glossier look   
+      opacity: 0.5,       // Reduce opacity for a more translucent look
+      roughness: 1.0,     // Lower roughness for a glossier look   
       side: THREE.DoubleSide ,
     });
+    const cylinder = new THREE.Mesh(geometry, material);
+    scene.add(cylinder);
 
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-
+    // Lighting
+    // 3. Hemisphere Light (Sky-Ground Soft Lighting)
+    const skyColor = 0xffffff; // White Light
+    const groundColor = 0xffffff; // White Light
+    const hemiLight = new THREE.HemisphereLight(skyColor, groundColor, 1);  // First color = sky, Second color = ground reflection
+    scene.add(hemiLight);
 
 
     // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableRotate = false;
-    controls.enablePan = false;
-    controls.enableZoom = false;
     controls.enableDamping = true;
+    controls.enableRotate = true; // Disable rotation
+    controls.enableZoom = false;   // Disable zoom
+    controls.enablePan = false;    // Disable panning
 
     // Animation Loop
     const animate = () => {
@@ -703,12 +242,11 @@ const BottleThreeViewer = ({modelConfig, rowIndex}) => {
 
 const ModelInput = styled.div`
 
-  color: ${({ theme }) => theme.colors.headerSecondary};
-
+  outline: 1px solid blue;
+  color: black;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding-bottom:10px;
+  justify-content: flex-end;
+  padding-bottom:7px;
   font-size: 14px;
   font-weight: bold;
 
@@ -720,148 +258,36 @@ const ModelInput = styled.div`
 `;
 
 const Input = styled.input`
-  width: 40px;
-  margin-left: 6px;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-`;
-
-const InputRange = styled.input`
-  width: 90%;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-
-`;
-
-const InputSpan = styled.span`
-  margin-right: 6px;
-  padding-bottom: 10px;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-`;
-
-
-const InputShape = ({ modelConfig, onChange, rowIndex }) => {
-  
-      // Get row hole shape by rowIndex
-      const shapeKey = `row_${rowIndex}_hole_shape`;
-      const shape = modelConfig[shapeKey];
-
-  return (
-    <ShapeSelector>
-      <ShapeOption 
-        $selected={shape === "circle"} 
-        onClick={() => onChange({ target: { value: "circle" } })}
-      >
-        <CircleIcon />
-      </ShapeOption>
-
-      <ShapeOption 
-        $selected={shape === "square"} 
-        onClick={() => onChange({ target: { value: "square" } })}
-      >
-        <SquareIcon />
-      </ShapeOption>
-    </ShapeSelector>
-  );
-};
-
-
-const ShapeSelector = styled.div`
-  display: flex;
-  gap: 10px;
-  margin-top: 5px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-`;
-
-const ShapeOption = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 5px;
- border: 3px solid ${({ theme, $selected }) => ($selected ? theme.colors.highlightPrimary : theme.colors.secondary)};
-
-  background-color: ${({ $selected }) => ($selected ? "#f8f9fa" : "white")};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    border-color: ${({ theme, $selected }) => ($selected ? theme.colors.highlightPrimary : "#0056b3")};
-  }
-`;
-
-
-const CircleIcon = styled.div`
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: black;
-`;
-
-const SquareIcon = styled.div`
-  width: 20px;
-  height: 20px;
-  background: black;
-`;
-
-
-const HolderModelInputContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  padding-top: 20px;
-  padding-left: 20px;
-  padding-right: 20px;
-  box-sizing: border-box;
-
-  h3  {
-    padding-left: 20px;
-  }
-
-
-  `;
-
-const HolderModelInput = styled.div`
-  color: ${({ theme }) => theme.colors.headerSecondary};
-  padding-left: 20px;
-  padding-bottom: 20px;
-
+  outline: 1px solid red;
+  width: 50px;
 `;
 
 const CenterPanel = styled.div`
-
+  outline: 1px solid black;
   h2 {
-    color: ${({ theme }) => theme.colors.headerPrimary};
-    padding-top: 0;
-    margin-top: 0;
+    color: black;
   }
 
-  background: ${({ theme }) => theme.colors.black};
-  
+  color:black;
   grid-area: center;
-
+  background: white;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   padding-top:20px;
 
-  border-left: 4px solid ${({ theme }) => theme.colors.outline};
-  border-right: 4px solid ${({ theme }) => theme.colors.outline};
-
   /* Tablet (900-1250) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
       padding-left: 20px;
       padding-right: 150px;
-      border-left: 4px solid ${({ theme }) => theme.colors.outline};
-      border-right: 0px solid ${({ theme }) => theme.colors.outline};
   }
 
   /* Large Tablet (700-900) */
   @media (min-width: ${breakpoints.smallTablet}) and (max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
-    border-left: 0px solid ${({ theme }) => theme.colors.outline};
-    border-right: 0px solid ${({ theme }) => theme.colors.outline};
+    padding-left: auto;
+    padding-right: auto;
     h2{
       padding-left: 20px;
     }
@@ -870,8 +296,6 @@ const CenterPanel = styled.div`
   /* Small Tablet (500-700) */
   @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.smallTablet}) {
     align-items: flex-start;
-    border-left: 0px solid ${({ theme }) => theme.colors.outline};
-    border-right: 0px solid ${({ theme }) => theme.colors.outline};
     h2{
       padding-left: 20px;
     }
@@ -880,27 +304,14 @@ const CenterPanel = styled.div`
   /* Mobile (<500) */
   @media (max-width: ${breakpoints.mobile}) {
     align-items: flex-start;
-    border-left: 0px solid ${({ theme }) => theme.colors.outline};
-    border-right: 0px solid ${({ theme }) => theme.colors.outline};
+    padding-left: auto;
+    padding-right: auto;
     h2{
       padding-left: 20px;
     }
   }
 
 `;
-
-const ModelContainer = styled.div`
-  position: relative;  /* Creates positioning context for sliders */
-  width: 100%;
-  display: flex;
-  justify-content: center;
-`;
-
-const ModelWrapper = styled.div`
-
-`;
-
-
 
 const Model = styled.div`
   background: lightgrey;
@@ -989,18 +400,12 @@ const Hole = styled.div`
   outline: 1px solid black;
   box-shadow: inset 0 0 10px black; /* Inner shadow for depth */
   border-radius: ${({ shape }) => (shape === "circle" ? "50%" : "0")}; 
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: ${({ diameter }) => diameter * 0.4}px; /* Adjust text size dynamically */
-  font-weight: bold;
-  color: white;
 `;
+
 
 const ModelProfile = styled.div`
 
-  margin-top: 70px;
+  margin-top: 20px;
 
   width: ${({ model_depth }) => model_depth}px;
   height: ${({ model_height }) => model_height}px;
@@ -1023,8 +428,6 @@ const ModelProfile = styled.div`
   }
 `;
 
-
-
 const ModelProfileTier = styled.div`
   background: lightgrey;
   width: ${({ tier_depth}) => tier_depth}px;
@@ -1040,7 +443,7 @@ const ModelProfileHole = styled.div`
   height: ${({ hole_height }) => hole_height}px;
   width: ${({ hole_diameter }) => hole_diameter}px;
   margin-left: ${({ tier_row_padding_top_bottom }) => tier_row_padding_top_bottom}px;
-  background: ${({ theme }) => theme.colors.black};
+  background: white;
 
   border-sizing: border-box;
   border-left: 1px dashed black;
@@ -1049,23 +452,6 @@ const ModelProfileHole = styled.div`
 
   position: absolute;
   z-index: 10;
-
-
-  font-size: ${({ diameter }) => diameter * 0.4}px; /* Adjust text size dynamically */
-  font-weight: bold;
-  color: black;
-  /* Number inside the hole */
-  span {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: ${({ hole_diameter }) => hole_diameter * 0.4}px;
-    font-weight: bold;
-    color: ${({ theme }) => theme.colors.headerSecondary};
-    pointer-events: none; 
-  }
-
 
 
 
@@ -1119,12 +505,125 @@ const JscadContainer = styled.div`
 
 `;
 
+
+const RightPanel = styled.div`
+  
+  outline: 1px solid black;
+  
+  h2 {
+    color: black;
+  }
+
+  span {
+    color: black;
+  }
+  
+  color: black;
+  grid-area: right;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 0px;
+  padding-left: 10px;
+  padding-top:20px;
+
+  /* LargeTablet (900-1250px) */
+  @media (max-width: ${breakpoints.largeTablet} and max-width: ${breakpoints.laptop}) {
+    flex-wrap: wrap;
+    padding-left: 20px;
+    padding-top: 0px;
+  }
+
+    /* Large Tablet (<900) */
+  @media (max-width: ${breakpoints.largeTablet}) {
+    flex-wrap: wrap;
+    padding-left: 20px;
+    padding-top: 0px;
+  }
+
+  
+`;
+
+const DownloadDiv = styled.div`
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+
+  /* Tablet 900-1250*/
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+      padding-left: 40px; 
+  }
+`;
+
+const DownloadButton = styled.button`
+  padding: 5px 10px; 
+  font-size: 14px; 
+  width: auto; /* Shrinks to fit text */
+  min-width: 120px; /* Ensures it doesn't get too small */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: inline-block;
+  width: 300px;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const ComputedDiv = styled.div`
+
+  /* Large Tablet 900-1250*/
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+      padding-left: 40px; 
+  }
+
+`;
+
+const AutodeskDiv = styled.div`
+
+  /* Tablet 900-1250*/
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+      padding-left: 40px; 
+      width: 150%;
+  }
+
+`;
+
+const ModelOutput = styled.div`
+  color: black;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  font-size: 12px;
+  span:first-child {
+    margin-right: 6px; 
+    font-weight: bold; 
+  }
+`;
+
+
+const ModelOutputLabel = styled.span`
+  color: black;
+  font-size: 12px;
+`;
+
+
+const ModelOutputValue = styled.span`
+  color: black;
+  font-size: 12px;
+`;
+
 const ThreeContainer = styled.div`
   width: min(100%, 400px);
   border-sizing: border-box;
   // outline: 1px solid black;
   aspect-ratio: 1 / 1; /* Ensures height always matches width */  
-  background: ${({ theme }) => theme.colors.background}; 
+  background: white; /* Ensures the container matches scene background */
   margin-top: 40px;
 
 
@@ -1147,146 +646,6 @@ const ThreeContainer = styled.div`
 
 
 `;
-
-
-const RightPanel = styled.div`
-  
-  h2 {
-    color: ${({ theme }) => theme.colors.headerPrimary};
-  }
-
-  span {
-    color: ${({ theme }) => theme.colors.headerSecondary};
-  }
-  
-  color: black;
-  grid-area: right;
-  background: ${({ theme }) => theme.colors.background};
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding-top:20px;
-
-  /* LargeTablet (900-1250px) */
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-    flex-wrap: wrap;
-    padding-left: 0px;
-    padding-top: 0px;
-  }
-
-    /* Mobile (<900) */
-  @media (max-width: ${breakpoints.largeTablet}) {
-    flex-wrap: wrap;
-    padding-top: 0px;
-  }
-
-  
-`;
-
-const DownloadDiv = styled.div`
-  
-  width: 100%;
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  border-top: 4px solid ${({ theme }) => theme.colors.outline};
-  border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
-  padding-bottom: 40px;
-  padding-left: 20px;
-  box-sizing: border-box;
-
-
-
-  /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) {
-      padding-left: 20px; 
-      border-top: 0px solid ${({ theme }) => theme.colors.outline};
-  }
-`;
-
-const DownloadButton = styled.button`
-  padding: 5px 10px; 
-  font-size: 14px; 
-  width: auto; /* Shrinks to fit text */
-  min-width: 120px; /* Ensures it doesn't get too small */
-  background-color: ${({ theme }) => theme.colors.highlightPrimary};
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s;
-  display: inline-block;
-  width: 300px;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.highlightSecondary};
-  }
-`;
-
-const ComputedDiv = styled.div`
-  box-sizing: border-box;
-  padding-left: 20px;
-  border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
-  padding-bottom: 20px;
-
-  /* Large Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-      padding-left: 20px; 
-  }
-
-`;
-
-const AutodeskDiv = styled.div`
-  box-sizing: border-box;
-
-  padding-left: 20px;
-  margin-bottom: 40px;
-
-  /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-      padding-left: 20px; 
-      width: 100%;
-      margin-bottom: 40px;
-  }
-
-`;
-
-const ModelOutput = styled.div`
-  flex-wrap: wrap;
-  color: black;
-  display: flex;
-  justify-content: flex-start;
-  flex-direction: column;
-  font-size: 12px;
-  span:first-child {
-    margin-right: 6px; 
-    font-weight: bold; 
-  }
-
-  /* Mobile (<900) */
-  @media (max-width: ${breakpoints.largeTablet}) {
-    span:first-child {
-      margin-right: 0px; 
-      font-weight: bold; 
-  }
-
-
-  }
-`;
-
-
-const ModelOutputLabel = styled.span`
-  color: black;
-  font-size: 12px;
-`;
-
-
-const ModelOutputValue = styled.span`
-  color: black;
-  font-size: 12px;
-`;
-
-
 
 
 
@@ -1477,7 +836,7 @@ const formatNumber = (value) => {
   return (Math.ceil(value * 10) / 10).toFixed(1);  // Round up to nearest 0.1 mm
 };
 
-const JscadViewer = ({ setExportScene, setStlURL, modelConfig}) => {
+const JscadViewer = ({ setExportScene, setStlURL, modelConfig }) => {
   const mountRef = useRef(null);
 
   // generateSTL inside JscadViewer
@@ -1604,7 +963,7 @@ const JscadViewer = ({ setExportScene, setStlURL, modelConfig}) => {
       let geometry = subtract(base, ...row1Holes);
 
 
-      
+
       /////////////////////////////////////////////
       //  Tier 2 / Row 2
       /////////////////////////////////////////////
@@ -1869,7 +1228,7 @@ const ThreeViewer = ({ stlURL }) => {
     // Initialize Three.js scene only once
     if (!sceneRef.current) {
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x1c1c1c);
+      scene.background = new THREE.Color(0xffffff);
       sceneRef.current = scene;
 
       // Camera setup
@@ -1892,11 +1251,6 @@ const ThreeViewer = ({ stlURL }) => {
       light.castShadow = true;
       scene.add(light);
 
-      // Ambient Light
-      const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
-      scene.add(ambientLight);
-
-
       // Orbit Controls
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enablePan = false;
@@ -1917,11 +1271,7 @@ const ThreeViewer = ({ stlURL }) => {
     // Load new STL in the background while keeping the old model
     const loader = new STLLoader();
     loader.load(stlURL,(geometry) => {
-        const material = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.6 });
-
-
-
-        
+        const material = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, roughness: 0.6 });
         const newMesh = new THREE.Mesh(geometry, material);
         newMesh.rotation.x = -Math.PI / 2; // Rotate STL to match JSCAD/CAD coordinate system
       
@@ -1952,84 +1302,6 @@ const GridPreview = () => {
   const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
   const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
-  const [openAccordions, setOpenAccordions] = useState({
-    bottle1: false,
-    bottle2: false,
-    bottle3: false,
-    holder: false 
-  });
-
-  // Add the function here, before any event handlers
-  const computeRequiredModelDimensions = (newDiameter, prevConfig) => {
-    const {
-      row_1_hole_diameter,
-      row_2_hole_diameter,
-      row_3_hole_diameter,
-      number_holes_per_row,
-      edge_gap_scale_factor,
-      model_width,
-      model_depth,
-    } = prevConfig;
-
-    const maxHoleDiameter = Math.max(newDiameter, row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter);
-    const n = number_holes_per_row;
-    const minInnerGap = 2.75
-    const minLeftRightPadding = minInnerGap * edge_gap_scale_factor;
-
-    const minModelWidth = (minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter);
-    const minModelDepth = 3 * (8 + maxHoleDiameter);
-
-    console.log("Computed Model Width:", minModelWidth);
-    console.log("Computed Model Depth:", minModelDepth);
-
-
-    return {
-      model_width: Math.max(model_width, Math.ceil(minModelWidth)),
-      model_depth: Math.max(model_depth, Math.ceil(minModelDepth)),
-    };
-  };
-
-  const autoFitHolderDimensions = () => {
-    // Get the largest hole diameter among all rows
-    const maxHoleDiameter = Math.max(
-      modelConfig.row_1_hole_diameter, 
-      modelConfig.row_2_hole_diameter, 
-      modelConfig.row_3_hole_diameter
-    );
-    
-    // Calculate minimum dimensions directly
-    const n = modelConfig.number_holes_per_row;
-    const minInnerGap = 2.75;
-    const minLeftRightPadding = minInnerGap * modelConfig.edge_gap_scale_factor;
-    
-    const minModelWidth = Math.ceil((minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter));
-    const minModelDepth = Math.ceil(3 * (8 + maxHoleDiameter));
-    
-    console.log("Autofit - Max Hole Diameter:", maxHoleDiameter);
-    console.log("Autofit - Calculated Min Width:", minModelWidth);
-    console.log("Autofit - Calculated Min Depth:", minModelDepth);
-    
-    // Directly update the state with calculated minimum values
-    setUserConfig((prev) => ({
-      ...prev,
-      model_width: minModelWidth,
-      model_depth: minModelDepth,
-    }));
-  };
-  
-  
-  useEffect(() => {
-    setUserConfig((prev) => {
-      // Recompute values that depend on model_width
-      const { model_width, model_depth } = computeRequiredModelDimensions(prev.row_1_hole_diameter, prev);
-  
-      return {
-        ...prev,
-        model_width,
-        model_depth,
-      };
-    });
-  }, [userConfig.model_width]); // Runs whenever model_width updates
 
 
   const generatePythonFile = () => {
@@ -2122,9 +1394,7 @@ const GridPreview = () => {
   
       // Ensure width is at least the minimum required value
       newWidth = Math.max(newWidth, Math.ceil(minModelWidth));
-      console.log("Previous State Before Update:", prev);
-      console.log("Computed New Model Width:", minModelWidth);
-      console.log("Computed Inner Gap from computeRequiredModelDimensions:", prev.innerGap);
+  
       console.log("Computed Min Model Width:", minModelWidth);
       console.log("Clamped Model Width:", newWidth);
   
@@ -2182,67 +1452,82 @@ const GridPreview = () => {
   };
 
   const updateRow1HoleDiameter = (e) => {
-    const newDiameter = parseInt(e.target.value) || 0;
-  
     setUserConfig((prev) => {
-      // Compute the required width & depth immediately
-      const { model_width: newWidth, model_depth: newDepth } = computeRequiredModelDimensions(newDiameter, prev);
-  
-      // Use newWidth directly when computing row gaps instead of old prev.model_width
-      const newInnerGap = (newWidth - (prev.number_holes_per_row * newDiameter)) / (prev.number_holes_per_row - 1);
-      const newPadding = prev.edge_gap_scale_factor * newInnerGap;
-  
+      const newDiameter = parseInt(e.target.value) || 0;
+
+      const { model_width, number_holes_per_row, edge_gap_scale_factor } = prev;
+      const maxDiameter = (model_width - (2.5 * (number_holes_per_row - 1)) / (1 - (2 * edge_gap_scale_factor / (number_holes_per_row + 1)))) / number_holes_per_row;
+      const roundedMaxDiameter = Math.floor(maxDiameter);
+
+      // Minimum allowable diameter
+      const minDiameter = 12;
+      
+      // Clamp the input value to be within [minDiameter, roundedMaxDiameter]
+      const clampedDiameter = Math.min(Math.max(newDiameter, minDiameter), roundedMaxDiameter);
+      
+      console.log("Clamped Diameter:", clampedDiameter);
+      console.log("Min Diameter:", minDiameter);
+      console.log("Max Diameter:", roundedMaxDiameter);
+    
+
+      
       return {
-        ...prev,
-        model_width: newWidth,
-        model_depth: newDepth,
-        row_1_hole_diameter: newDiameter,
-        row_1_inner_gap: newInnerGap,
-        row_1_padding_left_right: newPadding,
+        ...prev, // Preserve existing state
+        row_1_hole_diameter: clampedDiameter,
       };
     });
   };
 
   const updateRow2HoleDiameter = (e) => {
-    const newDiameter = parseInt(e.target.value) || 0;
-  
     setUserConfig((prev) => {
-      // Compute the required width & depth immediately
-      const { model_width: newWidth, model_depth: newDepth } = computeRequiredModelDimensions(newDiameter, prev);
-  
-      // Use newWidth directly when computing row gaps instead of old prev.model_width
-      const newInnerGap = (newWidth - (prev.number_holes_per_row * newDiameter)) / (prev.number_holes_per_row - 1);
-      const newPadding = prev.edge_gap_scale_factor * newInnerGap;
-  
+      const newDiameter = parseInt(e.target.value) || 0;
+
+      const { model_width, number_holes_per_row, edge_gap_scale_factor } = prev;
+      const maxDiameter = (model_width - (2.5 * (number_holes_per_row - 1)) / (1 - (2 * edge_gap_scale_factor / (number_holes_per_row + 1)))) / number_holes_per_row;
+      const roundedMaxDiameter = Math.floor(maxDiameter);
+
+      // Minimum allowable diameter
+      const minDiameter = 12;
+      
+      // Clamp the input value to be within [minDiameter, roundedMaxDiameter]
+      const clampedDiameter = Math.min(Math.max(newDiameter, minDiameter), roundedMaxDiameter);
+      
+      console.log("Clamped Diameter:", clampedDiameter);
+      console.log("Min Diameter:", minDiameter);
+      console.log("Max Diameter:", roundedMaxDiameter);
+    
+
+      
       return {
-        ...prev,
-        model_width: newWidth,
-        model_depth: newDepth,
-        row_2_hole_diameter: newDiameter,
-        row_2_inner_gap: newInnerGap,
-        row_2_padding_left_right: newPadding,
+        ...prev, // Preserve existing state
+        row_2_hole_diameter: clampedDiameter,
       };
     });
   };
 
   const updateRow3HoleDiameter = (e) => {
-    const newDiameter = parseInt(e.target.value) || 0;
-  
     setUserConfig((prev) => {
-      // Compute the required width & depth immediately
-      const { model_width: newWidth, model_depth: newDepth } = computeRequiredModelDimensions(newDiameter, prev);
-  
-      // Use newWidth directly when computing row gaps instead of old prev.model_width
-      const newInnerGap = (newWidth - (prev.number_holes_per_row * newDiameter)) / (prev.number_holes_per_row - 1);
-      const newPadding = prev.edge_gap_scale_factor * newInnerGap;
-  
+      const newDiameter = parseInt(e.target.value) || 0;
+
+      const { model_width, number_holes_per_row, edge_gap_scale_factor } = prev;
+      const maxDiameter = (model_width - (2.5 * (number_holes_per_row - 1)) / (1 - (2 * edge_gap_scale_factor / (number_holes_per_row + 1)))) / number_holes_per_row;
+      const roundedMaxDiameter = Math.floor(maxDiameter);
+
+      // Minimum allowable diameter
+      const minDiameter = 12;
+      
+      // Clamp the input value to be within [minDiameter, roundedMaxDiameter]
+      const clampedDiameter = Math.min(Math.max(newDiameter, minDiameter), roundedMaxDiameter);
+      
+      console.log("Clamped Diameter:", clampedDiameter);
+      console.log("Min Diameter:", minDiameter);
+      console.log("Max Diameter:", roundedMaxDiameter);
+    
+
+      
       return {
-        ...prev,
-        model_width: newWidth,
-        model_depth: newDepth,
-        row_3_hole_diameter: newDiameter,
-        row_3_inner_gap: newInnerGap,
-        row_3_padding_left_right: newPadding,
+        ...prev, // Preserve existing state
+        row_3_hole_diameter: clampedDiameter,
       };
     });
   };
@@ -2293,13 +1578,6 @@ const GridPreview = () => {
   return (
     <>
       <Helmet>
-        <style>
-          {`
-            * {
-              -webkit-tap-highlight-color: transparent;
-            }
-          `}
-        </style>
         <title>HolderForge</title>
         <meta name="description" content="HolderForge lets you design and customize holders and organizers for cologne, perfume, makeup, lipstick, concealers, bottles and more. Custom fit organization. Perfect for travel, home organization, and keeping your fragrance and cosmetics collection secure and organized. " />
         <meta name="keywords" content="custom holder, custom organizer, 3D printed model generator for bottle holders, custom cologne holders, custom perfume holders, custom bottle holders, makeup organizers, travel cologne holders, lipstick organizer" />
@@ -2311,279 +1589,135 @@ const GridPreview = () => {
         <h2>Make a Custom Bottle Holder</h2>
       </Header>
       <LeftPanel>
-        <BottleInputContainer>
-          <h2>Bottle Sizes To Hold</h2>
-          <AccordionContainer>
-            <AccordionItem>
-              <AccordionHeader onClick={() => setOpenAccordions(prev => ({
-                ...prev,
-                bottle1: !prev.bottle1
-              }))}>
-                <h3>Bottle 1</h3>
-                {!openAccordions.bottle1 && (
-                  <AccordionSummary>
-                    {`${modelConfig.row_1_hole_diameter}mm × ${modelConfig.row_1_bottle_height}mm`}
-                    <ShapeSummaryIcon shape={modelConfig.row_1_hole_shape} />
-                  </AccordionSummary>
-                )}
-                {openAccordions.bottle1 ? '▲' : '▼'}
-            </AccordionHeader>
-            <AccordionContent isOpen={openAccordions.bottle1}>
+        <h2>Customize</h2>
+        <AccordionContainer>
+          <AccordionItem>
+          <AccordionItemLeft>
+            <h3>Bottle 1</h3>
+            <ModelInput>
+              <span>Hole Diameter (mm)</span>
+              <Input type="number" value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
+            </ModelInput>
+            <ModelInput>
+              <span>Bottle Height (mm)</span>
+              <Input type="number" value={modelConfig.row_1_bottle_height} onChange={updateRow1BottleHeight} />
+            </ModelInput>
+            <ModelInput>
+              <span>Hole Shape</span>
+              <select value={modelConfig.row_1_hole_shape} onChange={updateRow1HoleShape}>
+                <option value="circle">Circle</option>
+                <option value="square">Square</option>
+              </select>
+            </ModelInput>
+            </AccordionItemLeft>
+            <AccordionItemRight>
+              <BottleThreeViewer modelConfig={modelConfig} rowIndex={1}/>
+            </AccordionItemRight>
+          </AccordionItem>
+          <AccordionItem>
+          <AccordionItemLeft>
+            <h3>Bottle 2</h3>
+              <ModelInput>
+                <span>Hole Diameter (mm)</span>
+                <Input type="number" value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
+              </ModelInput>
+              <ModelInput>
+                <span>Bottle Height (mm)</span>
+                <Input type="number" value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
+              </ModelInput>
+              <ModelInput>
+                <span>Hole Shape</span>
+                <select value={modelConfig.row_2_hole_shape} onChange={updateRow2HoleShape}>
+                  <option value="circle">Circle</option>
+                  <option value="square">Square</option>
+                </select>
+              </ModelInput>
+          </AccordionItemLeft>  
+          <AccordionItemRight>
+          <BottleThreeViewer modelConfig={modelConfig} rowIndex={2}/>
+          </AccordionItemRight>
+          </AccordionItem>
+          <AccordionItem>
             <AccordionItemLeft>
+            <h3>Bottle 3</h3>
             <ModelInput>
-              <InputSpan>
-                Diameter
-                <NumberInput 
-                  value={modelConfig.row_1_hole_diameter} 
-                  onChange={updateRow1HoleDiameter} 
-                  min={10} 
-                  max={30}
-                  step={1}
-                />
-              </InputSpan>
-              <InputRange type="range" min={10} max={30} value={modelConfig.row_1_hole_diameter} onChange={updateRow1HoleDiameter} />
+              <span>Row 3 Hole Diameter (mm)</span>
+              <Input type="number" value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
             </ModelInput>
             <ModelInput>
-              <InputSpan>
-                Height  
-                <NumberInput 
-                  value={modelConfig.row_1_bottle_height} 
-                  onChange={updateRow1BottleHeight} 
-                  min={40} 
-                  max={135}
-                  step={1}
-                />
-              </InputSpan>
-              <InputRange type="range" min={40} max={135} value={modelConfig.row_1_bottle_height} onChange={updateRow1BottleHeight} />
+              <span>Row 3 Bottle Height (mm)</span>
+              <Input type="number" value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
             </ModelInput>
-              <ModelInput>
-                <InputSpan>
-                <span>Shape</span>
-                </InputSpan>
-                <InputShape modelConfig={modelConfig} onChange={updateRow1HoleShape} rowIndex={1} />
-              </ModelInput>
-                <InputSpan>
-                  <span> Quantity: 5</span>
-                </InputSpan>
-              </AccordionItemLeft>
-              <AccordionItemRight>
-                <BottlePreview modelConfig={modelConfig} rowIndex={1} />
-              </AccordionItemRight>
-              </AccordionContent>
+            <ModelInput>
+              <span>Row 3 Hole Shape</span>
+              <select value={modelConfig.row_3_hole_shape} onChange={updateRow3HoleShape}>
+                <option value="circle">Circle</option>
+                <option value="square">Square</option>
+              </select>
+            </ModelInput>
+            </AccordionItemLeft>
+            <AccordionItemRight>
+            <BottleThreeViewer modelConfig={modelConfig} rowIndex={3}/>
+            </AccordionItemRight>
             </AccordionItem>
-            <AccordionItem>
-              <AccordionHeader onClick={() => setOpenAccordions(prev => ({
-                  ...prev,
-                  bottle2: !prev.bottle2
-                }))}>
-                  <h3>Bottle 2</h3>
-                  {!openAccordions.bottle2 && (
-                    <AccordionSummary>
-                      {`${modelConfig.row_2_hole_diameter}mm × ${modelConfig.row_2_bottle_height}mm`}
-                      <ShapeSummaryIcon shape={modelConfig.row_2_hole_shape} />
-                    </AccordionSummary>
-                  )}
-                  {openAccordions.bottle2 ? '▲' : '▼'}
-              </AccordionHeader>
-              <AccordionContent isOpen={openAccordions.bottle2}>
-                <AccordionItemLeft>
-                <ModelInput>
-                  <InputSpan>
-                    Diameter
-                    <NumberInput 
-                      value={modelConfig.row_2_hole_diameter} 
-                      onChange={updateRow2HoleDiameter} 
-                      min={10} 
-                      max={30}
-                      step={1}
-                    />
-                  </InputSpan>
-                  <InputRange type="range" min={10} max={30} value={modelConfig.row_2_hole_diameter} onChange={updateRow2HoleDiameter} />
-                </ModelInput>
-                <ModelInput>
-                  <InputSpan>
-                    Height  
-                    <NumberInput 
-                      value={modelConfig.row_2_bottle_height} 
-                      onChange={updateRow2BottleHeight} 
-                      min={40} 
-                      max={135}
-                      step={1}
-                    />
-                  </InputSpan>
-                  <InputRange type="range" min={40} max={135} value={modelConfig.row_2_bottle_height} onChange={updateRow2BottleHeight} />
-                </ModelInput>
-                  <ModelInput>
-                    <InputSpan>
-                    <span>Shape</span>
-                    </InputSpan>
-                    <InputShape modelConfig={modelConfig} onChange={updateRow2HoleShape} rowIndex={2} />
-                  </ModelInput>
-                  <InputSpan>
-                      <span> Quantity: 5</span>
-                    </InputSpan>
-                </AccordionItemLeft>  
-                <AccordionItemRight>
-                <BottlePreview modelConfig={modelConfig} rowIndex={2} />
-                </AccordionItemRight>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem>
-            <AccordionHeader onClick={() => setOpenAccordions(prev => ({
-                ...prev,
-                bottle3: !prev.bottle3
-              }))}>
-                <h3>Bottle 3</h3>
-                {!openAccordions.bottle3 && (
-                  <AccordionSummary>
-                    {`${modelConfig.row_3_hole_diameter}mm × ${modelConfig.row_3_bottle_height}mm`}
-                    <ShapeSummaryIcon shape={modelConfig.row_3_hole_shape} />
-                  </AccordionSummary>
-                )}
-                {openAccordions.bottle3 ? '▲' : '▼'}
-            </AccordionHeader>
-            <AccordionContent isOpen={openAccordions.bottle3}>
-              <AccordionItemLeft>
-              <ModelInput>
-                <InputSpan>
-                  Diameter
-                  <NumberInput 
-                    value={modelConfig.row_3_hole_diameter} 
-                    onChange={updateRow3HoleDiameter} 
-                    min={10} 
-                    max={30}
-                    step={1}
-                  />
-                </InputSpan>
-                <InputRange type="range" min={10} max={30} value={modelConfig.row_3_hole_diameter} onChange={updateRow3HoleDiameter} />
-              </ModelInput>
-              <ModelInput>
-                <InputSpan>
-                  Height  
-                  <NumberInput 
-                    value={modelConfig.row_3_bottle_height} 
-                    onChange={updateRow3BottleHeight} 
-                    min={40} 
-                    max={135}
-                    step={1}
-                  />
-                </InputSpan>
-                <InputRange type="range" min={40} max={135} value={modelConfig.row_3_bottle_height} onChange={updateRow3BottleHeight} />
-              </ModelInput>
-              <ModelInput>
-                <InputSpan>
-                <span>Shape</span>
-                </InputSpan>
-                <InputShape modelConfig={modelConfig} onChange={updateRow3HoleShape} rowIndex={3} />
-              </ModelInput>
-                <InputSpan>
-                  <span> Quantity: 5</span>
-                </InputSpan>
-              </AccordionItemLeft>
-              <AccordionItemRight>
-                <BottlePreview modelConfig={modelConfig} rowIndex={3} />
-              </AccordionItemRight>
-            </AccordionContent>
-            </AccordionItem>
-          </AccordionContainer>
-        </BottleInputContainer>
+            </AccordionContainer>
 
 
-        <HolderModelInputContainer>     
-          <h2>Holder</h2>
-          <AccordionHolderContainer>
-            <AccordionHolderItem>
-              <AccordionHolderHeader onClick={() => setOpenAccordions(prev => ({
-                ...prev,
-                holder: !prev.holder
-              }))}>
-                <h3>Dimensions</h3>
-                {!openAccordions.holder && (
-                  <AccordionHolderSummary>
-                    {`${modelConfig.model_width}mm × ${modelConfig.model_depth}mm`}
-                    <HolderSummaryIcon width={modelConfig.model_width} height={modelConfig.model_height} />
-                  </AccordionHolderSummary>
-                )}
-                {openAccordions.holder ? '▲' : '▼'}
-              </AccordionHolderHeader>
-              <AccordionHolderContent isOpen={openAccordions.holder}>
-                <AccordionHolderItemLeft>
-                  <ModelInput>
-                    <InputSpan>
-                      Width  
-                      <NumberInput 
-                        value={modelConfig.model_width} 
-                        onChange={updateModelWidth} 
-                        min={10} 
-                        max={300} 
-                      />
-                    </InputSpan>
-                  </ModelInput>
-                  <ModelInput>
-                    <InputSpan>
-                      Depth  
-                      <NumberInput 
-                        value={modelConfig.model_depth} 
-                        onChange={updateModelDepth} 
-                        min={10} 
-                        max={300}
-                      />
-                    </InputSpan>
-                  </ModelInput>
-                  <AutofitButton onClick={autoFitHolderDimensions}>
-                    Autofit
-                  </AutofitButton>
-                </AccordionHolderItemLeft>
-              </AccordionHolderContent>
-            </AccordionHolderItem>
-          </AccordionHolderContainer>
-        </HolderModelInputContainer>
+
+
+          <h2>Customize Holder</h2>
+          <ModelInput>
+            <span>Model Width (mm)</span>
+            <Input type="number" value={modelConfig.model_width} onChange={updateModelWidth} />
+          </ModelInput>
+          <ModelInput>
+            <span>Model Depth (mm)</span>
+            <Input type="number" value={modelConfig.model_depth} onChange={updateModelDepth} />
+          </ModelInput>
 
       </LeftPanel>
       <CenterPanel>
         <h2>Preview</h2>
-        <ModelContainer>
-          <ModelWrapper>
-            <Model
-              model_width={modelConfig.model_width * modelConfig.mm2pixel}
-              model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
+        <Model
+            model_width={modelConfig.model_width * modelConfig.mm2pixel}
+            model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
+        >
+          <Row3 depth={modelConfig.row_3_depth * modelConfig.mm2pixel} 
+                paddingLeftRight={modelConfig.row_3_padding_left_right * modelConfig.mm2pixel}
+                paddingTopBottom={modelConfig.row_3_padding_top_bottom * modelConfig.mm2pixel}
+                holeGap={modelConfig.row_3_inner_gap * modelConfig.mm2pixel}
           >
-            <Row3 depth={modelConfig.row_3_depth * modelConfig.mm2pixel} 
-                  paddingLeftRight={modelConfig.row_3_padding_left_right * modelConfig.mm2pixel}
-                  paddingTopBottom={modelConfig.row_3_padding_top_bottom * modelConfig.mm2pixel}
-                  holeGap={modelConfig.row_3_inner_gap * modelConfig.mm2pixel}
-            >
-              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-              <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}>3</Hole>
-            </Row3>
-            <Row2 depth={modelConfig.row_2_depth * modelConfig.mm2pixel}
-                  paddingLeftRight={modelConfig.row_2_padding_left_right * modelConfig.mm2pixel}
-                  paddingTopBottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
-                  holeGap={modelConfig.row_2_inner_gap * modelConfig.mm2pixel}
-            >
-              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-              <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}>2</Hole>
-            </Row2>
-            <Row1 depth={modelConfig.row_1_depth * modelConfig.mm2pixel} 
-                  paddingLeftRight={modelConfig.row_1_padding_left_right * modelConfig.mm2pixel}
-                  paddingTopBottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
-                  holeGap={modelConfig.row_1_inner_gap * modelConfig.mm2pixel}
-            >
-              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-              <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape}>1</Hole>
-            </Row1>  
-            </Model>
-          </ModelWrapper>
-        </ModelContainer>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+            <Hole diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_3_hole_shape}/>
+          </Row3>
+          <Row2 depth={modelConfig.row_2_depth * modelConfig.mm2pixel}
+                paddingLeftRight={modelConfig.row_2_padding_left_right * modelConfig.mm2pixel}
+                paddingTopBottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
+                holeGap={modelConfig.row_2_inner_gap * modelConfig.mm2pixel}
+          >
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}  />
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}/>
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}/>
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}/>
+            <Hole diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_2_hole_shape}/>
+          </Row2>
+          <Row1 depth={modelConfig.row_1_depth * modelConfig.mm2pixel} 
+                paddingLeftRight={modelConfig.row_1_padding_left_right * modelConfig.mm2pixel}
+                paddingTopBottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
+                holeGap={modelConfig.row_1_inner_gap * modelConfig.mm2pixel}
+          >
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+            <Hole diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel} shape={modelConfig.row_1_hole_shape} />
+          </Row1>  
+
+        </Model>
+
         <ModelProfile
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
             model_height={modelConfig.model_height * modelConfig.mm2pixel}
@@ -2597,9 +1731,7 @@ const GridPreview = () => {
               hole_height={modelConfig.row_3_hole_height * modelConfig.mm2pixel}
               hole_diameter={modelConfig.row_3_hole_diameter * modelConfig.mm2pixel}
               tier_row_padding_top_bottom={modelConfig.row_3_padding_top_bottom * modelConfig.mm2pixel}
-            >
-              <span>3</span>
-            </ModelProfileHole>
+            />
           </ModelProfileTier>  
           <ModelProfileTier
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
@@ -2610,9 +1742,7 @@ const GridPreview = () => {
               hole_height={modelConfig.row_2_hole_height * modelConfig.mm2pixel}
               hole_diameter={modelConfig.row_2_hole_diameter * modelConfig.mm2pixel}
               tier_row_padding_top_bottom={modelConfig.row_2_padding_top_bottom * modelConfig.mm2pixel}
-            >
-              <span>2</span>
-            </ModelProfileHole>
+            />
           </ModelProfileTier>  
           <ModelProfileTier
             model_depth={modelConfig.model_depth * modelConfig.mm2pixel}
@@ -2623,9 +1753,7 @@ const GridPreview = () => {
               hole_height={modelConfig.row_1_hole_height * modelConfig.mm2pixel}
               hole_diameter={modelConfig.row_1_hole_diameter * modelConfig.mm2pixel}
               tier_row_padding_top_bottom={modelConfig.row_1_padding_top_bottom * modelConfig.mm2pixel}
-            >
-              <span>1</span>
-            </ModelProfileHole>
+            />
           </ModelProfileTier>  
         </ModelProfile>
         <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} />

@@ -27,8 +27,8 @@ import Cuboid from './Cuboid';
 
 
 const breakpoints = {
-  laptop: '1250px',
-  largeTablet: '900px',
+  laptop: '1300px',
+  largeTablet: '1000px',
   smallTablet: '700px',
   mobile: '500px',
 };
@@ -42,7 +42,7 @@ const GridLayout = styled.div`
   overflow-x: hidden;   
 
 
-  grid-template-columns: 3fr 5fr 5fr;
+  grid-template-columns: 4fr 5fr 5fr;
   grid-template-rows: auto 1fr 100px;
   grid-template-areas:
     "header header header"
@@ -52,7 +52,7 @@ const GridLayout = styled.div`
   /* Large Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
     grid-template-columns: 5fr 6fr;
-    grid-template-rows: auto 1fr auto 50px;
+    grid-template-rows: auto 1fr auto 100px;
     grid-template-areas:
       "header header"
       "left center"
@@ -75,9 +75,12 @@ const GridLayout = styled.div`
 
 const Header = styled.header`
   grid-area: header;
+  min-height: 90px;
 
 
   background: ${({ theme }) => theme.colors.background};
+  border-bottom: 8px solid ${({ theme }) => theme.colors.outline};
+  box-sizing: border-box;
 
   display: flex;
   flex-direction: column;
@@ -261,13 +264,14 @@ const LeftPanel = styled.div`
   flex-direction: column; 
   justify-content: flex-start;
   align-items: flex-end;
-  padding-right: 20px;
-  padding-top:20px;
+  padding-right: 0px;
+
 
   /* Large Tablet (900-1250) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
     align-items: flex-start;
-    padding-left: 50px;
+    padding-right: 0;
+    padding-bottom: 20px;
   }
 
   /* Mobile (<900) */
@@ -275,12 +279,12 @@ const LeftPanel = styled.div`
     align-items: flex-start;
     padding-bottom: 20px;
     padding-right: 0;
+    border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
   }
 `;
 
 const BottleInputContainer = styled.div`
   width: 100%;
-  border-top: 4px solid ${({ theme }) => theme.colors.outline};
   border-bottom: 2px solid ${({ theme }) => theme.colors.outline};
 
 
@@ -824,7 +828,7 @@ const HolderModelInput = styled.div`
 `;
 
 const CenterPanel = styled.div`
-  outline: 1px solid black;
+
   h2 {
     color: ${({ theme }) => theme.colors.headerPrimary};
     padding-top: 0;
@@ -850,8 +854,7 @@ const CenterPanel = styled.div`
   /* Large Tablet (700-900) */
   @media (min-width: ${breakpoints.smallTablet}) and (max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
-    padding-left: auto;
-    padding-right: auto;
+
     h2{
       padding-left: 20px;
     }
@@ -868,8 +871,6 @@ const CenterPanel = styled.div`
   /* Mobile (<500) */
   @media (max-width: ${breakpoints.mobile}) {
     align-items: flex-start;
-    padding-left: auto;
-    padding-right: auto;
     h2{
       padding-left: 20px;
     }
@@ -1139,8 +1140,6 @@ const ThreeContainer = styled.div`
 
 const RightPanel = styled.div`
   
-  outline: 1px solid black;
-  
   h2 {
     color: ${({ theme }) => theme.colors.headerPrimary};
   }
@@ -1155,21 +1154,18 @@ const RightPanel = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-top: 0px;
-
   padding-top:20px;
 
   /* LargeTablet (900-1250px) */
-  @media (max-width: ${breakpoints.largeTablet} and max-width: ${breakpoints.laptop}) {
+  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
     flex-wrap: wrap;
-    padding-left: 20px;
+    padding-left: 0px;
     padding-top: 0px;
   }
 
-    /* Large Tablet (<900) */
+    /* Mobile (<900) */
   @media (max-width: ${breakpoints.largeTablet}) {
     flex-wrap: wrap;
-
     padding-top: 0px;
   }
 
@@ -1186,10 +1182,12 @@ const DownloadDiv = styled.div`
   border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
   padding-bottom: 40px;
   padding-left: 20px;
+  box-sizing: border-box;
 
   /* Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-      padding-left: 40px; 
+      padding-left: 20px; 
+      border-top: 0px solid ${({ theme }) => theme.colors.outline};
   }
 `;
 
@@ -1213,25 +1211,28 @@ const DownloadButton = styled.button`
 `;
 
 const ComputedDiv = styled.div`
+  box-sizing: border-box;
   padding-left: 20px;
   border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
   padding-bottom: 20px;
 
   /* Large Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-      padding-left: 40px; 
+      padding-left: 20px; 
   }
 
 `;
 
 const AutodeskDiv = styled.div`
+  box-sizing: border-box;
 
   padding-left: 20px;
 
   /* Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
-      padding-left: 40px; 
-      width: 150%;
+      padding-left: 20px; 
+      width: 100%;
+      margin-bottom: 20px;
   }
 
 `;

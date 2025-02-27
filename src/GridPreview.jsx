@@ -43,7 +43,7 @@ const GridLayout = styled.div`
 
 
   grid-template-columns: 4fr 5fr 5fr;
-  grid-template-rows: auto 1fr 100px;
+  grid-template-rows: auto 1fr 0px;
   grid-template-areas:
     "header header header"
     "left center right"
@@ -57,13 +57,13 @@ const GridLayout = styled.div`
       "header header"
       "left center"
       "right center"
-      "footer footer";
+      "right center";
   }
 
   /* Mobile <900*/
   @media (max-width: ${breakpoints.largeTablet}) {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto 100px;
+    grid-template-rows: auto auto 1fr auto 0px;
     grid-template-areas:
       "header"
       "left"
@@ -89,7 +89,7 @@ const Header = styled.header`
   padding-left: 0px;
 
   h1 {
-    color: ${({ theme }) => theme.colors.headerPrimary};
+    color: ${({ theme }) => theme.colors.headerLogo};
     margin: 0;
     padding-bottom: 0;
     padding-top: 10px;
@@ -250,7 +250,7 @@ const Footer = styled.footer`
 
 const LeftPanel = styled.div`
   background: ${({ theme }) => theme.colors.background};
-  border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
+
 
   h2 {
     color: ${({ theme }) => theme.colors.headerPrimary};
@@ -272,6 +272,7 @@ const LeftPanel = styled.div`
     align-items: flex-start;
     padding-right: 0;
     padding-bottom: 20px;
+    border-bottom: 4px solid ${({ theme }) => theme.colors.outline};
   }
 
   /* Mobile (<900) */
@@ -845,16 +846,22 @@ const CenterPanel = styled.div`
   justify-content: flex-start;
   padding-top:20px;
 
+  border-left: 4px solid ${({ theme }) => theme.colors.outline};
+  border-right: 4px solid ${({ theme }) => theme.colors.outline};
+
   /* Tablet (900-1250) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
       padding-left: 20px;
       padding-right: 150px;
+      border-left: 4px solid ${({ theme }) => theme.colors.outline};
+      border-right: 0px solid ${({ theme }) => theme.colors.outline};
   }
 
   /* Large Tablet (700-900) */
   @media (min-width: ${breakpoints.smallTablet}) and (max-width: ${breakpoints.largeTablet}) {
     align-items: flex-start;
-
+    border-left: 0px solid ${({ theme }) => theme.colors.outline};
+    border-right: 0px solid ${({ theme }) => theme.colors.outline};
     h2{
       padding-left: 20px;
     }
@@ -863,6 +870,8 @@ const CenterPanel = styled.div`
   /* Small Tablet (500-700) */
   @media (min-width: ${breakpoints.mobile}) and (max-width: ${breakpoints.smallTablet}) {
     align-items: flex-start;
+    border-left: 0px solid ${({ theme }) => theme.colors.outline};
+    border-right: 0px solid ${({ theme }) => theme.colors.outline};
     h2{
       padding-left: 20px;
     }
@@ -871,6 +880,8 @@ const CenterPanel = styled.div`
   /* Mobile (<500) */
   @media (max-width: ${breakpoints.mobile}) {
     align-items: flex-start;
+    border-left: 0px solid ${({ theme }) => theme.colors.outline};
+    border-right: 0px solid ${({ theme }) => theme.colors.outline};
     h2{
       padding-left: 20px;
     }
@@ -1184,8 +1195,10 @@ const DownloadDiv = styled.div`
   padding-left: 20px;
   box-sizing: border-box;
 
+
+
   /* Tablet 900-1250*/
-  @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
+  @media (min-width: ${breakpoints.largeTablet}) {
       padding-left: 20px; 
       border-top: 0px solid ${({ theme }) => theme.colors.outline};
   }
@@ -1227,17 +1240,19 @@ const AutodeskDiv = styled.div`
   box-sizing: border-box;
 
   padding-left: 20px;
+  margin-bottom: 40px;
 
   /* Tablet 900-1250*/
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
       padding-left: 20px; 
       width: 100%;
-      margin-bottom: 20px;
+      margin-bottom: 40px;
   }
 
 `;
 
 const ModelOutput = styled.div`
+  flex-wrap: wrap;
   color: black;
   display: flex;
   justify-content: flex-start;
@@ -1246,6 +1261,16 @@ const ModelOutput = styled.div`
   span:first-child {
     margin-right: 6px; 
     font-weight: bold; 
+  }
+
+  /* Mobile (<900) */
+  @media (max-width: ${breakpoints.largeTablet}) {
+    span:first-child {
+      margin-right: 0px; 
+      font-weight: bold; 
+  }
+
+
   }
 `;
 

@@ -3,6 +3,7 @@ import { highlight } from "prismjs";
 export const theme = {
     colors: {
       background: "#272727",
+      headerLogo: "#3474F1",
       headerPrimary: "#FAFBFC",
       headerSecondary: "#DFDFDF",
       highlightPrimary: "#3474F1",

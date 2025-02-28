@@ -1166,7 +1166,7 @@ const RightPanel = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-top:20px;
+  padding-top:0px;
 
   /* LargeTablet (900-1250px) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
@@ -1186,25 +1186,21 @@ const RightPanel = styled.div`
 
 
 const ShopifyBuyDiv = styled.div`
-  width: 100%;
+
   padding: 20px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  padding-top: 0px;
+  padding-left: 20px;
+
 
   
   h2 {
     color: ${({ theme }) => theme.colors.headerPrimary};
-    padding: 0;
-    margin: 0;
-
   }
   
-  p {
-    color: ${({ theme }) => theme.colors.headerSecondary};
-    font-size: 16px;  
-    padding: 0;
-    margin: 0;
-    font-weight: bold;
-  }
 
   /* Mobile (<900) */
   @media (max-width: ${breakpoints.largeTablet}) {
@@ -1215,22 +1211,23 @@ const ShopifyBuyDiv = styled.div`
 
 
 const AddToCartButton = styled.button`
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 5px 10px;
+  font-size: 14px;
+  width: auto; 
+  min-width: 120px;
   background-color: #3474f1;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background 0.3s;
+  display: inline-block;
+  width: 150px;
   
   &:hover {
-    background-color: #2f68d9;
+    background-color: ${({ theme }) => theme.colors.highlightSecondary};
   }
 
-  &:active {
-    background-color: #2a5fc9;
-  }
 `;
 
 
@@ -2011,7 +2008,7 @@ const GridPreview = () => {
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
   const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
   const [openAccordions, setOpenAccordions] = useState({
-    bottle1: false,
+    bottle1: true,
     bottle2: false,
     bottle3: false,
     holder: false 
@@ -2045,7 +2042,6 @@ const GridPreview = () => {
   
       const data = await response.json();
       console.log("Added to cart:", data);
-      updateCartCount(); // Update the cart count in the UI
     } catch (error) {
       console.error("Error adding to cart:", error);
     }
@@ -2726,7 +2722,6 @@ const GridPreview = () => {
       <RightPanel>
         <ShopifyBuyDiv>
           <h2>Order</h2>
-          <p>Custom 3D Printed Holder - $30</p>
           <AddToCartButton onClick={addToCart}>
             Add to Cart
           </AddToCartButton>

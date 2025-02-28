@@ -1,0 +1,16 @@
+Record details
+
+
+Edit record
+Record name
+holderforge.com
+Record type
+A
+Value
+d1vyxzsryvgfjm.cloudfront.net.
+Alias
+Yes
+TTL (seconds)
+-
+Routing policy
+Simple

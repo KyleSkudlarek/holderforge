@@ -26,6 +26,7 @@ import Cuboid from './Cuboid';
 
 
 
+
 const breakpoints = {
   laptop: '1300px',
   largeTablet: '1000px',
@@ -1183,6 +1184,57 @@ const RightPanel = styled.div`
   
 `;
 
+
+const ShopifyBuyDiv = styled.div`
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+
+  
+  h2 {
+    color: ${({ theme }) => theme.colors.headerPrimary};
+    padding: 0;
+    margin: 0;
+
+  }
+  
+  p {
+    color: ${({ theme }) => theme.colors.headerSecondary};
+    font-size: 16px;  
+    padding: 0;
+    margin: 0;
+    font-weight: bold;
+  }
+
+  /* Mobile (<900) */
+  @media (max-width: ${breakpoints.largeTablet}) {
+      border-top: 4px solid ${({ theme }) => theme.colors.outline};
+  }
+  
+`;
+
+
+const AddToCartButton = styled.button`
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #3474f1;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+  
+  &:hover {
+    background-color: #2f68d9;
+  }
+
+  &:active {
+    background-color: #2a5fc9;
+  }
+`;
+
+
+
 const DownloadDiv = styled.div`
   
   width: 100%;
@@ -1201,6 +1253,12 @@ const DownloadDiv = styled.div`
   @media (min-width: ${breakpoints.largeTablet}) {
       padding-left: 20px; 
       border-top: 0px solid ${({ theme }) => theme.colors.outline};
+  }
+
+  /* Mobile (<900) */
+  @media (max-width: ${breakpoints.largeTablet}) {
+    padding-left: 20px; 
+    border-top: 0px solid ${({ theme }) => theme.colors.outline};
   }
 `;
 
@@ -1959,6 +2017,40 @@ const GridPreview = () => {
     holder: false 
   });
 
+  const addToCart = async () => {
+    try {
+      const response = await fetch('https://shop.holderforge.com/cart/add.js', { // Use Shopify store domain
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Ensures the cart session is recognized
+        body: JSON.stringify({
+          id: "46443471143157", // Your actual variant ID
+          quantity: 1,
+          properties: {
+            "Model Width": modelConfig.model_width,
+            "Model Depth": modelConfig.model_depth,
+            "Hole 1 Diameter": modelConfig.row_1_hole_diameter,
+            "Hole 2 Diameter": modelConfig.row_2_hole_diameter,
+            "Hole 3 Diameter": modelConfig.row_3_hole_diameter,
+            "Hole 1 Shape": modelConfig.row_1_hole_shape,
+            "Hole 2 Shape": modelConfig.row_2_hole_shape,
+            "Hole 3 Shape": modelConfig.row_3_hole_shape,
+          }
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to add to cart");
+      }
+  
+      const data = await response.json();
+      console.log("Added to cart:", data);
+      updateCartCount(); // Update the cart count in the UI
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
+  };
+
   // Add the function here, before any event handlers
   const computeRequiredModelDimensions = (newDiameter, prevConfig) => {
     const {
@@ -2515,7 +2607,7 @@ const GridPreview = () => {
                         value={modelConfig.model_width} 
                         onChange={updateModelWidth} 
                         min={10} 
-                        max={300} 
+                        max={200} 
                       />
                     </InputSpan>
                   </ModelInput>
@@ -2526,7 +2618,7 @@ const GridPreview = () => {
                         value={modelConfig.model_depth} 
                         onChange={updateModelDepth} 
                         min={10} 
-                        max={300}
+                        max={200}
                       />
                     </InputSpan>
                   </ModelInput>
@@ -2632,6 +2724,13 @@ const GridPreview = () => {
         <ThreeViewer stlURL={stlURL} />
       </CenterPanel>
       <RightPanel>
+        <ShopifyBuyDiv>
+          <h2>Order</h2>
+          <p>Custom 3D Printed Holder - $30</p>
+          <AddToCartButton onClick={addToCart}>
+            Add to Cart
+          </AddToCartButton>
+        </ShopifyBuyDiv>
         <DownloadDiv>
           <h2>Download</h2>
           <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>

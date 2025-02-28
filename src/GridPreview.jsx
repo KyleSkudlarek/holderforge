@@ -524,6 +524,8 @@ const BottlePreviewContainer = styled.div`
   // outline: 1px solid black;
   display: flex;
   justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 60px; /* Alternative approach with padding */
 
 `;
 
@@ -1166,7 +1168,7 @@ const RightPanel = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-top:20px;
+  padding-top:0px;
 
   /* LargeTablet (900-1250px) */
   @media (min-width: ${breakpoints.largeTablet}) and (max-width: ${breakpoints.laptop}) {
@@ -1186,25 +1188,21 @@ const RightPanel = styled.div`
 
 
 const ShopifyBuyDiv = styled.div`
-  width: 100%;
+
   padding: 20px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  padding-top: 0px;
+  padding-left: 20px;
+
 
   
   h2 {
     color: ${({ theme }) => theme.colors.headerPrimary};
-    padding: 0;
-    margin: 0;
-
   }
   
-  p {
-    color: ${({ theme }) => theme.colors.headerSecondary};
-    font-size: 16px;  
-    padding: 0;
-    margin: 0;
-    font-weight: bold;
-  }
 
   /* Mobile (<900) */
   @media (max-width: ${breakpoints.largeTablet}) {
@@ -1215,22 +1213,23 @@ const ShopifyBuyDiv = styled.div`
 
 
 const AddToCartButton = styled.button`
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 5px 10px;
+  font-size: 14px;
+  width: auto; 
+  min-width: 120px;
   background-color: #3474f1;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background 0.3s;
+  display: inline-block;
+  width: 150px;
   
   &:hover {
-    background-color: #2f68d9;
+    background-color: ${({ theme }) => theme.colors.highlightSecondary};
   }
 
-  &:active {
-    background-color: #2a5fc9;
-  }
 `;
 
 
@@ -1363,15 +1362,15 @@ const baseModelConfigAtom = atom({
   // Default values for user inputs
   model_width: 120,
   model_depth: 81,
-  row_1_hole_diameter: 19,
-  row_2_hole_diameter: 19,
+  row_1_hole_diameter: 15,
+  row_2_hole_diameter: 17,
   row_3_hole_diameter: 19,
-  row_1_bottle_height: 120,
-  row_2_bottle_height: 120,
+  row_1_bottle_height: 90,
+  row_2_bottle_height: 100,
   row_3_bottle_height: 120,
 
   row_1_hole_shape: "circle", // Options: "circle" or "square"
-  row_2_hole_shape: "circle",
+  row_2_hole_shape: "square",
   row_3_hole_shape: "circle",
 
 });
@@ -2011,7 +2010,7 @@ const GridPreview = () => {
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
   const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
   const [openAccordions, setOpenAccordions] = useState({
-    bottle1: false,
+    bottle1: true,
     bottle2: false,
     bottle3: false,
     holder: false 
@@ -2045,7 +2044,6 @@ const GridPreview = () => {
   
       const data = await response.json();
       console.log("Added to cart:", data);
-      updateCartCount(); // Update the cart count in the UI
     } catch (error) {
       console.error("Error adding to cart:", error);
     }
@@ -2059,25 +2057,29 @@ const GridPreview = () => {
       row_3_hole_diameter,
       number_holes_per_row,
       edge_gap_scale_factor,
-      model_width,
-      model_depth,
     } = prevConfig;
-
-    const maxHoleDiameter = Math.max(newDiameter, row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter);
+  
+    // Find the largest hole diameter across all rows
+    // When calling this for row_1, replace row_1_hole_diameter with newDiameter
+    // (Same for row_2 and row_3)
+    const maxHoleDiameter = Math.max(
+      row_1_hole_diameter === newDiameter ? 0 : row_1_hole_diameter,
+      row_2_hole_diameter === newDiameter ? 0 : row_2_hole_diameter,
+      row_3_hole_diameter === newDiameter ? 0 : row_3_hole_diameter,
+      newDiameter
+    );
+    
     const n = number_holes_per_row;
-    const minInnerGap = 2.75
+    const minInnerGap = 2.75;
     const minLeftRightPadding = minInnerGap * edge_gap_scale_factor;
-
-    const minModelWidth = (minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter);
-    const minModelDepth = 3 * (8 + maxHoleDiameter);
-
-    console.log("Computed Model Width:", minModelWidth);
-    console.log("Computed Model Depth:", minModelDepth);
-
-
+  
+    const minModelWidth = Math.ceil((minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter));
+    const minModelDepth = Math.ceil(3 * (8 + maxHoleDiameter));
+  
+    // Return the minimum required dimensions
     return {
-      model_width: Math.max(model_width, Math.ceil(minModelWidth)),
-      model_depth: Math.max(model_depth, Math.ceil(minModelDepth)),
+      model_width: minModelWidth,
+      model_depth: minModelDepth,
     };
   };
 
@@ -2726,7 +2728,6 @@ const GridPreview = () => {
       <RightPanel>
         <ShopifyBuyDiv>
           <h2>Order</h2>
-          <p>Custom 3D Printed Holder - $30</p>
           <AddToCartButton onClick={addToCart}>
             Add to Cart
           </AddToCartButton>

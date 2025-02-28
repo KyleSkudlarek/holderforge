@@ -2019,7 +2019,7 @@ const GridPreview = () => {
 
   const addToCart = async () => {
     try {
-      const response = await fetch('https://rmdprc-8s.myshopify.com/cart/add.js', { // Use Shopify store domain
+      const response = await fetch('https://shop.holderforge.com/cart/add.js', { // Use Shopify store domain
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Ensures the cart session is recognized

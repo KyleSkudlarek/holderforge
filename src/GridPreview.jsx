@@ -2402,18 +2402,18 @@ const GridPreview = () => {
     <GridLayout>
       <Header>
         <h1>HolderForge</h1>
-        <h2>Make a Custom Bottle Holder</h2>
+        <h2>Make a Custom Organizer</h2>
       </Header>
       <LeftPanel>
         <BottleInputContainer>
-          <h2>Bottle Sizes To Hold</h2>
+          <h2>Things To Hold</h2>
           <AccordionContainer>
             <AccordionItem>
               <AccordionHeader onClick={() => setOpenAccordions(prev => ({
                 ...prev,
                 bottle1: !prev.bottle1
               }))}>
-                <h3>Bottle 1</h3>
+                <h3>Thing 1</h3>
                 {!openAccordions.bottle1 && (
                   <AccordionSummary>
                     {`${modelConfig.row_1_hole_diameter}mm × ${modelConfig.row_1_bottle_height}mm`}
@@ -2470,7 +2470,7 @@ const GridPreview = () => {
                   ...prev,
                   bottle2: !prev.bottle2
                 }))}>
-                  <h3>Bottle 2</h3>
+                  <h3>Thing 2</h3>
                   {!openAccordions.bottle2 && (
                     <AccordionSummary>
                       {`${modelConfig.row_2_hole_diameter}mm × ${modelConfig.row_2_bottle_height}mm`}
@@ -2527,7 +2527,7 @@ const GridPreview = () => {
                 ...prev,
                 bottle3: !prev.bottle3
               }))}>
-                <h3>Bottle 3</h3>
+                <h3>Thing 3</h3>
                 {!openAccordions.bottle3 && (
                   <AccordionSummary>
                     {`${modelConfig.row_3_hole_diameter}mm × ${modelConfig.row_3_bottle_height}mm`}

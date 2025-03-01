@@ -1158,6 +1158,10 @@ const RightPanel = styled.div`
     color: ${({ theme }) => theme.colors.headerPrimary};
   }
 
+  p {
+    color: ${({ theme }) => theme.colors.headerSecondary};
+  }
+
   span {
     color: ${({ theme }) => theme.colors.headerSecondary};
   }
@@ -1187,20 +1191,34 @@ const RightPanel = styled.div`
 `;
 
 
-const ShopifyBuyDiv = styled.div`
+const OrderDiv = styled.div`
 
-  padding: 20px;
+
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
 
-  padding-top: 0px;
+  padding-top: 20px;
   padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
 
 
+  h2, p {
+    padding: 0;
+    margin: 0;
+  }
   
   h2 {
     color: ${({ theme }) => theme.colors.headerPrimary};
+
+  }
+
+  p {
+    color: ${({ theme }) => theme.colors.headerSecondary};
+    padding-bottom: 20px;
+    font-size: 14px;
+    line-height: 1;  
   }
   
 
@@ -1246,6 +1264,18 @@ const DownloadDiv = styled.div`
   padding-left: 20px;
   box-sizing: border-box;
 
+  h2, p {
+    padding: 0;
+    margin: 0;
+   }  
+
+  p {
+     line-height: 1;
+     font-size: 14px;
+     margin-bottom: 10px;
+
+  }
+
 
 
   /* Tablet 900-1250*/
@@ -1263,6 +1293,7 @@ const DownloadDiv = styled.div`
 
 const DownloadButton = styled.button`
   padding: 5px 10px; 
+  margin-top: 10px;
   font-size: 14px; 
   width: auto; /* Shrinks to fit text */
   min-width: 120px; /* Ensures it doesn't get too small */
@@ -2775,16 +2806,18 @@ const GridPreview = () => {
         <ThreeViewer stlURL={stlURL} />
       </CenterPanel>
       <RightPanel>
-        <ShopifyBuyDiv>
+        <OrderDiv>
           <h2>Order</h2>
+          <p>Printed and shipped to you</p>
           <AddToCartButton onClick={addToCart}>
             Add to Cart
           </AddToCartButton>
-        </ShopifyBuyDiv>
+        </OrderDiv>
         <DownloadDiv>
           <h2>Download</h2>
+          <p>Print with a 3D printer</p>
+          <DownloadButton onClick={downloadSTLFile}>Download STL File</DownloadButton>
           <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
-          <DownloadButton onClick={downloadSTLFile} style={{ marginTop: "10px" }}>Download STL File</DownloadButton>
         </DownloadDiv>
         <ComputedDiv>
           <h2>Computed Values</h2>

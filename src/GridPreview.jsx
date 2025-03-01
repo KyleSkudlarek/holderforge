@@ -2808,7 +2808,7 @@ const GridPreview = () => {
       <RightPanel>
         <OrderDiv>
           <h2>Order</h2>
-          <p>Printed and shipped to you</p>
+          <p>Printed and shipped to you (Coming Soon)</p>
           <AddToCartButton onClick={addToCart}>
             Add to Cart
           </AddToCartButton>

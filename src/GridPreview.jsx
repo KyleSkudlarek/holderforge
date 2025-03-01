@@ -1365,9 +1365,9 @@ const baseModelConfigAtom = atom({
   row_1_hole_diameter: 15,
   row_2_hole_diameter: 17,
   row_3_hole_diameter: 19,
-  row_1_bottle_height: 90,
+  row_1_bottle_height: 120,
   row_2_bottle_height: 100,
-  row_3_bottle_height: 120,
+  row_3_bottle_height: 80,
 
   row_1_hole_shape: "circle", // Options: "circle" or "square"
   row_2_hole_shape: "square",
@@ -2123,7 +2123,7 @@ const GridPreview = () => {
         model_depth,
       };
     });
-  }, [userConfig.model_width]); // Runs whenever model_width updates
+  }, []); // Runs whenever model_width updates
 
 
   const generatePythonFile = () => {
@@ -2200,56 +2200,47 @@ const GridPreview = () => {
 
 
   const updateModelWidth = (e) => {
+    const newWidth = parseInt(e.target.value, 10) || 0;
+    
     setUserConfig((prev) => {
-      let newWidth = parseInt(e.target.value, 10) || 0;
-      const { number_holes_per_row, edge_gap_scale_factor, row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter } = prev;
-      const n = number_holes_per_row;
-  
-      // Get the largest hole diameter among all rows
-      const maxHoleDiameter = Math.max(row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter);
-  
-      // Compute the left-right padding dynamically
-      const leftRightPadding = edge_gap_scale_factor * ((newWidth - (n * maxHoleDiameter)) / (n + 1));
-  
-      // Compute the minimum model width required
-      const minModelWidth = (2.5 * (n - 1)) + (2 * leftRightPadding) + (n * maxHoleDiameter);
-  
+      // Calculate the minimum width directly here
+      const maxHoleDiameter = Math.max(
+        prev.row_1_hole_diameter, 
+        prev.row_2_hole_diameter, 
+        prev.row_3_hole_diameter
+      );
+      
+      const n = prev.number_holes_per_row;
+      const minInnerGap = 2.75;
+      const minLeftRightPadding = minInnerGap * prev.edge_gap_scale_factor;
+      
+      const minModelWidth = Math.ceil((minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter));
+      
       // Ensure width is at least the minimum required value
-      newWidth = Math.max(newWidth, Math.ceil(minModelWidth));
-      console.log("Previous State Before Update:", prev);
-      console.log("Computed New Model Width:", minModelWidth);
-      console.log("Computed Inner Gap from computeRequiredModelDimensions:", prev.innerGap);
-      console.log("Computed Min Model Width:", minModelWidth);
-      console.log("Clamped Model Width:", newWidth);
-  
       return {
         ...prev,
-        model_width: newWidth,
+        model_width: Math.max(newWidth, minModelWidth),
       };
     });
   };
 
   const updateModelDepth = (e) => {
+    const newDepth = parseInt(e.target.value, 10) || 0;
+    
     setUserConfig((prev) => {
-      let newDepth = parseInt(e.target.value, 10) || 0;
-      const { row_1_hole_diameter, row_2_hole_diameter, row_3_hole_diameter } = prev;
-  
-      // Compute the minimum required model depth ensuring at least 4mm padding in all rows
-      const minModelDepth = 3 * Math.max(
-        8 + row_1_hole_diameter,
-        8 + row_2_hole_diameter,
-        8 + row_3_hole_diameter
+      // Calculate the minimum depth directly here
+      const maxHoleDiameter = Math.max(
+        prev.row_1_hole_diameter, 
+        prev.row_2_hole_diameter, 
+        prev.row_3_hole_diameter
       );
-  
-      // Ensure model depth is at least the computed minimum
-      newDepth = Math.max(newDepth, Math.ceil(minModelDepth));
-  
-      console.log("Computed Min Model Depth:", minModelDepth);
-      console.log("Clamped Model Depth:", newDepth);
-  
+      
+      const minModelDepth = Math.ceil(3 * (8 + maxHoleDiameter));
+      
+      // Ensure depth is at least the minimum required value
       return {
         ...prev,
-        model_depth: newDepth,
+        model_depth: Math.max(newDepth, minModelDepth),
       };
     });
   };
@@ -2277,20 +2268,32 @@ const GridPreview = () => {
 
   const updateRow1HoleDiameter = (e) => {
     const newDiameter = parseInt(e.target.value) || 0;
-  
+    
     setUserConfig((prev) => {
-      // Compute the required width & depth immediately
-      const { model_width: newWidth, model_depth: newDepth } = computeRequiredModelDimensions(newDiameter, prev);
-  
-      // Use newWidth directly when computing row gaps instead of old prev.model_width
-      const newInnerGap = (newWidth - (prev.number_holes_per_row * newDiameter)) / (prev.number_holes_per_row - 1);
+      // Calculate the new maximums directly with the current state + new diameter
+      const maxHoleDiameter = Math.max(
+        newDiameter,  // Use the new diameter value directly
+        prev.row_2_hole_diameter,
+        prev.row_3_hole_diameter
+      );
+      
+      const n = prev.number_holes_per_row;
+      const minInnerGap = 2.75;
+      const minLeftRightPadding = minInnerGap * prev.edge_gap_scale_factor;
+      
+      // Calculate the new minimum dimensions
+      const minModelWidth = Math.ceil((minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter));
+      const minModelDepth = Math.ceil(3 * (8 + maxHoleDiameter));
+      
+      // Calculate new gaps based on the new width
+      const newInnerGap = (minModelWidth - (n * newDiameter)) / (n - 1);
       const newPadding = prev.edge_gap_scale_factor * newInnerGap;
-  
+      
       return {
         ...prev,
-        model_width: newWidth,
-        model_depth: newDepth,
         row_1_hole_diameter: newDiameter,
+        model_width: minModelWidth,  // Always use the minimum width
+        model_depth: minModelDepth,  // Always use the minimum depth
         row_1_inner_gap: newInnerGap,
         row_1_padding_left_right: newPadding,
       };
@@ -2299,20 +2302,32 @@ const GridPreview = () => {
 
   const updateRow2HoleDiameter = (e) => {
     const newDiameter = parseInt(e.target.value) || 0;
-  
+    
     setUserConfig((prev) => {
-      // Compute the required width & depth immediately
-      const { model_width: newWidth, model_depth: newDepth } = computeRequiredModelDimensions(newDiameter, prev);
-  
-      // Use newWidth directly when computing row gaps instead of old prev.model_width
-      const newInnerGap = (newWidth - (prev.number_holes_per_row * newDiameter)) / (prev.number_holes_per_row - 1);
+      // Calculate the new maximums directly with the current state + new diameter
+      const maxHoleDiameter = Math.max(
+        prev.row_1_hole_diameter,
+        newDiameter,  // Use the new diameter value directly
+        prev.row_3_hole_diameter
+      );
+      
+      const n = prev.number_holes_per_row;
+      const minInnerGap = 2.75;
+      const minLeftRightPadding = minInnerGap * prev.edge_gap_scale_factor;
+      
+      // Calculate the new minimum dimensions
+      const minModelWidth = Math.ceil((minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter));
+      const minModelDepth = Math.ceil(3 * (8 + maxHoleDiameter));
+      
+      // Calculate new gaps based on the new width
+      const newInnerGap = (minModelWidth - (n * newDiameter)) / (n - 1);
       const newPadding = prev.edge_gap_scale_factor * newInnerGap;
-  
+      
       return {
         ...prev,
-        model_width: newWidth,
-        model_depth: newDepth,
         row_2_hole_diameter: newDiameter,
+        model_width: minModelWidth,  // Always use the minimum width
+        model_depth: minModelDepth,  // Always use the minimum depth
         row_2_inner_gap: newInnerGap,
         row_2_padding_left_right: newPadding,
       };
@@ -2321,20 +2336,32 @@ const GridPreview = () => {
 
   const updateRow3HoleDiameter = (e) => {
     const newDiameter = parseInt(e.target.value) || 0;
-  
+    
     setUserConfig((prev) => {
-      // Compute the required width & depth immediately
-      const { model_width: newWidth, model_depth: newDepth } = computeRequiredModelDimensions(newDiameter, prev);
-  
-      // Use newWidth directly when computing row gaps instead of old prev.model_width
-      const newInnerGap = (newWidth - (prev.number_holes_per_row * newDiameter)) / (prev.number_holes_per_row - 1);
+      // Calculate the new maximums directly with the current state + new diameter
+      const maxHoleDiameter = Math.max(
+        prev.row_1_hole_diameter,
+        prev.row_2_hole_diameter,
+        newDiameter  // Use the new diameter value directly
+      );
+      
+      const n = prev.number_holes_per_row;
+      const minInnerGap = 2.75;
+      const minLeftRightPadding = minInnerGap * prev.edge_gap_scale_factor;
+      
+      // Calculate the new minimum dimensions
+      const minModelWidth = Math.ceil((minInnerGap * (n - 1)) + (2 * minLeftRightPadding) + (n * maxHoleDiameter));
+      const minModelDepth = Math.ceil(3 * (8 + maxHoleDiameter));
+      
+      // Calculate new gaps based on the new width
+      const newInnerGap = (minModelWidth - (n * newDiameter)) / (n - 1);
       const newPadding = prev.edge_gap_scale_factor * newInnerGap;
-  
+      
       return {
         ...prev,
-        model_width: newWidth,
-        model_depth: newDepth,
         row_3_hole_diameter: newDiameter,
+        model_width: minModelWidth,  // Always use the minimum width
+        model_depth: minModelDepth,  // Always use the minimum depth
         row_3_inner_gap: newInnerGap,
         row_3_padding_left_right: newPadding,
       };

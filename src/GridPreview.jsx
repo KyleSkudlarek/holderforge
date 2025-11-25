@@ -1394,14 +1394,14 @@ const baseModelConfigAtom = atom({
   model_width: 120,
   model_depth: 81,
   row_1_hole_diameter: 15,
-  row_2_hole_diameter: 17,
-  row_3_hole_diameter: 19,
+  row_2_hole_diameter: 15,
+  row_3_hole_diameter: 15,
   row_1_bottle_height: 120,
-  row_2_bottle_height: 100,
-  row_3_bottle_height: 80,
+  row_2_bottle_height: 120,
+  row_3_bottle_height: 120,
 
   row_1_hole_shape: "circle", // Options: "circle" or "square"
-  row_2_hole_shape: "square",
+  row_2_hole_shape: "circle",
   row_3_hole_shape: "circle",
 
 });

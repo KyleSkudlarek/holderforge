@@ -591,14 +591,7 @@ const BottleThreeViewer = ({modelConfig, rowIndex}) => {
     const backgroundColor = 0x272727;
     scene.background = new THREE.Color(backgroundColor);
 
-    // Camera Setup
-    const camera = new THREE.PerspectiveCamera(
-      50,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.set(50, 50, 150);
+
 
 
     // Renderer Setup
@@ -1962,7 +1955,7 @@ const ThreeViewer = ({ stlURL }) => {
 
       // Camera setup
       const camera = new THREE.PerspectiveCamera(65, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 2000);
-      camera.position.set(0, 150, 150); // Move camera further back
+      camera.position.set(100, 150, 100); // Move camera further back
       camera.lookAt(0, 0, 0);
       sceneRef.current.camera = camera;
 
@@ -2063,7 +2056,7 @@ const GridPreview = () => {
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
   const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
   const [openAccordions, setOpenAccordions] = useState({
-    bottle1: true,
+    bottle1: false,
     bottle2: false,
     bottle3: false,
     holder: false 
@@ -2716,6 +2709,7 @@ const GridPreview = () => {
       </LeftPanel>
       <CenterPanel>
         <h2>Preview</h2>
+        <ThreeViewer stlURL={stlURL} />
         <ModelContainer>
           <ModelWrapper>
             <Model
@@ -2803,7 +2797,6 @@ const GridPreview = () => {
           </ModelProfileTier>  
         </ModelProfile>
         <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} />
-        <ThreeViewer stlURL={stlURL} />
       </CenterPanel>
       <RightPanel>
         <OrderDiv>

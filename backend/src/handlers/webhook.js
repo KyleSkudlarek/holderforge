@@ -57,7 +57,7 @@ async function fulfil(order, secrets) {
       quantity: order.quantity,
       servicelevelToken: order.shippoServicelevel || "usps_ground_advantage",
     });
-    await updateOrder(order.orderId, { status: "label_purchased", label });
+    await updateOrder(order.orderId, { status: "label_purchased", label, labelError: null });
   } catch (err) {
     labelError = err.message;
     console.error("label purchase failed", order.orderId, err);

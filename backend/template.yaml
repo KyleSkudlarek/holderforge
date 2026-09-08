@@ -1,0 +1,204 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  HolderForge commerce backend: Stripe Checkout session creation, Stripe webhook
+  that records paid orders, buys a USPS label through Shippo, and emails the
+  shop owner. One stack per stage (staging, prod).
+
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues: [staging, prod]
+  SiteUrl:
+    Type: String
+    Description: Fallback base URL for Checkout success/cancel redirects when the request Origin is not allowlisted.
+  AllowedOrigins:
+    Type: CommaDelimitedList
+    Description: Browser origins allowed to call the API and upload STL files.
+  ProductName:
+    Type: String
+    Default: Custom 15-Slot Bottle Holder
+  UnitPriceCents:
+    Type: Number
+    Default: 3499
+    Description: Price per holder in USD cents.
+  ShippingGroundCents:
+    Type: Number
+    Default: 695
+    Description: Flat USPS Ground Advantage rate charged to the customer, USD cents.
+  ParcelWeightOz:
+    Type: Number
+    Default: 10
+    Description: Shipping weight per holder including packaging, ounces. Multiplied by quantity.
+  ParcelLengthIn:
+    Type: Number
+    Default: 7
+  ParcelWidthIn:
+    Type: Number
+    Default: 5
+  ParcelHeightIn:
+    Type: Number
+    Default: 4
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures: [arm64]
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        STAGE: !Ref Stage
+        SSM_PREFIX: !Sub /holderforge/${Stage}/
+        ORDERS_TABLE: !Ref OrdersTable
+        UPLOADS_BUCKET: !Ref UploadsBucket
+        SITE_URL: !Ref SiteUrl
+        ALLOWED_ORIGINS: !Join [",", !Ref AllowedOrigins]
+        PRODUCT_NAME: !Ref ProductName
+        UNIT_PRICE_CENTS: !Ref UnitPriceCents
+        SHIPPING_GROUND_CENTS: !Ref ShippingGroundCents
+        PARCEL_WEIGHT_OZ: !Ref ParcelWeightOz
+        PARCEL_LENGTH_IN: !Ref ParcelLengthIn
+        PARCEL_WIDTH_IN: !Ref ParcelWidthIn
+        PARCEL_HEIGHT_IN: !Ref ParcelHeightIn
+
+Resources:
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins: !Ref AllowedOrigins
+        AllowMethods: [GET, POST, OPTIONS]
+        AllowHeaders: [content-type]
+        MaxAge: 3600
+
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub holderforge-orders-${Stage}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  # Customer-generated STL files, uploaded by the browser via presigned PUT before
+  # redirecting to Stripe. Keyed uploads/<uuid>.stl; the key is stored in the
+  # Checkout Session metadata and copied onto the order.
+  UploadsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub holderforge-uploads-${Stage}-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins: !Ref AllowedOrigins
+            AllowedMethods: [PUT]
+            AllowedHeaders: ["*"]
+            MaxAge: 3600
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-old-uploads
+            Status: Enabled
+            Prefix: uploads/
+            ExpirationInDays: 400
+
+  CheckoutFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2022
+        Minify: false
+        Sourcemap: false
+        External: ["@aws-sdk/*"]
+        EntryPoints: [src/handlers/checkout.js]
+    Properties:
+      CodeUri: .
+      Handler: checkout.handler
+      Description: Creates a Stripe Checkout Session and a presigned STL upload URL.
+      Events:
+        Checkout:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /checkout
+            Method: POST
+        Pricing:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /pricing
+            Method: GET
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: [ssm:GetParametersByPath]
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/holderforge/${Stage}
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/holderforge/${Stage}/*
+            - Effect: Allow
+              Action: [s3:PutObject]
+              Resource: !Sub ${UploadsBucket.Arn}/uploads/*
+
+  WebhookFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2022
+        Minify: false
+        Sourcemap: false
+        External: ["@aws-sdk/*"]
+        EntryPoints: [src/handlers/webhook.js]
+    Properties:
+      CodeUri: .
+      Handler: webhook.handler
+      Description: Handles Stripe checkout.session.completed; records the order, buys a Shippo label, emails the owner.
+      Timeout: 60
+      Events:
+        StripeWebhook:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /stripe/webhook
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+        - Statement:
+            - Effect: Allow
+              Action: [ssm:GetParametersByPath]
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/holderforge/${Stage}
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/holderforge/${Stage}/*
+            - Effect: Allow
+              Action: [s3:GetObject]
+              Resource: !Sub ${UploadsBucket.Arn}/uploads/*
+            - Effect: Allow
+              Action: [ses:SendEmail]
+              Resource: "*"
+
+Outputs:
+  ApiUrl:
+    Description: Base URL of the HTTP API (no trailing slash).
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com
+  WebhookUrl:
+    Description: Register this URL as the Stripe webhook endpoint for checkout.session.completed.
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/stripe/webhook
+  OrdersTableName:
+    Value: !Ref OrdersTable
+  UploadsBucketName:
+    Value: !Ref UploadsBucket

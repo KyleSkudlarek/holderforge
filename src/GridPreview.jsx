@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { atom, useAtom } from "jotai";
 import { pythonTemplate } from "./template"; // Import the Python template
+import OrderPanel from "./OrderPanel";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -1184,67 +1185,6 @@ const RightPanel = styled.div`
 `;
 
 
-const OrderDiv = styled.div`
-
-
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-
-  padding-top: 20px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-bottom: 20px;
-
-
-  h2, p {
-    padding: 0;
-    margin: 0;
-  }
-  
-  h2 {
-    color: ${({ theme }) => theme.colors.headerPrimary};
-
-  }
-
-  p {
-    color: ${({ theme }) => theme.colors.headerSecondary};
-    padding-bottom: 20px;
-    font-size: 14px;
-    line-height: 1;  
-  }
-  
-
-  /* Mobile (<900) */
-  @media (max-width: ${breakpoints.largeTablet}) {
-      border-top: 4px solid ${({ theme }) => theme.colors.outline};
-  }
-  
-`;
-
-
-const AddToCartButton = styled.button`
-  padding: 5px 10px;
-  font-size: 14px;
-  width: auto; 
-  min-width: 120px;
-  background-color: #3474f1;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s;
-  display: inline-block;
-  width: 150px;
-  
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.highlightSecondary};
-  }
-
-`;
-
-
-
 const DownloadDiv = styled.div`
   
   width: 100%;
@@ -2062,39 +2002,6 @@ const GridPreview = () => {
     holder: false 
   });
 
-  const addToCart = async () => {
-    try {
-      const response = await fetch('https://shop.holderforge.com/cart/add.js', { // Use Shopify store domain
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Ensures the cart session is recognized
-        body: JSON.stringify({
-          id: "46443471143157", // Your actual variant ID
-          quantity: 1,
-          properties: {
-            "Model Width": modelConfig.model_width,
-            "Model Depth": modelConfig.model_depth,
-            "Hole 1 Diameter": modelConfig.row_1_hole_diameter,
-            "Hole 2 Diameter": modelConfig.row_2_hole_diameter,
-            "Hole 3 Diameter": modelConfig.row_3_hole_diameter,
-            "Hole 1 Shape": modelConfig.row_1_hole_shape,
-            "Hole 2 Shape": modelConfig.row_2_hole_shape,
-            "Hole 3 Shape": modelConfig.row_3_hole_shape,
-          }
-        })
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to add to cart");
-      }
-  
-      const data = await response.json();
-      console.log("Added to cart:", data);
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-    }
-  };
-
   // Add the function here, before any event handlers
   const computeRequiredModelDimensions = (newDiameter, prevConfig) => {
     const {
@@ -2799,13 +2706,7 @@ const GridPreview = () => {
         <JscadViewer setExportScene={setExportScene} setStlURL={setStlURL} modelConfig={modelConfig} />
       </CenterPanel>
       <RightPanel>
-        <OrderDiv>
-          <h2>Order</h2>
-          <p>Printed and shipped to you (Coming Soon)</p>
-          <AddToCartButton onClick={addToCart}>
-            Add to Cart
-          </AddToCartButton>
-        </OrderDiv>
+        <OrderPanel modelConfig={modelConfig} stlURL={stlURL} />
         <DownloadDiv>
           <h2>Download</h2>
           <p>Print with a 3D printer</p>

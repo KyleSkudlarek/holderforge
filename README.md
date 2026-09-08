@@ -34,3 +34,13 @@ https://192.168.1.225:5173
 | Production | https://holderforge.com | Manual: GitHub → Actions → **Deploy to production** → Run workflow (or `gh workflow run deploy-prod.yml`). Builds the chosen ref and uploads `dist/` to Amplify app `holderforge-prod`. |
 
 Roll back by re-running the workflow with an older commit SHA.
+
+## Backend (payments)
+
+`backend/` is an AWS SAM app: Stripe Checkout session creation, Stripe webhook,
+Shippo label purchase, owner email. See [docs/payments.md](docs/payments.md).
+
+```
+cd backend && npm install && npm test
+npm run deploy:staging      # sam build && sam deploy --config-env staging
+```

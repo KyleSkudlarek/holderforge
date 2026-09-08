@@ -28,6 +28,16 @@ git branch; never create long-lived branches.
 - Amplify manages TLS certificates; no cache invalidation step is required.
 - Both apps carry the SPA rewrite `/<*>` → `/index.html` (404-200). Add any
   new custom rule to both.
+- **Backend (`backend/`, AWS SAM)**: stacks `holderforge-api-staging` and
+  `holderforge-api-prod`. Staging deploys from `deploy-staging-backend.yml` on
+  any push to `main` that touches `backend/**`; prod deploys as the first job of
+  `deploy-prod.yml`. Local: `cd backend && npm run deploy:staging`. Secrets and
+  personal data live in SSM under `/holderforge/<stage>/`, never in the repo.
+  Full flow, parameters and go-live checklist: `docs/payments.md`.
+- The storefront reads the API base URL from `VITE_API_URL` at build time. On
+  the staging Amplify app it is an app environment variable; the prod workflow
+  injects it from the stack output. Unset means the Order panel shows
+  "Coming Soon" and never calls the API.
 
 ## Infrastructure inventory
 
@@ -37,11 +47,16 @@ git branch; never create long-lived branches.
 | Amplify app (production) | `holderforge-prod` `d3u13d7kxpo2y6`, branch `production` (PRODUCTION, manual deploy) |
 | Amplify custom domain | `staging.holderforge.com` → `holderforge`/`main` |
 | Amplify custom domain | `holderforge.com` (+ `www`) → `holderforge-prod`/`production` |
-| IAM role | `holderforge-github-deploy` (GitHub OIDC; inline policy `amplify-deploy-holderforge-prod`) |
+| IAM role | `holderforge-github-deploy` (GitHub OIDC, trusts environments `production` and `staging`; PowerUserAccess + inline `amplify-deploy-holderforge-prod` + `holderforge-api-stack-roles`) |
+| CloudFormation stacks | `holderforge-api-staging`, `holderforge-api-prod` (SAM; HTTP API, 2 Lambdas, DynamoDB table `holderforge-orders-<stage>`, S3 `holderforge-uploads-<stage>-641383114949`) |
+| SSM parameters | `/holderforge/<stage>/{stripe/secret_key, stripe/webhook_secret, shippo/api_key, ship_from, notify_email}` |
+| Stripe | account HolderForge; webhook endpoints per stage managed by `backend/scripts/register-stripe-webhook.sh` |
+| Shippo | account for label purchase; test and live tokens in SSM |
+| SES | email identity = `notify_email` (sandbox mode is sufficient) |
 | IAM OIDC provider | `token.actions.githubusercontent.com` (account-wide, pre-existing) |
 | Route 53 hosted zone | `holderforge.com.` `Z01876611GQP3UAURM8LA` |
 | Route 53 registered domain | `holderforge.com`, auto-renew on, expires 2027-01-31 |
-| GitHub Actions environment | `production` (auto-created by the deploy workflow; add required reviewers there if wanted) |
+| GitHub Actions environments | `production`, `staging` (auto-created by the workflows; add required reviewers to `production` if wanted) |
 | CloudFormation stack | `amplify-holderforge-dev-e430a` (Amplify Gen 1 backend for the staging app, hosting only) |
 | S3 bucket | `amplify-holderforge-dev-e430a-deployment` (Amplify CLI deployment bucket) |
 | IAM roles | `amplify-holderforge-dev-e430a-authRole`, `-unauthRole` |
@@ -59,3 +74,14 @@ git branch; never create long-lived branches.
   serving. Trust the domain status, not the per-subdomain flag.
 - The staging app's app-level `enableBranchAutoBuild` is false; the per-branch
   `enableAutoBuild` on `main` is what triggers builds.
+- SSM `GetParametersByPath` evaluates the path WITH a trailing slash, so the IAM
+  resource must list both `parameter/holderforge/<stage>` and
+  `parameter/holderforge/<stage>/*`; the first form alone is AccessDenied.
+- SAM's esbuild builder installs production dependencies only, so `esbuild`
+  must sit in `dependencies` in `backend/package.json`, not devDependencies.
+- The Claude Code `Bash(aws *)` allow rule is a prefix match on the whole
+  command: `VAR=x aws ...` or `cat > f && aws ...` does not match and is routed
+  to the auto-mode classifier, which blocks IAM/DNS writes. Run `aws` commands
+  as standalone commands.
+- Headless Chrome renders this app blank without `--use-angle=swiftshader
+  --enable-unsafe-swiftshader` (three.js/regl need WebGL).

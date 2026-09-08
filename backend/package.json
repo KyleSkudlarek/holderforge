@@ -1,0 +1,24 @@
+{
+  "name": "holderforge-backend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Stripe Checkout + Shippo fulfillment backend for holderforge.com (AWS SAM).",
+  "scripts": {
+    "test": "node --test 'test/**/*.test.js'",
+    "build": "sam build",
+    "deploy:staging": "sam build && sam deploy --config-env staging",
+    "deploy:prod": "sam build && sam deploy --config-env prod"
+  },
+  "dependencies": {
+    "esbuild": "^0.25.0",
+    "stripe": "^18.4.0"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.850.0",
+    "@aws-sdk/client-s3": "^3.850.0",
+    "@aws-sdk/client-sesv2": "^3.850.0",
+    "@aws-sdk/client-ssm": "^3.850.0",
+    "@aws-sdk/lib-dynamodb": "^3.850.0",
+    "@aws-sdk/s3-request-presigner": "^3.850.0"
+  }
+}

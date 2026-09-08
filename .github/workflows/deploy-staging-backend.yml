@@ -1,0 +1,48 @@
+# Staging backend deploy. The staging frontend is built by Amplify on every push
+# to main; this workflow covers the backend/ stack the same way so the two stay
+# in step. Runs only when backend files change.
+name: Deploy backend to staging
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-staging-backend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-staging-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.holderforge.com
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::641383114949:role/holderforge-github-deploy
+          aws-region: us-east-1
+      - run: npm ci
+      - run: npm test
+      - run: sam build
+      - run: sam deploy --config-env staging --no-progressbar
+      - name: Ensure Stripe webhook is registered
+        run: ./scripts/register-stripe-webhook.sh staging

@@ -1,0 +1,30 @@
+# SAM deploy configuration. One stack per stage.
+#   sam build && sam deploy --config-env staging
+#   sam build && sam deploy --config-env prod
+version = 0.1
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[staging.deploy.parameters]
+stack_name = "holderforge-api-staging"
+resolve_s3 = true
+s3_prefix = "holderforge-api-staging"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+fail_on_empty_changeset = false
+parameter_overrides = "Stage=staging SiteUrl=https://staging.holderforge.com AllowedOrigins=\"https://staging.holderforge.com,https://main.d3nnchft3fvnkp.amplifyapp.com,http://localhost:5173\""
+tags = "project=holderforge stage=staging"
+
+[prod.deploy.parameters]
+stack_name = "holderforge-api-prod"
+resolve_s3 = true
+s3_prefix = "holderforge-api-prod"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+fail_on_empty_changeset = false
+parameter_overrides = "Stage=prod SiteUrl=https://holderforge.com AllowedOrigins=\"https://holderforge.com,https://www.holderforge.com,https://production.d3u13d7kxpo2y6.amplifyapp.com\""
+tags = "project=holderforge stage=prod"

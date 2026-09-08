@@ -2,14 +2,16 @@
 #
 # Production is the manual-deploy Amplify app `holderforge-prod`
 # (d3u13d7kxpo2y6), which is deliberately not connected to GitHub so the repo
-# keeps a single branch. This workflow builds the chosen ref, zips dist/, and
-# uploads it via Amplify's create-deployment / start-deployment API. Staging is
-# handled separately: the repo-connected Amplify app auto-builds `main`.
+# keeps a single branch. This workflow deploys the backend stack, then builds the
+# chosen ref with the production API URL, zips dist/, and uploads it via
+# Amplify's create-deployment / start-deployment API. Staging is handled
+# separately: the repo-connected Amplify app auto-builds `main`, and
+# deploy-staging-backend.yml deploys the backend.
 #
 # Rollback: re-run with an older commit SHA as `ref`.
 #
 # AWS auth is GitHub OIDC -> IAM role `holderforge-github-deploy`, whose trust
-# policy only accepts this repo's `production` environment.
+# policy accepts this repo's `production` and `staging` environments.
 name: Deploy to production
 
 on:
@@ -35,7 +37,45 @@ env:
   DEPLOY_ROLE_ARN: arn:aws:iam::641383114949:role/holderforge-github-deploy
 
 jobs:
-  release:
+  backend:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://holderforge.com
+    outputs:
+      api_url: ${{ steps.outputs.outputs.api_url }}
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: npm ci
+      - run: npm test
+      - run: sam build
+      - run: sam deploy --config-env prod --no-progressbar
+      - name: Ensure Stripe webhook is registered
+        run: ./scripts/register-stripe-webhook.sh prod
+      - name: Read stack outputs
+        id: outputs
+        run: |
+          url=$(aws cloudformation describe-stacks --stack-name holderforge-api-prod \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+          echo "api_url=$url" >> "$GITHUB_OUTPUT"
+
+  frontend:
+    needs: backend
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -51,6 +91,8 @@ jobs:
           cache: npm
 
       - name: Build
+        env:
+          VITE_API_URL: ${{ needs.backend.outputs.api_url }}
         run: |
           npm ci
           npm run build
@@ -92,6 +134,7 @@ jobs:
             echo "## Released to production"
             echo
             echo "- Commit: \`$(git rev-parse HEAD)\` — $(git log -1 --format=%s)"
+            echo "- API: ${{ needs.backend.outputs.api_url }}"
             echo "- Amplify job: $job_id"
             echo "- https://holderforge.com (direct: https://$AMPLIFY_BRANCH.$AMPLIFY_APP_ID.amplifyapp.com)"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -94,8 +94,13 @@ exports.handler = async (event) => {
     return json(200, { ignored: "unpaid session", sessionId });
   }
 
-  if (await getOrder(sessionId)) {
-    return json(200, { duplicate: sessionId });
+  // A replayed event for an order whose label purchase failed retries fulfilment
+  // (and re-sends the owner email); any other duplicate is a no-op.
+  const existing = await getOrder(sessionId);
+  if (existing) {
+    if (existing.status !== "needs_label") return json(200, { duplicate: sessionId });
+    await fulfil(existing, secrets);
+    return json(200, { retried: sessionId });
   }
 
   const session = await stripe.checkout.sessions.retrieve(sessionId, {

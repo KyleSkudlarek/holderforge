@@ -70,7 +70,11 @@ backend/scripts/replay-stripe-event.sh staging evt_...   # event id from Stripe 
 ```
 
 The script fetches the event, signs it with the stored webhook secret and POSTs
-it to the stage's webhook URL. Replays are idempotent.
+it to the stage's webhook URL. Replaying an order in `needs_label` status retries
+the Shippo purchase and re-sends the owner email; any other replay is a no-op.
+
+Shippo requires `ship_from.phone`; a label purchase without it fails with
+`address_from.phone must not be empty`.
 
 ## Prices, shipping and parcel defaults
 

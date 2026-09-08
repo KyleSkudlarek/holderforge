@@ -44,3 +44,6 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+
+# Claude Code per-user permission approvals
+.claude/settings.local.json

@@ -60,6 +60,18 @@ unset KEY
 SES stays in sandbox mode: the owner email is both sender and recipient, which
 sandbox allows. Customers get Stripe's receipt and Shippo's tracking, not SES mail.
 
+## Replaying a webhook event
+
+If the webhook failed (missing parameter, bug) Stripe retries on its own
+schedule for up to three days. To process a paid order immediately instead:
+
+```
+backend/scripts/replay-stripe-event.sh staging evt_...   # event id from Stripe dashboard > Developers > Events
+```
+
+The script fetches the event, signs it with the stored webhook secret and POSTs
+it to the stage's webhook URL. Replays are idempotent.
+
 ## Prices, shipping and parcel defaults
 
 Template parameters on the stack, overridable in `backend/samconfig.toml`

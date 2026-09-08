@@ -1,0 +1,97 @@
+# Manual production release for holderforge.com.
+#
+# Production is the manual-deploy Amplify app `holderforge-prod`
+# (d3u13d7kxpo2y6), which is deliberately not connected to GitHub so the repo
+# keeps a single branch. This workflow builds the chosen ref, zips dist/, and
+# uploads it via Amplify's create-deployment / start-deployment API. Staging is
+# handled separately: the repo-connected Amplify app auto-builds `main`.
+#
+# Rollback: re-run with an older commit SHA as `ref`.
+#
+# AWS auth is GitHub OIDC -> IAM role `holderforge-github-deploy`, whose trust
+# policy only accepts this repo's `production` environment.
+name: Deploy to production
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit SHA, tag, or branch to release"
+        required: true
+        default: main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  AMPLIFY_APP_ID: d3u13d7kxpo2y6
+  AMPLIFY_BRANCH: production
+  DEPLOY_ROLE_ARN: arn:aws:iam::641383114949:role/holderforge-github-deploy
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://holderforge.com
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+          test -f dist/index.html
+
+      - name: Zip dist
+        # Amplify expects index.html at the zip root.
+        run: (cd dist && zip -qr ../site.zip .)
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload and deploy to Amplify
+        run: |
+          set -euo pipefail
+          dep=$(aws amplify create-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "$AMPLIFY_BRANCH" --output json)
+          job_id=$(jq -r .jobId <<<"$dep")
+          upload_url=$(jq -r .zipUploadUrl <<<"$dep")
+          curl -sSf -T site.zip "$upload_url"
+          aws amplify start-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "$AMPLIFY_BRANCH" --job-id "$job_id" >/dev/null
+          echo "job_id=$job_id" >> "$GITHUB_ENV"
+
+      - name: Wait for Amplify job
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 60); do
+            status=$(aws amplify get-job --app-id "$AMPLIFY_APP_ID" --branch-name "$AMPLIFY_BRANCH" --job-id "$job_id" --query 'job.summary.status' --output text)
+            echo "status: $status"
+            case "$status" in
+              SUCCEED) break ;;
+              FAILED|CANCELLED) exit 1 ;;
+            esac
+            sleep 10
+          done
+          [ "$status" = SUCCEED ] || { echo "timed out"; exit 1; }
+          {
+            echo "## Released to production"
+            echo
+            echo "- Commit: \`$(git rev-parse HEAD)\` — $(git log -1 --format=%s)"
+            echo "- Amplify job: $job_id"
+            echo "- https://holderforge.com (direct: https://$AMPLIFY_BRANCH.$AMPLIFY_APP_ID.amplifyapp.com)"
+          } >> "$GITHUB_STEP_SUMMARY"

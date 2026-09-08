@@ -24,14 +24,13 @@ https://localhost:5173
 https://192.168.1.225:5173
 
 
-## CI/CD 
+## CI/CD
 
-### Github
-https://github.com/KyleSkudlarek/holderforge
+`main` is the only branch. Two AWS Amplify Hosting apps, both us-east-1:
 
+| Environment | URL | How it deploys |
+|---|---|---|
+| Staging | https://staging.holderforge.com (alias https://main.d3nnchft3fvnkp.amplifyapp.com) | Automatic on every push/merge to `main` (Amplify app `holderforge`, connected to this repo) |
+| Production | https://holderforge.com | Manual: GitHub → Actions → **Deploy to production** → Run workflow (or `gh workflow run deploy-prod.yml`). Builds the chosen ref and uploads `dist/` to Amplify app `holderforge-prod`. |
 
-### Git push to main branch will trigger deployment to staging
-Staging env: https://main.d3nnchft3fvnkp.amplifyapp.com/
-
-### Git merge to prod branch will trigger deployment to prod
-Prod env: https://www.holderforge.com
+Roll back by re-running the workflow with an older commit SHA.

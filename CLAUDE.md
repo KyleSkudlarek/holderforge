@@ -6,40 +6,64 @@ GitHub Actions workflow in this repo.
 
 ## Deploy
 
-- **Amplify app:** `holderforge`, app id `d3nnchft3fvnkp`, us-east-1, account
-  641383114949. Repo `github.com/kyleskudlarek/holderforge`. Build spec lives in
-  the Amplify console (not `amplify.yml`): `npm ci` → `npm run build` → `dist/`.
-- **Branch → URL mapping** (both branches have auto-build on):
-  - `main` → https://main.d3nnchft3fvnkp.amplifyapp.com (staging; see gotcha
-    below about `staging.holderforge.com`)
-  - `prod` → https://prod.d3nnchft3fvnkp.amplifyapp.com and the **public site**
-    https://holderforge.com / https://www.holderforge.com
-- **Release to production** = open and merge a GitHub PR `main → prod`. Pushing
-  to `main` only redeploys the staging URL, so committing to `main` is safe.
-- Amplify manages the TLS certificate; no cache invalidation step is required.
+Two Amplify Hosting apps in us-east-1, account 641383114949. `main` is the only
+git branch; never create long-lived branches.
+
+- **Staging = Amplify app `holderforge` (`d3nnchft3fvnkp`)**, connected to
+  GitHub, branch `main`, auto-builds on every push. Build spec in the Amplify
+  console: `npm ci` → `npm run build` → `dist/`. URL https://staging.holderforge.com
+  (alias https://main.d3nnchft3fvnkp.amplifyapp.com). Committing to `main`
+  never touches production, so auto-commits are safe.
+- **Production = Amplify app `holderforge-prod` (`d3u13d7kxpo2y6`)**, a
+  manual-deploy app with no git connection, Amplify branch `production`. Only
+  the GitHub Actions workflow `.github/workflows/deploy-prod.yml` deploys to it:
+  Actions → "Deploy to production" → Run workflow (default ref `main`), or
+  `gh workflow run deploy-prod.yml`. It builds on the runner, zips `dist/`, and
+  uses `amplify create-deployment` / `start-deployment`. Rollback = re-run with
+  an older SHA. URLs https://holderforge.com, https://www.holderforge.com,
+  direct https://production.d3u13d7kxpo2y6.amplifyapp.com.
+- **AWS auth for the workflow** is GitHub OIDC → IAM role
+  `holderforge-github-deploy`, trust limited to
+  `repo:KyleSkudlarek/holderforge:environment:production`. No long-lived keys.
+- Amplify manages TLS certificates; no cache invalidation step is required.
+- Both apps carry the SPA rewrite `/<*>` → `/index.html` (404-200). Add any
+  new custom rule to both.
+
+## Pending cutover (remove this section when done)
+
+Amplify app `holderforge-prod`, the workflow, and the docs above are in place,
+but IAM and Route 53 writes could not be made from the session that built them.
+`holderforge.com` is therefore still served by the OLD app's `prod` branch and
+the `prod` git branch still exists. Finish with `scripts/prod-cutover.sh`
+(`phase1`, then run the workflow once, then `phase2`), which creates the IAM
+role, fixes `staging.holderforge.com` DNS, moves `holderforge.com` to the new
+app, and deletes the legacy `prod` branch. Until then, do not delete the `prod`
+git branch: it is what production is built from.
 
 ## Infrastructure inventory
 
 | Resource | Name / id |
 |---|---|
-| Amplify app | `d3nnchft3fvnkp` (branches `main`, `prod`) |
-| Amplify custom domain | `holderforge.com` → branch `prod` (status AVAILABLE) |
-| Amplify custom domain | `staging.holderforge.com` → branch `main` (status **FAILED**, see gotcha) |
+| Amplify app (staging) | `holderforge` `d3nnchft3fvnkp`, branch `main` (DEVELOPMENT, auto-build) |
+| Amplify app (production) | `holderforge-prod` `d3u13d7kxpo2y6`, branch `production` (PRODUCTION, manual deploy) |
+| Amplify custom domain | `staging.holderforge.com` → `holderforge`/`main` |
+| Amplify custom domain | `holderforge.com` (+ `www`) → `holderforge-prod`/`production` after cutover (currently `holderforge`/`prod`) |
+| IAM role | `holderforge-github-deploy` (GitHub OIDC; inline policy `amplify-deploy-holderforge-prod`) — created by phase1 |
+| IAM OIDC provider | `token.actions.githubusercontent.com` (account-wide, pre-existing) |
 | Route 53 hosted zone | `holderforge.com.` `Z01876611GQP3UAURM8LA` |
 | Route 53 registered domain | `holderforge.com`, auto-renew on, expires 2027-01-31 |
-| CloudFormation stack | `amplify-holderforge-dev-e430a` (Amplify Gen 1 backend, hosting only) |
+| GitHub Actions environment | `production` (auto-created by the deploy workflow; add required reviewers there if wanted) |
+| CloudFormation stack | `amplify-holderforge-dev-e430a` (Amplify Gen 1 backend for the staging app, hosting only) |
 | S3 bucket | `amplify-holderforge-dev-e430a-deployment` (Amplify CLI deployment bucket) |
 | IAM roles | `amplify-holderforge-dev-e430a-authRole`, `-unauthRole` |
 
 ## Gotchas
 
-- **`staging.holderforge.com` is broken (TLS handshake failure).** Route 53 has
-  a CNAME to `main.d3nnchft3fvnkp.amplifyapp.com`, but the Amplify domain
-  association for `staging.holderforge.com` expects a CNAME to
-  `d82kq8zk42w37.cloudfront.net` and has status FAILED, so no certificate covers
-  the hostname. Fix: delete the failed domain association, recreate it for
-  branch `main`, and point the Route 53 CNAME at the CloudFront target Amplify
-  hands back. Until then use the `main.…amplifyapp.com` URL for staging.
-- The Amplify app-level `enableBranchAutoBuild` is false, but per-branch
-  auto-build is true on both `main` and `prod`; the per-branch setting is what
-  controls builds here.
+- Amplify apps connected to a git repo can only build from a git branch and
+  reject `create-deployment`/`start-deployment`; manual-deploy apps are the
+  reverse. That is why production is a separate app.
+- Custom-domain CNAMEs must point at the CloudFront hostname Amplify returns in
+  the domain association, not at `<branch>.<app>.amplifyapp.com`. Pointing at
+  the amplifyapp hostname makes the association FAIL and breaks TLS.
+- The staging app's app-level `enableBranchAutoBuild` is false; the per-branch
+  `enableAutoBuild` on `main` is what triggers builds.

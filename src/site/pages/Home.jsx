@@ -106,7 +106,7 @@ export default function Home() {
   // banner, so forward the flag there.
   useEffect(() => {
     if (new URLSearchParams(location.search).has("checkout")) {
-      navigate(`/design${location.search}`, { replace: true });
+      navigate(`/design/${location.search}`, { replace: true });
     }
   }, [location.search, navigate]);
 
@@ -135,8 +135,8 @@ export default function Home() {
               3D-printed tray with a snug hole for each bottle, so your collection stands upright with the labels facing out.
             </Lead>
             <Actions>
-              <ButtonLink to="/find">Find your bottle</ButtonLink>
-              <ButtonLink to="/design" $variant="secondary">Design your own</ButtonLink>
+              <ButtonLink to="/find/">Find your bottle</ButtonLink>
+              <ButtonLink to="/design/" $variant="secondary">Design your own</ButtonLink>
             </Actions>
             <BottleSearch wide />
           </HeroText>
@@ -152,7 +152,7 @@ export default function Home() {
               <H3>Tell us the bottle</H3>
               <Text>
                 Search the brand. We have measured {brandCount} of them, so the hole size is already known. Own something we
-                haven't measured? <InlineLink to="/guides/how-to-measure">Measure it in 30 seconds</InlineLink>.
+                haven't measured? <InlineLink to="/guides/how-to-measure/">Measure it in 30 seconds</InlineLink>.
               </Text>
             </Step>
             <Step>
@@ -170,7 +170,7 @@ export default function Home() {
           <H2>What are you holding?</H2>
           <Grid $cols={4}>
             {categories.map((c) => (
-              <CardLink key={c.slug} to={`/shop/${c.slug}`}>
+              <CardLink key={c.slug} to={`/shop/${c.slug}/`}>
                 <Placeholder label={c.name} ratio="3 / 2" />
                 <CardBody>
                   <H3>{c.name}</H3>
@@ -185,11 +185,11 @@ export default function Home() {
           <H2>Popular bottles</H2>
           <ChipRow>
             {popularBrands.map((b) => (
-              <ChipLink key={b} to={`/fits/${brandSlug(b)}`}>
+              <ChipLink key={b} to={`/fits/${brandSlug(b)}/`}>
                 {b}
               </ChipLink>
             ))}
-            <ChipLink to="/fits">All {brandCount} brands</ChipLink>
+            <ChipLink to="/fits/">All {brandCount} brands</ChipLink>
           </ChipRow>
         </Section>
 
@@ -214,7 +214,7 @@ export default function Home() {
                   <li>Choose a colour and order in a minute</li>
                 </List>
                 <div>
-                  <ButtonLink to="/shop" $variant="secondary">Browse holders</ButtonLink>
+                  <ButtonLink to="/shop/" $variant="secondary">Browse holders</ButtonLink>
                 </div>
               </CardBody>
             </Card>
@@ -227,7 +227,7 @@ export default function Home() {
                   <li>Live 3D preview, and the STL to print it yourself</li>
                 </List>
                 <div>
-                  <ButtonLink to="/design" $variant="secondary">Open the designer</ButtonLink>
+                  <ButtonLink to="/design/" $variant="secondary">Open the designer</ButtonLink>
                 </div>
               </CardBody>
             </Card>

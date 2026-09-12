@@ -73,7 +73,7 @@ function SizePage({ hole }) {
       />
       <Container>
         <Breadcrumbs aria-label="Breadcrumb">
-          <Link to="/">Home</Link> <span>/</span> <Link to="/fits">Bottles</Link> <span>/</span> <span>{hole} mm</span>
+          <Link to="/">Home</Link> <span>/</span> <Link to="/fits/">Bottles</Link> <span>/</span> <span>{hole} mm</span>
         </Breadcrumbs>
         <Section style={{ paddingTop: 20 }}>
           <H1>Holders for {hole} mm bottles</H1>
@@ -85,7 +85,7 @@ function SizePage({ hole }) {
           <H2>Bottles at this size</H2>
           <ChipRow>
             {list.map((b) => (
-              <ChipLink key={bottleId(b)} to={`/fits/${brandSlug(b.brand)}`}>
+              <ChipLink key={bottleId(b)} to={`/fits/${brandSlug(b.brand)}/`}>
                 {bottleLabel(b)}
               </ChipLink>
             ))}
@@ -101,7 +101,7 @@ function SizePage({ hole }) {
               <CardBody style={{ alignItems: "center", gap: 10, padding: 24 }}>
                 <H3>Mixing {hole} mm bottles with other sizes?</H3>
                 <Text>Design a holder with a different size on each row.</Text>
-                <ButtonLink to={`/design?d=${hole}`} $variant="secondary">
+                <ButtonLink to={`/design/?d=${hole}`} $variant="secondary">
                   Design your own
                 </ButtonLink>
               </CardBody>
@@ -114,7 +114,7 @@ function SizePage({ hole }) {
             {holeSizes()
               .filter((h) => h !== hole)
               .map((h) => (
-                <ChipLink key={h} to={`/fits/${h}mm`}>
+                <ChipLink key={h} to={`/fits/${h}mm/`}>
                   {h} mm
                 </ChipLink>
               ))}
@@ -144,10 +144,10 @@ function BrandPage({ brand }) {
       />
       <Container>
         <Breadcrumbs aria-label="Breadcrumb">
-          <Link to="/">Home</Link> <span>/</span> <Link to="/fits">Bottles</Link>
+          <Link to="/">Home</Link> <span>/</span> <Link to="/fits/">Bottles</Link>
           {category ? (
             <>
-              <span>/</span> <Link to={`/shop/${category.slug}`}>{category.name}</Link>
+              <span>/</span> <Link to={`/shop/${category.slug}/`}>{category.name}</Link>
             </>
           ) : null}
           <span>/</span> <span>{brand.name}</span>
@@ -199,7 +199,7 @@ function BrandPage({ brand }) {
               <CardBody style={{ alignItems: "center", gap: 10, padding: 24 }}>
                 <H3>Mixing {brand.name} with other bottles?</H3>
                 <Text>Design a holder with a different size on each row.</Text>
-                <ButtonLink to={`/design?d=${first.hole}`} $variant="secondary">
+                <ButtonLink to={`/design/?d=${first.hole}`} $variant="secondary">
                   Design your own
                 </ButtonLink>
               </CardBody>
@@ -213,12 +213,12 @@ function BrandPage({ brand }) {
               <H3>Other bottles that share the {holes.join(" / ")} mm size</H3>
               <ChipRow>
                 {sameSize.slice(0, 12).map((b) => (
-                  <ChipLink key={bottleId(b)} to={`/fits/${brandSlug(b.brand)}`}>
+                  <ChipLink key={bottleId(b)} to={`/fits/${brandSlug(b.brand)}/`}>
                     {bottleLabel(b)}
                   </ChipLink>
                 ))}
                 {holes.map((h) => (
-                  <ChipLink key={h} to={`/fits/${h}mm`}>
+                  <ChipLink key={h} to={`/fits/${h}mm/`}>
                     All {h} mm bottles
                   </ChipLink>
                 ))}
@@ -231,7 +231,7 @@ function BrandPage({ brand }) {
               <H3>How we measure</H3>
               <Text>
                 Calipers across the widest point of the base, rounded up to the nearest millimetre, plus 1 mm for the hole. Have a different {brand.name} bottle?{" "}
-                <InlineLink to="/guides/how-to-measure">Measure it yourself</InlineLink> and pick the size on any holder.
+                <InlineLink to="/guides/how-to-measure/">Measure it yourself</InlineLink> and pick the size on any holder.
               </Text>
             </CardBody>
           </Card>

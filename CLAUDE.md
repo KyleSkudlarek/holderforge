@@ -102,5 +102,8 @@ one row in `src/catalog/bottles.js`; everything else derives from it.
 - The SSR bundle must inline `styled-components` and `react-helmet`
   (`ssr.noExternal` in the prerender script); as externals their default
   exports resolve wrong under Node ESM and `styled.div` is undefined.
+- Amplify 301s `/shop` to `/shop/` because prerendered routes are directories.
+  Internal links, canonicals and the sitemap all use trailing slashes
+  (`canonicalUrl` in `src/site/Seo.jsx`); keep new links that way.
 - `npm run lint` has ~140 pre-existing errors in `GridPreview.jsx` (prop-types,
   unused imports); it is not a gate.

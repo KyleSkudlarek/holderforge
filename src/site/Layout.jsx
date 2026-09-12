@@ -101,10 +101,10 @@ export default function Layout() {
         <HeaderRow>
           <Logo to="/">HolderForge</Logo>
           <Nav aria-label="Primary">
-            <NavLink to="/shop">Shop</NavLink>
-            <NavLink to="/find">Find your bottle</NavLink>
-            <NavLink to="/design">Design your own</NavLink>
-            <NavLink to="/guides/how-to-measure">How to measure</NavLink>
+            <NavLink to="/shop/">Shop</NavLink>
+            <NavLink to="/find/">Find your bottle</NavLink>
+            <NavLink to="/design/">Design your own</NavLink>
+            <NavLink to="/guides/how-to-measure/">How to measure</NavLink>
           </Nav>
         </HeaderRow>
       </Header>
@@ -115,9 +115,9 @@ export default function Layout() {
         <FooterRow>
           <div>Made to order in Austin, TX. Ships USPS within the US.</div>
           <FooterLinks>
-            <Link to="/fits">All bottles A-Z</Link>
-            <Link to="/guides/how-to-measure">How to measure</Link>
-            <Link to="/design">Custom designer</Link>
+            <Link to="/fits/">All bottles A-Z</Link>
+            <Link to="/guides/how-to-measure/">How to measure</Link>
+            <Link to="/design/">Custom designer</Link>
             <a href="https://www.etsy.com/shop/SkudsWorkshop" rel="noopener">Etsy shop</a>
           </FooterLinks>
         </FooterRow>

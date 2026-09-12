@@ -2426,7 +2426,7 @@ const GridPreview = () => {
         <h2>Make a Custom Organizer</h2>
         <nav aria-label="Site">
           <Link to="/">Home</Link>
-          <Link to="/shop">Shop ready-made sizes</Link>
+          <Link to="/shop/">Shop ready-made sizes</Link>
         </nav>
       </Header>
       <LeftPanel>

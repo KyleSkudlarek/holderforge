@@ -96,7 +96,7 @@ export default function Find() {
             {results.sizes.length ? (
               <ChipRow>
                 {results.sizes.map((h) => (
-                  <ChipLink key={h} to={`/fits/${h}mm`}>
+                  <ChipLink key={h} to={`/fits/${h}mm/`}>
                     All {h} mm bottles
                   </ChipLink>
                 ))}
@@ -113,7 +113,7 @@ export default function Find() {
                 {results.bottles.map((b) => (
                   <Row key={bottleId(b)}>
                     <div>
-                      <Link to={`/fits/${brandSlug(b.brand)}`}>
+                      <Link to={`/fits/${brandSlug(b.brand)}/`}>
                         <strong>{b.brand}</strong>
                       </Link>
                       <br />
@@ -128,7 +128,7 @@ export default function Find() {
                     </div>
                     <ChipRow>
                       {productsForHole(b.hole, b.type).map((p) => (
-                        <ChipLink key={p.slug} to={`/shop/${p.slug}?size=${b.hole}&bottle=${bottleId(b)}`}>
+                        <ChipLink key={p.slug} to={`/shop/${p.slug}/?size=${b.hole}&bottle=${bottleId(b)}`}>
                           {p.name}
                         </ChipLink>
                       ))}
@@ -145,7 +145,7 @@ export default function Find() {
             <H2>Browse by size</H2>
             <ChipRow>
               {holeSizes().map((h) => (
-                <ChipLink key={h} to={`/fits/${h}mm`} title={`${bottlesForHole(h).length} bottles`}>
+                <ChipLink key={h} to={`/fits/${h}mm/`} title={`${bottlesForHole(h).length} bottles`}>
                   {h} mm
                 </ChipLink>
               ))}
@@ -153,7 +153,7 @@ export default function Find() {
             <H2 style={{ marginTop: 16 }}>Brands measured so far</H2>
             <ChipRow>
               {brands().map((b) => (
-                <ChipLink key={b.slug} to={`/fits/${b.slug}`}>
+                <ChipLink key={b.slug} to={`/fits/${b.slug}/`}>
                   {b.name}
                 </ChipLink>
               ))}
@@ -169,10 +169,10 @@ export default function Find() {
                 Measure it in 30 seconds: trace the base, read the width, pick the size 1 mm larger. Or tell us the brand and we'll measure it and add it here.
               </Text>
               <ChipRow>
-                <ButtonLink to="/guides/how-to-measure" $variant="secondary">
+                <ButtonLink to="/guides/how-to-measure/" $variant="secondary">
                   How to measure
                 </ButtonLink>
-                <ButtonLink to="/design" $variant="secondary">
+                <ButtonLink to="/design/" $variant="secondary">
                   Design a custom size
                 </ButtonLink>
               </ChipRow>
@@ -183,7 +183,7 @@ export default function Find() {
               <H3>How we measure</H3>
               <Text>
                 Calipers across the widest point of the base, rounded up to the nearest millimetre, then 1 mm added for the hole so the bottle slides in without scratching the label. Full list on the{" "}
-                <InlineLink to="/fits">bottles A-Z page</InlineLink>.
+                <InlineLink to="/fits/">bottles A-Z page</InlineLink>.
               </Text>
             </CardBody>
           </Card>

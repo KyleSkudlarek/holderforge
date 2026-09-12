@@ -33,7 +33,7 @@ if (!template.includes("<!--app-head-->") || !template.includes('<div id="root">
 const designerHead = [
   "<title>Custom bottle holder designer | HolderForge</title>",
   '<meta name="description" content="Design a 3D-printed holder for your bottles: set the hole size for each row, preview it in 3D, and order it printed or download the STL." />',
-  `<link rel="canonical" href="${SITE_URL}/design" />`,
+  `<link rel="canonical" href="${SITE_URL}/design/" />`,
 ].join("\n");
 
 const escapeAttr = (s) => s.replace(/"/g, "&quot;");
@@ -58,7 +58,7 @@ for (const route of routes) {
 const today = new Date().toISOString().slice(0, 10);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${routes.map((r) => `  <url><loc>${SITE_URL}${r}</loc><lastmod>${today}</lastmod></url>`).join("\n")}
+${routes.map((r) => `  <url><loc>${SITE_URL}${r === "/" ? "/" : `${r}/`}</loc><lastmod>${today}</lastmod></url>`).join("\n")}
 </urlset>
 `;
 writeFileSync(join(dist, "sitemap.xml"), sitemap);

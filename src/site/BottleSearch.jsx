@@ -99,13 +99,13 @@ export default function BottleSearch({ placeholder, large, wide, onPick, autoFoc
 
   const results = search(q);
   const items = [
-    ...results.sizes.map((h) => ({ kind: "size", key: `size-${h}`, label: `${h} mm bottles`, hint: "size page", go: () => navigate(`/fits/${h}mm`) })),
+    ...results.sizes.map((h) => ({ kind: "size", key: `size-${h}`, label: `${h} mm bottles`, hint: "size page", go: () => navigate(`/fits/${h}mm/`) })),
     ...results.bottles.map((b) => ({
       kind: "bottle",
       key: bottleId(b),
       label: bottleLabel(b),
       hint: `${b.hole} mm hole`,
-      go: () => (onPick ? onPick(b) : navigate(`/fits/${brandSlug(b.brand)}`)),
+      go: () => (onPick ? onPick(b) : navigate(`/fits/${brandSlug(b.brand)}/`)),
     })),
   ];
 
@@ -121,7 +121,7 @@ export default function BottleSearch({ placeholder, large, wide, onPick, autoFoc
     if (active >= 0 && items[active]) {
       items[active].go();
     } else if (q.trim()) {
-      navigate(`/find?q=${encodeURIComponent(q.trim())}`);
+      navigate(`/find/?q=${encodeURIComponent(q.trim())}`);
     }
     setOpen(false);
   };

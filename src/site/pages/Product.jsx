@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import Seo, { breadcrumbLd, SITE_URL } from "../Seo";
+import Seo, { breadcrumbLd, canonicalUrl } from "../Seo";
 import BottleSearch from "../BottleSearch";
 import ProductCard from "../ProductCard";
 import NotFound from "./NotFound";
@@ -379,7 +379,7 @@ export default function Product() {
   const photos = product.images[colorId] || [];
   const others = size ? productsForHole(size).filter((p) => p.slug !== product.slug && p.categories.some((c) => product.categories.includes(c))) : [];
   const primaryCategory = categoryBySlug(product.categories[0]);
-  const designerHref = `/design?d=${size || product.holeSizes[0]}`;
+  const designerHref = `/design/?d=${size || product.holeSizes[0]}`;
   const path = `/shop/${product.slug}`;
 
   const jsonLd = [
@@ -390,14 +390,14 @@ export default function Product() {
         description: product.description,
         brand: { "@type": "Brand", name: "HolderForge" },
         material: "PLA",
-        url: `${SITE_URL}${path}`,
+        url: canonicalUrl(path),
         offers: {
           "@type": "Offer",
           priceCurrency: "USD",
           price: (product.priceCents / 100).toFixed(2),
           availability: "https://schema.org/InStock",
           itemCondition: "https://schema.org/NewCondition",
-          url: `${SITE_URL}${path}`,
+          url: canonicalUrl(path),
           shippingDetails: {
             "@type": "OfferShippingDetails",
             shippingRate: { "@type": "MonetaryAmount", value: (SHIPPING_CENTS / 100).toFixed(2), currency: "USD" },
@@ -420,10 +420,10 @@ export default function Product() {
       />
       <Container>
         <Breadcrumbs aria-label="Breadcrumb">
-          <Link to="/">Home</Link> <span>/</span> <Link to="/shop">Shop</Link>
+          <Link to="/">Home</Link> <span>/</span> <Link to="/shop/">Shop</Link>
           {primaryCategory ? (
             <>
-              <span>/</span> <Link to={`/shop/${primaryCategory.slug}`}>{primaryCategory.name}</Link>
+              <span>/</span> <Link to={`/shop/${primaryCategory.slug}/`}>{primaryCategory.name}</Link>
             </>
           ) : null}
           <span>/</span> <span>{product.name}</span>
@@ -490,7 +490,7 @@ export default function Product() {
                 ) : (
                   <Notice $tone="warning">
                     {bottleLabel(bottle)} needs a {bottle.hole} mm hole, which this holder isn't sold in.{" "}
-                    <InlineLink to={`/fits/${bottle.hole}mm`}>See holders for {bottle.hole} mm</InlineLink>.
+                    <InlineLink to={`/fits/${bottle.hole}mm/`}>See holders for {bottle.hole} mm</InlineLink>.
                   </Notice>
                 )
               ) : (
@@ -511,7 +511,7 @@ export default function Product() {
                 <Muted>One size: {product.holeSizes[0]} mm holes.</Muted>
               )}
               <Muted>
-                Not sure? <InlineLink to="/guides/how-to-measure">Measure your bottle</InlineLink> (30 seconds).
+                Not sure? <InlineLink to="/guides/how-to-measure/">Measure your bottle</InlineLink> (30 seconds).
               </Muted>
             </StepCard>
 
@@ -598,7 +598,7 @@ export default function Product() {
                       <ul>
                         {g.bottles.map((b) => (
                           <li key={bottleId(b)}>
-                            <Link to={`/fits/${brandSlug(b.brand)}`}>{bottleLabel(b)}</Link>
+                            <Link to={`/fits/${brandSlug(b.brand)}/`}>{bottleLabel(b)}</Link>
                           </li>
                         ))}
                       </ul>
@@ -639,7 +639,7 @@ export default function Product() {
               <H2>How to measure your bottle</H2>
               <Text>
                 Stand the bottle on paper, trace the base, measure the width of the trace to the nearest millimetre, then choose the hole size 1 mm larger.{" "}
-                <InlineLink to="/guides/how-to-measure">Full guide with photos</InlineLink>.
+                <InlineLink to="/guides/how-to-measure/">Full guide with photos</InlineLink>.
               </Text>
             </Section>
 
@@ -649,7 +649,7 @@ export default function Product() {
                 <summary>My bottles are different sizes. Can I mix?</summary>
                 <p>
                   A ready-made holder has one hole size. For a mix, either pick the universal holder (one loose 23 mm size) or{" "}
-                  <InlineLink to="/design">design a holder</InlineLink> with a different size on each row.
+                  <InlineLink to="/design/">design a holder</InlineLink> with a different size on each row.
                 </p>
               </Faq>
               <Faq>

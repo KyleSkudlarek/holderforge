@@ -64,7 +64,7 @@ export default function Shop() {
       />
       <Container>
         <Breadcrumbs aria-label="Breadcrumb">
-          <Link to="/">Home</Link> <span>/</span> {category ? <Link to="/shop">Shop</Link> : <span>Shop</span>}
+          <Link to="/">Home</Link> <span>/</span> {category ? <Link to="/shop/">Shop</Link> : <span>Shop</span>}
           {category ? (
             <>
               <span>/</span> <span>{category.name}</span>
@@ -81,11 +81,11 @@ export default function Shop() {
           <FilterRow>
             <FilterLabel>Holds</FilterLabel>
             <ChipRow>
-              <ChipLink to={size ? `/shop?size=${size}` : "/shop"} $active={!category}>
+              <ChipLink to={size ? `/shop/?size=${size}` : "/shop/"} $active={!category}>
                 Everything
               </ChipLink>
               {categories.map((c) => (
-                <ChipLink key={c.slug} to={`/shop/${c.slug}${size ? `?size=${size}` : ""}`} $active={category?.slug === c.slug}>
+                <ChipLink key={c.slug} to={`/shop/${c.slug}/${size ? `?size=${size}` : ""}`} $active={category?.slug === c.slug}>
                   {c.name}
                 </ChipLink>
               ))}
@@ -99,7 +99,7 @@ export default function Shop() {
                   {h} mm
                 </Chip>
               ))}
-              <ChipLink to="/guides/how-to-measure" style={{ borderStyle: "dashed" }}>
+              <ChipLink to="/guides/how-to-measure/" style={{ borderStyle: "dashed" }}>
                 Not sure? Measure it
               </ChipLink>
             </ChipRow>
@@ -119,7 +119,7 @@ export default function Shop() {
               <CardBody style={{ alignItems: "center", gap: 10, padding: 24 }}>
                 <H3>Need a size or layout we don't stock?</H3>
                 <Text>Mixed sizes on each row, more rows, square holes, any diameter.</Text>
-                <ButtonLink to={`/design${size ? `?d=${size}` : ""}`} $variant="secondary">
+                <ButtonLink to={`/design/${size ? `?d=${size}` : ""}`} $variant="secondary">
                   Design your own
                 </ButtonLink>
               </CardBody>
@@ -132,7 +132,7 @@ export default function Shop() {
             <H2>Bottles we've measured in this category</H2>
             <ChipRow>
               {[...new Set(bottlesForCategory(category.slug).map((b) => b.brand))].sort().map((brand) => (
-                <ChipLink key={brand} to={`/fits/${brandSlug(brand)}`}>
+                <ChipLink key={brand} to={`/fits/${brandSlug(brand)}/`}>
                   {brand}
                 </ChipLink>
               ))}

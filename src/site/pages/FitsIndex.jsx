@@ -56,7 +56,7 @@ export default function FitsIndex() {
           <H2>By size</H2>
           <ChipRow>
             {holeSizes().map((h) => (
-              <ChipLink key={h} to={`/fits/${h}mm`}>
+              <ChipLink key={h} to={`/fits/${h}mm/`}>
                 {h} mm <Muted style={{ marginLeft: 6 }}>{bottlesForHole(h).length}</Muted>
               </ChipLink>
             ))}
@@ -66,7 +66,7 @@ export default function FitsIndex() {
           <H2>By brand</H2>
           <BrandGrid>
             {list.map((b) => (
-              <BrandRow key={b.slug} to={`/fits/${b.slug}`}>
+              <BrandRow key={b.slug} to={`/fits/${b.slug}/`}>
                 <span>{b.name}</span>
                 <span>
                   {[...new Set(b.bottles.map((x) => x.hole))].sort((x, y) => x - y).join(" / ")} mm

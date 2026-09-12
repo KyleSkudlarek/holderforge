@@ -13,8 +13,8 @@ export default function NotFound() {
           <H1>That page doesn't exist</H1>
           <Lead>Try searching for your bottle, or start from the shop.</Lead>
           <ChipRow>
-            <ButtonLink to="/find">Find your bottle</ButtonLink>
-            <ButtonLink to="/shop" $variant="secondary">
+            <ButtonLink to="/find/">Find your bottle</ButtonLink>
+            <ButtonLink to="/shop/" $variant="secondary">
               Shop
             </ButtonLink>
           </ChipRow>

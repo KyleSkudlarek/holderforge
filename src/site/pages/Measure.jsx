@@ -69,7 +69,7 @@ export default function Measure() {
         <Section style={{ paddingTop: 20 }}>
           <H1>How to measure your bottle</H1>
           <Lead>
-            Before you measure: we may already have. <InlineLink to="/find">Search the brand</InlineLink> and the size is filled in for you.
+            Before you measure: we may already have. <InlineLink to="/find/">Search the brand</InlineLink> and the size is filled in for you.
           </Lead>
           <BottleSearch wide />
         </Section>
@@ -121,8 +121,8 @@ export default function Measure() {
         <Section style={{ paddingTop: 0 }}>
           <H2>Got your number?</H2>
           <ChipRow>
-            <ButtonLink to="/shop">Pick a holder and choose the size</ButtonLink>
-            <ButtonLink to="/design" $variant="secondary">
+            <ButtonLink to="/shop/">Pick a holder and choose the size</ButtonLink>
+            <ButtonLink to="/design/" $variant="secondary">
               Design a custom holder
             </ButtonLink>
           </ChipRow>

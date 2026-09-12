@@ -15,7 +15,7 @@ export default function ProductCard({ product, size, bottle, hint }) {
   if (bottle) params.set("bottle", bottle);
   const qs = params.toString();
   return (
-    <CardLink to={`/shop/${product.slug}${qs ? `?${qs}` : ""}`}>
+    <CardLink to={`/shop/${product.slug}/${qs ? `?${qs}` : ""}`}>
       <Placeholder label={`${product.name}, ${colors.find((c) => c.id === defaultColorId).name}`} tint={tintFor(defaultColorId)} />
       <CardBody>
         <H3>{product.name}</H3>

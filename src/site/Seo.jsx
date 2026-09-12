@@ -3,11 +3,16 @@ import { Helmet } from "react-helmet";
 export const SITE_URL = "https://holderforge.com";
 export const SITE_NAME = "HolderForge";
 
+// Amplify serves prerendered pages from dist/<route>/index.html and 301s the
+// slash-less form, so the canonical (and every internal link) carries a
+// trailing slash.
+export const canonicalUrl = (path) => `${SITE_URL}${path === "/" ? "/" : `${path}/`}`;
+
 // Per-page head tags. `path` must be the canonical route (no query string).
 // `jsonLd` is one object or an array of structured-data objects.
 export default function Seo({ title, description, path, jsonLd, image }) {
   const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
-  const url = `${SITE_URL}${path}`;
+  const url = canonicalUrl(path);
   const blocks = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
   return (
     <Helmet>
@@ -37,6 +42,6 @@ export const breadcrumbLd = (items) => ({
     "@type": "ListItem",
     position: i + 1,
     name: it.name,
-    item: `${SITE_URL}${it.path}`,
+    item: canonicalUrl(it.path),
   })),
 });

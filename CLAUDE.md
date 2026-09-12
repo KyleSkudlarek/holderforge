@@ -39,6 +39,13 @@ git branch; never create long-lived branches.
   injects it from the stack output. Unset means the Order panel shows
   "Coming Soon" and never calls the API.
 
+## Site structure
+
+Two halves: the designer (`/design`, `src/GridPreview.jsx`) and the catalog
+(`src/site/` pages driven by `src/catalog/` data). Routes, data model, photo
+naming and the prerender step: `docs/catalog.md`. Adding a measured bottle is
+one row in `src/catalog/bottles.js`; everything else derives from it.
+
 ## Infrastructure inventory
 
 | Resource | Name / id |
@@ -85,3 +92,15 @@ git branch; never create long-lived branches.
   as standalone commands.
 - Headless Chrome renders this app blank without `--use-angle=swiftshader
   --enable-unsafe-swiftshader` (three.js/regl need WebGL).
+- `scripts/prerender.mjs` reads `dist/index.html` as its template and
+  overwrites it, so it only works right after `vite build`; always run
+  `npm run build`, never the script alone twice.
+- `vite preview` serves the SPA fallback for `/shop` etc. instead of the
+  prerendered `dist/shop/index.html`; to check prerendered pages locally serve
+  `dist/` with `python3 -m http.server` (or any static server) and use
+  trailing slashes.
+- The SSR bundle must inline `styled-components` and `react-helmet`
+  (`ssr.noExternal` in the prerender script); as externals their default
+  exports resolve wrong under Node ESM and `styled.div` is undefined.
+- `npm run lint` has ~140 pre-existing errors in `GridPreview.jsx` (prop-types,
+  unused imports); it is not a gate.

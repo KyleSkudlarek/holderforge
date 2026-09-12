@@ -22,6 +22,7 @@ import { measureBounds } from '@jscad/modeling/src/measurements';
 import { geom3 } from '@jscad/modeling/src/geometries';
 import { extrudeLinear } from '@jscad/modeling/src/operations/extrusions'
 import { Helmet } from "react-helmet";
+import { Link } from "react-router-dom";
 import Cuboid from './Cuboid'; 
 
 
@@ -105,6 +106,38 @@ const Header = styled.header`
     padding: 0;
     font-size: 14px;
     padding-left: 20px;
+  }
+
+  position: relative;
+  nav {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 4px;
+  }
+  nav a {
+    color: ${({ theme }) => theme.colors.headerSecondary};
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+  }
+  nav a:hover {
+    color: ${({ theme }) => theme.colors.headerPrimary};
+    background: ${({ theme }) => theme.colors.black};
+  }
+  @media (max-width: 500px) {
+    nav a {
+      padding: 8px 8px;
+      font-size: 13px;
+    }
   }
 `;
 
@@ -1312,6 +1345,14 @@ const ModelOutputValue = styled.span`
 
 
 // State for model - user inputs and system values
+// Catalog pages link here with ?d=<mm> to open the designer at that hole size.
+// Width and depth are recomputed on mount from the diameters.
+const initialHoleDiameter = (() => {
+  if (typeof window === "undefined") return 15;
+  const d = Number(new URLSearchParams(window.location.search).get("d"));
+  return Number.isFinite(d) && d >= 8 && d <= 40 ? d : 15;
+})();
+
 const baseModelConfigAtom = atom({
   
   // System values (not editable by user)
@@ -1326,9 +1367,9 @@ const baseModelConfigAtom = atom({
   // Default values for user inputs
   model_width: 120,
   model_depth: 81,
-  row_1_hole_diameter: 15,
-  row_2_hole_diameter: 15,
-  row_3_hole_diameter: 15,
+  row_1_hole_diameter: initialHoleDiameter,
+  row_2_hole_diameter: initialHoleDiameter,
+  row_3_hole_diameter: initialHoleDiameter,
   row_1_bottle_height: 120,
   row_2_bottle_height: 120,
   row_3_bottle_height: 120,
@@ -2383,6 +2424,10 @@ const GridPreview = () => {
       <Header>
         <h1>HolderForge</h1>
         <h2>Make a Custom Organizer</h2>
+        <nav aria-label="Site">
+          <Link to="/">Home</Link>
+          <Link to="/shop">Shop ready-made sizes</Link>
+        </nav>
       </Header>
       <LeftPanel>
         <BottleInputContainer>

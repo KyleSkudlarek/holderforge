@@ -1,6 +1,8 @@
 # HolderForge
 
-Web UI for 3D modeling a bottle holder that generates an STL model and Autodesk Fusion python script
+Storefront for 3D-printed bottle holders: a catalog of ready-made sizes backed
+by a measured-bottle database (`src/catalog/`, see `docs/catalog.md`) and a
+designer (`/design`) that generates the STL and an Autodesk Fusion python script.
 
 
 ## How To Install
@@ -14,6 +16,9 @@ npm install
 ```
 npm run dev -- --host
 ```
+
+`npm run build` also prerenders every catalog route to static HTML and writes
+the sitemap (`scripts/prerender.mjs`).
 
 ## How To Access Locally
 https://localhost:5173

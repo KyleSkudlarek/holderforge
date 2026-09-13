@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import Seo from "../Seo";
@@ -35,11 +35,35 @@ const Actions = styled.div`
 
 const Illustration = styled.div`
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   > * {
+    width: 100%;
     max-width: 560px;
   }
 `;
+
+const PreviewToggle = styled.label`
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.headerSecondary};
+  cursor: pointer;
+  user-select: none;
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: ${({ theme }) => theme.colors.highlightPrimary};
+    cursor: pointer;
+  }
+`;
+
+// Bottles shown by the hero toggle: a 10 ml travel spray, 18 mm by 92 mm.
+const HERO_BOTTLES = { diameter: 18, height: 92 };
 
 // The hero holder: 15 slots at 19 mm in rose gold, drag to turn.
 const HERO_CONFIG = holderConfig({ hole: 19 });
@@ -114,6 +138,7 @@ export default function Home() {
   }, [location.search, navigate]);
 
   const brandCount = new Set(bottles.map((b) => b.brand)).size;
+  const [withBottles, setWithBottles] = useState(false);
 
   return (
     <>
@@ -147,10 +172,15 @@ export default function Home() {
             <HolderCanvas
               config={HERO_CONFIG}
               color={HERO_COLOR}
-              view="hero"
+              bottles={withBottles ? HERO_BOTTLES : false}
+              view={withBottles ? "heroLoaded" : "hero"}
               poster="/images/renders/hero.png"
               alt="Three-tier rose gold holder with fifteen 19 mm holes. Drag to turn it."
             />
+            <PreviewToggle>
+              <input type="checkbox" checked={withBottles} onChange={(e) => setWithBottles(e.target.checked)} />
+              Preview with bottles
+            </PreviewToggle>
           </Illustration>
         </Hero>
 

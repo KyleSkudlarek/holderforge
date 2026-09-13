@@ -8,7 +8,8 @@ import styled from "styled-components";
 //   config:   designer configuration (see holderConfig in src/render/holderScene.js)
 //   color:    hex, changes re-tint without rebuilding
 //   bottles:  false | { diameter, height }
-//   view:     "hero" | "product" | "card" | { yaw, elev, distance, lookY }
+//   view:     "hero" | "heroLoaded" | "product" | "card" | { yaw, elev, distance, lookY }
+//             changing it after mount eases the camera to the new view
 //   spin:     turntable on/off; drag always works
 //   poster:   image URL shown before WebGL is ready (and as the no-JS fallback)
 
@@ -62,14 +63,21 @@ export default function HolderCanvas({ config, color, bottles = false, view = "h
     };
     // The scene is rebuilt only when the geometry changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(config), JSON.stringify(bottles)]);
+  }, [JSON.stringify(config)]);
 
   useEffect(() => {
     viewerRef.current?.setColor(color);
   }, [color, ready]);
 
+  const bottlesKey = JSON.stringify(bottles);
   useEffect(() => {
-    viewerRef.current?.setView(view);
+    viewerRef.current?.setBottles(bottles);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bottlesKey, ready]);
+
+  // The first view is applied on creation; later changes ease the camera.
+  useEffect(() => {
+    if (ready) viewerRef.current?.setView(view, true);
   }, [view, ready]);
 
   useEffect(() => {

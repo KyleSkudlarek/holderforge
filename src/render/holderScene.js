@@ -7,7 +7,7 @@
 //   holderConfig({ hole, holesPerRow, rows, bottleHeight })  -> full config
 //     (also exported from ./holderConfig without pulling in three.js)
 //   createViewer(canvas, { config, color, bottles, view, style }) -> viewer
-//     viewer.setColor(hex) | setView(name | {yaw, elev}) | setSpin(bool)
+//     viewer.setColor(hex) | setBottles(spec | false) | setView(name, animate) | setSpin(bool)
 //     viewer.render() | viewer.dispose()
 //   VIEWS: named camera presets (yaw/elevation in radians, distance relative
 //     to the holder's footprint so different sizes frame the same way).
@@ -22,9 +22,11 @@ export { holderConfig };
 export const VIEWS = {
   // Home page hero ("A2" in the angle review): front tier faces left, seen from the right.
   hero: { yaw: 0.62, elev: 0.55, distance: 2.63, lookY: 0.45 },
-  // Product gallery: same side, a touch lower and further back to leave room for bottles.
-  product: { yaw: 0.62, elev: 0.42, distance: 3.2, lookY: 0.5 },
-  // Catalog card: nearly head-on, compact.
+  // Same hero with bottles standing in it: further back and higher so they fit.
+  heroLoaded: { yaw: 0.62, elev: 0.42, distance: 4.1, lookY: 1.25 },
+  // Product gallery, with bottles.
+  product: { yaw: 0.62, elev: 0.4, distance: 4.3, lookY: 1.2 },
+  // Catalog card: nearly head-on, compact, empty.
   card: { yaw: 0.35, elev: 0.5, distance: 2.7, lookY: 0.45 },
 };
 
@@ -115,29 +117,30 @@ function holderMaterial(color, style) {
     : new THREE.MeshStandardMaterial({ color, roughness: 0.42, metalness: 0.35 });
 }
 
-// A generic bottle: dark body, label band, cap and nozzle. `diameter` and
-// `height` in mm; the group's origin is the bottle's base.
+// A generic cosmetic tube: straight translucent blue body with a flush
+// slate cover cap, so it reads as a decant, a travel spray or a lipstick.
+// `diameter` and `height` in mm; the group's origin is the bottle's base.
+export const BOTTLE_BODY = "#9dbde8";
+export const BOTTLE_CAP = "#5b7fb5";
+const CAP_SHARE = 0.32; // cap height as a share of the bottle height
+
 export function bottleGroup({ diameter, height }, style) {
   const r = diameter / 2;
   const flat = style === "flat";
-  const glass = flat
-    ? new THREE.MeshLambertMaterial({ color: 0x2e3440 })
-    : new THREE.MeshPhysicalMaterial({ color: 0x1e2530, roughness: 0.3, metalness: 0.05, clearcoat: 0.8, clearcoatRoughness: 0.2 });
-  const label = flat ? new THREE.MeshLambertMaterial({ color: 0xe8e4dc }) : new THREE.MeshStandardMaterial({ color: 0xe8e4dc, roughness: 0.8 });
-  const cap = flat ? new THREE.MeshLambertMaterial({ color: 0x15181c }) : new THREE.MeshStandardMaterial({ color: 0x15181c, roughness: 0.4, metalness: 0.3 });
+  const capH = height * CAP_SHARE;
+  const bodyH = height - capH;
+  const body = flat
+    ? new THREE.MeshLambertMaterial({ color: BOTTLE_BODY })
+    : new THREE.MeshPhysicalMaterial({ color: BOTTLE_BODY, roughness: 0.15, metalness: 0, transparent: true, opacity: 0.55, clearcoat: 1, clearcoatRoughness: 0.1 });
+  const cap = flat ? new THREE.MeshLambertMaterial({ color: BOTTLE_CAP }) : new THREE.MeshStandardMaterial({ color: BOTTLE_CAP, roughness: 0.45, metalness: 0.2 });
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, height, 32), glass);
-  body.position.y = height / 2;
-  const band = new THREE.Mesh(new THREE.CylinderGeometry(r + 0.15, r + 0.15, height * 0.37, 32), label);
-  band.position.y = height * 0.42;
-  const top = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.8, r * 0.8, 12, 32), cap);
-  top.position.y = height + 6;
-  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 5, 16), cap);
-  nozzle.position.y = height + 14;
-  for (const m of [body, band, top, nozzle]) {
-    m.castShadow = !flat;
-    g.add(m);
-  }
+  const bodyMesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, bodyH, 40), body);
+  bodyMesh.position.y = bodyH / 2;
+  bodyMesh.renderOrder = 2;
+  const capMesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, capH, 40), cap);
+  capMesh.position.y = bodyH + capH / 2;
+  capMesh.castShadow = !flat;
+  g.add(bodyMesh, capMesh);
   return g;
 }
 
@@ -237,16 +240,27 @@ export function createViewer(canvas, { config, color, bottles, style, view = "he
   const holder = createHolderScene({ config, color, bottles, style, shadowMap: shadowMap ?? (canvas.width > 1200 ? 2048 : 1024) });
   const camera = new THREE.PerspectiveCamera(28, 4 / 3, 1, 4000);
   const size = Math.max(holder.layout.width, holder.layout.depth);
-  const state = { yaw: 0, elev: 0.5, distance: size * 2.6, lookY: holder.layout.height * 0.45, turn: 0, spinning: false, raf: 0, disposed: false };
+  // cam = current camera parameters, target = where an animated setView is heading.
+  const cam = { yaw: 0, elev: 0.5, distance: size * 2.6, lookY: holder.layout.height * 0.45 };
+  const target = { ...cam };
+  const state = { turn: 0, spinning: false, animating: false, raf: 0, disposed: false };
 
-  const setView = (v) => {
+  const resolve = (v) => {
     const preset = typeof v === "string" ? VIEWS[v] : v;
-    if (!preset) return;
-    state.yaw = preset.yaw ?? state.yaw;
-    state.elev = preset.elev ?? state.elev;
-    if (preset.distance) state.distance = preset.distance * size;
-    if (preset.lookY !== undefined) state.lookY = preset.lookY * holder.layout.height;
-    if (bottles) state.lookY = holder.layout.height + (bottles.height ?? 90) * 0.35;
+    if (!preset) return null;
+    return {
+      yaw: preset.yaw ?? target.yaw,
+      elev: preset.elev ?? target.elev,
+      distance: preset.distance ? preset.distance * size : target.distance,
+      lookY: preset.lookY !== undefined ? preset.lookY * holder.layout.height : target.lookY,
+    };
+  };
+  const setView = (v, animate = false) => {
+    const next = resolve(v);
+    if (!next) return;
+    Object.assign(target, next);
+    if (!animate) Object.assign(cam, next);
+    else state.animating = true;
   };
   setView(view);
 
@@ -266,24 +280,40 @@ export function createViewer(canvas, { config, color, bottles, style, view = "he
     fit();
     holder.rig.rotation.y = state.turn;
     camera.position.set(
-      Math.sin(state.yaw) * Math.cos(state.elev) * state.distance,
-      state.lookY + Math.sin(state.elev) * state.distance,
-      Math.cos(state.yaw) * Math.cos(state.elev) * state.distance
+      Math.sin(cam.yaw) * Math.cos(cam.elev) * cam.distance,
+      cam.lookY + Math.sin(cam.elev) * cam.distance,
+      Math.cos(cam.yaw) * Math.cos(cam.elev) * cam.distance
     );
-    camera.lookAt(0, state.lookY, 0);
+    camera.lookAt(0, cam.lookY, 0);
     renderer.render(holder.scene, camera);
   };
 
+  // Runs while spinning or easing toward a new view, then stops itself.
   const loop = () => {
+    state.raf = 0;
     if (state.disposed) return;
     if (state.spinning) state.turn += 0.004;
+    if (state.animating) {
+      let remaining = 0;
+      for (const k of ["yaw", "elev", "distance", "lookY"]) {
+        cam[k] += (target[k] - cam[k]) * 0.14;
+        remaining = Math.max(remaining, Math.abs(target[k] - cam[k]) / (Math.abs(target[k]) || 1));
+      }
+      if (remaining < 0.002) {
+        Object.assign(cam, target);
+        state.animating = false;
+      }
+    }
     render();
-    state.raf = requestAnimationFrame(loop);
+    if (state.spinning || state.animating) state.raf = requestAnimationFrame(loop);
+  };
+  const wake = () => {
+    if (!state.raf) state.raf = requestAnimationFrame(loop);
   };
 
   const setSpin = (on) => {
     state.spinning = on;
-    if (on && !state.raf) state.raf = requestAnimationFrame(loop);
+    if (on) wake();
   };
 
   const attachDrag = () => {
@@ -319,9 +349,11 @@ export function createViewer(canvas, { config, color, bottles, style, view = "he
 
   return {
     render,
-    setView: (v) => {
-      setView(v);
-      if (!state.raf) render();
+    // setView(name | preset, animate): animate eases the camera over ~0.5 s.
+    setView: (v, animate = false) => {
+      setView(v, animate);
+      if (animate) wake();
+      else if (!state.raf) render();
     },
     setColor: (hex) => {
       holder.setColor(hex);

@@ -57,19 +57,6 @@ export const products = [
     configFor: (hole) => configFor(hole, 60),
   },
   {
-    slug: "universal-travel-spray-holder-15-slot",
-    name: "Universal Travel Spray Holder",
-    tagline: "One 23 mm hole size for a mixed collection of 20-22 mm bottles.",
-    categories: ["travel-sprays", "rollerballs", "decants"],
-    layout: { rows: 3, holesPerRow: 5 },
-    holeSizes: [23],
-    priceCents: 4500,
-    description:
-      "Own the larger travel sprays from several brands? The universal holder uses one 23 mm hole, so 22 mm bottles like Tom Ford and Jo Malone sit snug and 20-21 mm bottles stand with a little room. Anything narrower than 20 mm will lean; pick a matched size or design a mixed holder instead.",
-    images: {},
-    configFor,
-  },
-  {
     slug: "makeup-organizer-15-slot",
     name: "15-Slot Lipstick & Makeup Organizer",
     tagline: "Lipstick, mascara and concealer tubes, sized to the brand.",

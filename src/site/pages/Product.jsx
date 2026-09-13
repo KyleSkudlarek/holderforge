@@ -7,7 +7,7 @@ import ProductCard from "../ProductCard";
 import HolderCanvas from "../HolderCanvas";
 import { holderConfig } from "../../render/holderConfig";
 import NotFound from "./NotFound";
-import { Container, Section, H1, H2, H3, Text, Muted, Button, ButtonLink, Card, CardBody, ChipRow, Chip, Swatch, Breadcrumbs, InlineLink, ExternalLink, Notice } from "../ui";
+import { Container, Section, H1, H2, H3, Text, Muted, Button, ButtonLink, Card, CardBody, ChipRow, Chip, Swatch, Breadcrumbs, InlineLink, ExternalLink, Notice, Segmented } from "../ui";
 import {
   productBySlug,
   colors,
@@ -70,22 +70,36 @@ const Thumbs = styled.div`
 `;
 
 const Thumb = styled.button`
+  position: relative;
   width: 72px;
   height: 72px;
   padding: 0;
   border-radius: 6px;
   border: 2px solid ${({ theme, $active }) => ($active ? theme.colors.headerPrimary : theme.colors.outline)};
   background: ${({ theme }) => theme.colors.surfaceRaised};
-  color: ${({ theme }) => theme.colors.muted};
-  font-size: 11px;
   cursor: pointer;
   flex-shrink: 0;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  line-height: 1.2;
+`;
+
+// Label over the live-render thumbnail so it reads as a gallery entry like
+// the photos, not a text button.
+const ThumbTag = styled.span`
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 `;
 
 const MainImage = styled.div`
@@ -217,19 +231,10 @@ const FitNote = styled.span`
   opacity: 0.8;
 `;
 
-const MixedToggle = styled.label`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-  cursor: pointer;
-  input {
-    width: 16px;
-    height: 16px;
-    accent-color: ${({ theme }) => theme.colors.highlightPrimary};
-  }
-`;
+const SIZE_MODE_OPTIONS = [
+  { value: "one", label: "One size" },
+  { value: "mixed", label: "Mixed sizes" },
+];
 
 const Price = styled.div`
   font-size: 28px;
@@ -560,8 +565,9 @@ export default function Product() {
                 <Thumb type="button" $active={activeView === "render"} onClick={() => setView("render")} aria-label={`${color.name}, rendered`}>
                   <img src={renderImage(product, colorId)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </Thumb>
-                <Thumb type="button" $active={activeView === "3d"} onClick={() => setView("3d")}>
-                  3D with your bottles
+                <Thumb type="button" $active={activeView === "3d"} onClick={() => setView("3d")} aria-label="3D view with your bottles">
+                  <img src={renderImage(product, colorId)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
+                  <ThumbTag>3D</ThumbTag>
                 </Thumb>
               </Thumbs>
               <MainImage>
@@ -623,9 +629,7 @@ export default function Product() {
                 <BottleSearch placeholder={mixed && selected.length ? "Add another bottle" : 'Search your brand, e.g. "ScentSplit"'} onPick={pickBottle} />
               ) : null}
               {product.holeSizes.length > 1 ? (
-                <MixedToggle>
-                  <input type="checkbox" checked={mixed} onChange={(e) => setMixed(e.target.checked)} />I have bottles of several sizes
-                </MixedToggle>
+                <Segmented label="Bottle sizes" options={SIZE_MODE_OPTIONS} value={mixed ? "mixed" : "one"} onChange={(v) => setMixed(v === "mixed")} style={{ alignSelf: "flex-start" }} />
               ) : null}
               {selected.length && !recommended ? (
                 <Notice $tone="warning">
@@ -810,7 +814,7 @@ export default function Product() {
               <Faq>
                 <summary>My bottles are different sizes. Can I mix?</summary>
                 <p>
-                  A ready-made holder has one hole size, and it takes bottles up to 3 mm narrower than the hole. Tick "I have bottles of several sizes" above to check a mix; if the range is wider than that,{" "}
+                  A ready-made holder has one hole size, and it takes bottles up to 3 mm narrower than the hole. Switch to "Mixed sizes" above to check a mix; if the range is wider than that,{" "}
                   <InlineLink to="/design/">design a holder</InlineLink> with a different size on each row.
                 </p>
               </Faq>

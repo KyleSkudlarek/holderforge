@@ -38,6 +38,12 @@ take many supplements). Same data model: brand, product, base dimensions.
 - Review language worth reusing: sturdy, heavier than expected, vanity, fits
   where I need it, second organizer, custom sizing help was quick.
 
+## Site pricing
+
+Set 2026-09-13: 15-slot sample vial holder USD 30, every other 15-slot holder
+USD 35 (Etsy stays at 40-45; the site is the higher-margin channel). Prices
+live in `priceCents` in `src/catalog/products.js`.
+
 ## Channels
 
 - Etsy is the discovery channel and carries the reviews. Etsy policy forbids

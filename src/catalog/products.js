@@ -56,7 +56,7 @@ export const products = [
     categories: ["travel-sprays", "decants", "rollerballs"],
     layout: { rows: 3, holesPerRow: 5 },
     holeSizes: range(15, 22),
-    priceCents: 4500,
+    priceCents: 3500,
     description:
       "Holds 15 travel sprays, rollerballs or decants in three staggered tiers so every label is visible. The holes are printed to match your bottles: pick the brand and the size is set for you, or measure the base and add 1 mm. Bottles of different sizes get their own row, at the same price.",
     images: withHeroes({ "rose-gold": ["rose-gold-travel-sprays.jpg", "rose-gold-scentsplit.jpg", "rose-gold-decantx.jpg"] }),
@@ -69,7 +69,7 @@ export const products = [
     categories: ["decants"],
     layout: { rows: 3, holesPerRow: 5 },
     holeSizes: [12],
-    priceCents: 4000,
+    priceCents: 3000,
     description:
       "For the little 1-2ml sample sprays that come with orders and in discovery sets. One universal 12 mm hole size fits the common vial bodies; no measuring needed.",
     images: withHeroes({ "rose-gold": ["rose-gold-samples.jpg"], white: ["white-samples.jpg"] }),
@@ -82,7 +82,7 @@ export const products = [
     categories: ["makeup"],
     layout: { rows: 3, holesPerRow: 5 },
     holeSizes: range(15, 25),
-    priceCents: 4500,
+    priceCents: 3500,
     description:
       "The same three-tier layout sized for makeup tubes. Round tubes pick a hole size below; square or rectangular tubes are made to order in the designer with square holes.",
     images: withHeroes({}),

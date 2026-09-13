@@ -27,8 +27,9 @@ import {
   fitFor,
   fitForAll,
   bestSizeFor,
-  recommendedHole,
-  rowPlanFor,
+  sizesFor,
+  rowFor,
+  rowsForSizes,
   RULE_TEXT,
 } from "../../catalog";
 
@@ -467,23 +468,30 @@ export default function Product() {
     .map((id) => bottleById(id))
     .filter(Boolean);
   const bottle = selected[0] || null;
-  const mixed = params.get("mixed") === "1" || selected.length > 1;
   const holes = selected.map((b) => b.hole);
+  const rows = product.layout.rows;
+  // Mixed mode sells the same holder with up to one hole size per row:
+  // ?sizes=16,22, picked from the chips or added when a bottle needs one.
+  // A link with bottles but no sizes gets them from the bottles.
+  const sizesParam = [...new Set((params.get("sizes") || "").split(",").map(Number).filter((h) => product.holeSizes.includes(h)))].sort((a, b) => a - b).slice(0, rows);
+  const mixed = params.get("mixed") === "1" || sizesParam.length > 0 || selected.length > 1;
+  const sizes = mixed ? (sizesParam.length ? sizesParam : sizesFor(product, holes, rows) || []) : [];
+  const rowHoles = sizes.length ? rowsForSizes(sizes, holes, rows) : null;
   const sizeParam = Number(params.get("size"));
-  const size = product.holeSizes.includes(sizeParam)
-    ? sizeParam
-    : selected.length
-      ? bestSizeFor(product, holes)
-      : product.holeSizes.length === 1
-        ? product.holeSizes[0]
-        : null;
-  const recommended = selected.length ? bestSizeFor(product, holes) : null;
-  // Bottles too far apart for one hole size get a size per row instead: the
-  // same print, so the price and photos are unchanged.
-  const plan = selected.length > 1 && !recommended ? rowPlanFor(product, holes, product.layout.rows) : null;
-  const planHoles = plan ? plan.map((r) => r.hole) : null;
-  const planGroups = plan ? [...new Set(plan)].map((g) => ({ ...g, rows: plan.flatMap((x, i) => (x === g ? [ROW_NAMES[i]] : [])) })) : [];
-  const holeForBottle = (b) => (plan ? plan.find((g) => g.bottleHoles.includes(b.hole)).hole : size);
+  const size = mixed
+    ? null
+    : product.holeSizes.includes(sizeParam)
+      ? sizeParam
+      : selected.length
+        ? bestSizeFor(product, holes)
+        : product.holeSizes.length === 1
+          ? product.holeSizes[0]
+          : null;
+  const recommended = !mixed && selected.length ? bestSizeFor(product, holes) : null;
+  const holeForBottle = (b) => (mixed ? rowFor(sizes, b.hole) : size);
+  const unplaced = mixed ? selected.filter((b) => !holeForBottle(b)) : [];
+  // Sizes with the rows they occupy: "Front and middle rows: 17 mm".
+  const rowGroups = rowHoles ? sizes.map((h) => ({ hole: h, rows: rowHoles.flatMap((x, i) => (x === h ? [ROW_NAMES[i]] : [])) })) : [];
   const colorId = colors.some((c) => c.id === params.get("color")) ? params.get("color") : defaultColorId;
   const color = colors.find((c) => c.id === colorId);
 
@@ -496,14 +504,27 @@ export default function Product() {
     setParams(next, { replace: true });
   };
 
-  const setSelected = (list) => {
-    const ids = [...new Set(list.map(bottleId))];
-    update({ bottles: ids.join(","), bottle: null, size: bestSizeFor(product, list.map((b) => b.hole)) });
+  const setSelected = (list, extra) => update({ bottles: [...new Set(list.map(bottleId))].join(","), bottle: null, ...extra });
+  const pickBottle = (b) => {
+    if (!mixed) return setSelected([b], { size: bestSizeFor(product, [b.hole]) });
+    // A bottle no chosen size takes gets its own size while a row is free.
+    const own = bestSizeFor(product, [b.hole]);
+    const next = !rowFor(sizes, b.hole) && own && sizes.length < rows ? [...sizes, own] : sizes;
+    setSelected([...selected, b], { sizes: next.join(","), size: null });
   };
-  const pickBottle = (b) => setSelected(mixed ? [...selected, b] : [b]);
-  const removeBottle = (b) => setSelected(selected.filter((x) => bottleId(x) !== bottleId(b)));
-  const pickSize = (h) => update({ size: h });
-  const setMixed = (on) => update({ mixed: on ? "1" : null, bottles: on ? params.get("bottles") || params.get("bottle") : bottle ? bottleId(bottle) : null, bottle: null });
+  const removeBottle = (b) => {
+    const rest = selected.filter((x) => bottleId(x) !== bottleId(b));
+    setSelected(rest, mixed ? { sizes: sizes.join(",") } : { size: bestSizeFor(product, rest.map((x) => x.hole)) });
+  };
+  const pickSize = (h) => {
+    if (!mixed) return update({ size: h });
+    const next = sizes.includes(h) ? sizes.filter((s) => s !== h) : sizes.length < rows ? [...sizes, h] : sizes;
+    update({ sizes: next.join(","), size: null, bottles: selected.map(bottleId).join(",") });
+  };
+  const setMixed = (on) =>
+    on
+      ? update({ mixed: "1", sizes: size ? String(size) : null, size: null, bottles: selected.map(bottleId).join(","), bottle: null })
+      : update({ mixed: null, sizes: null, bottles: bottle ? bottleId(bottle) : null, bottle: null, size: bottle ? bestSizeFor(product, [bottle.hole]) : sizes[0] || null });
 
   const fits = fitsForProduct(product);
   const brandCount = new Set(fits.flatMap((g) => g.bottles.map((b) => b.brand))).size;
@@ -527,15 +548,15 @@ export default function Product() {
   const requestedPhoto = view.startsWith("photo-") ? Number(view.slice(6)) : null;
   const activeView = requestedPhoto === null ? view : photos[requestedPhoto] ? view : photos.length ? "photo-0" : "render";
   const renderSize = size || product.holeSizes[0];
-  const liveConfig = holderConfig({ hole: renderSize, holes: planHoles, holesPerRow: product.layout.holesPerRow, rows: product.layout.rows });
+  const liveConfig = holderConfig({ hole: renderSize, holes: rowHoles, holesPerRow: product.layout.holesPerRow, rows });
   // Without a diameter each bottle takes its row's hole, which is what a
   // size-per-row holder should show.
-  const liveBottles = { diameter: plan ? undefined : bottle ? bottle.hole - 1 : renderSize - 1, height: bottle?.height || 90 };
+  const liveBottles = { diameter: rowHoles ? undefined : bottle ? bottle.hole - 1 : renderSize - 1, height: bottle?.height || 90 };
   const others = size ? productsForHole(size).filter((p) => p.slug !== product.slug && p.categories.some((c) => product.categories.includes(c))) : [];
   const bottlesParam = selected.length ? selected.map(bottleId).join(",") : undefined;
   const primaryCategory = categoryBySlug(product.categories[0]);
-  const holesLabel = planHoles ? planHoles.join(" / ") : String(size || product.holeSizes[0]);
-  const designerHref = `/design/?d=${planHoles ? planHoles.join(",") : size || product.holeSizes[0]}`;
+  const holesLabel = rowHoles ? rowHoles.join(" / ") : String(size || product.holeSizes[0]);
+  const designerHref = `/design/?d=${rowHoles ? rowHoles.join(",") : size || product.holeSizes[0]}`;
   const path = `/shop/${product.slug}`;
 
   const jsonLd = [
@@ -570,7 +591,7 @@ export default function Product() {
     return (
       <li key={bottleId(b)}>
         <span>{bottleLabel(b)}</span>
-        {f ? <FitTag $tone={f.tone}>{f.label}</FitTag> : null}
+        {f ? <FitTag $tone={f.tone}>{f.label}</FitTag> : mixed ? <FitTag>Needs {b.hole} mm</FitTag> : null}
         <button type="button" onClick={() => removeBottle(b)} aria-label={`Remove ${bottleLabel(b)}`}>
           remove
         </button>
@@ -625,7 +646,7 @@ export default function Product() {
                     view="product"
                     spin
                     ratio="1 / 1"
-                    alt={`${product.name} in ${color.name} with ${plan ? "your" : `${renderSize} mm`} bottles. Drag to turn.`}
+                    alt={`${product.name} in ${color.name} with ${rowHoles ? "your" : `${renderSize} mm`} bottles. Drag to turn.`}
                   />
                 ) : activeView === "render" ? (
                   <img src={renderImage(product, colorId)} alt={`${product.name} in ${color.name}, rendered`} width="800" height="600" style={{ display: "block", width: "100%", height: "auto", padding: "8% 0", boxSizing: "border-box" }} />
@@ -634,7 +655,7 @@ export default function Product() {
                 )}
                 <Badge>
                   {activeView === "render" || activeView === "3d" ? `${color.name}, rendered` : photoColorId === colorId ? color.name : `Photographed in ${photoColor.name}`}
-                  {size || plan ? `, ${holesLabel} mm holes` : ""}
+                  {size || rowHoles ? `, ${holesLabel} mm holes` : ""}
                 </Badge>
               </MainImage>
             </Gallery>
@@ -655,17 +676,23 @@ export default function Product() {
               <StepTitle>
                 <span className="n">1</span>Which bottle is it for?
               </StepTitle>
-              {selected.length && !plan ? <SelectedList>{selected.map((b) => bottleItem(b))}</SelectedList> : null}
-              {plan ? (
+              {selected.length && !mixed ? <SelectedList>{selected.map((b) => bottleItem(b))}</SelectedList> : null}
+              {mixed && (rowHoles || unplaced.length) ? (
                 <RowPlan>
-                  {planGroups.map((g) => (
-                    <li key={g.rows[0]}>
+                  {rowGroups.map((g) => (
+                    <li key={g.hole}>
                       <strong>
                         {capitalize(rowsLabel(g.rows))}: {g.hole} mm
                       </strong>
-                      <SelectedList>{selected.filter((b) => g.bottleHoles.includes(b.hole)).map((b) => bottleItem(b))}</SelectedList>
+                      <SelectedList>{selected.filter((b) => holeForBottle(b) === g.hole).map((b) => bottleItem(b))}</SelectedList>
                     </li>
                   ))}
+                  {unplaced.length ? (
+                    <li>
+                      <strong>No row fits</strong>
+                      <SelectedList>{unplaced.map((b) => bottleItem(b))}</SelectedList>
+                    </li>
+                  ) : null}
                 </RowPlan>
               ) : null}
               {!selected.length || mixed ? (
@@ -674,24 +701,21 @@ export default function Product() {
               {product.holeSizes.length > 1 ? (
                 <Segmented label="Bottle sizes" options={SIZE_MODE_OPTIONS} value={mixed ? "mixed" : "one"} onChange={(v) => setMixed(v === "mixed")} style={{ alignSelf: "flex-start" }} />
               ) : null}
-              {plan ? (
+              {mixed && rowHoles && !unplaced.length ? (
                 <Fit $tone="success">
                   <Check />
-                  <span>One hole size per row, so every bottle fits. Same holder, same price.</span>
+                  <span>{sizes.length === 1 ? `Every row ${sizes[0]} mm. Pick another size to give a row its own.` : selected.length ? "One hole size per row, so every bottle fits. Same holder, same price." : "One hole size per row. Same holder, same price. Add a bottle to check its fit."}</span>
                 </Fit>
               ) : null}
-              {selected.length && !recommended && !plan ? (
+              {mixed && unplaced.length ? (
                 <Notice $tone="warning">
-                  {selected.length > 1 ? "These bottles span too wide a range for one hole size." : `${bottleLabel(bottle)} needs a ${bottle.hole} mm hole, which this holder isn't sold in.`}{" "}
-                  {selected.length > 1 ? (
-                    <>
-                      <InlineLink to={`/design/?d=${recommendedHole(holes)}`}>Design a holder with a different size per row</InlineLink>.
-                    </>
-                  ) : (
-                    <>
-                      <InlineLink to={`/fits/${bottle.hole}mm/`}>See holders for {bottle.hole} mm</InlineLink>.
-                    </>
-                  )}
+                  {unplaced.length === 1 ? `${bottleLabel(unplaced[0])} needs a size no row has.` : `${unplaced.length} bottles need a size no row has.`}{" "}
+                  {sizes.length >= rows ? "Remove a size to make room, or remove the bottle." : "Pick a size below, or remove the bottle."}
+                </Notice>
+              ) : null}
+              {selected.length && !mixed && !recommended ? (
+                <Notice $tone="warning">
+                  {bottleLabel(bottle)} needs a {bottle.hole} mm hole, which this holder isn't sold in. <InlineLink to={`/fits/${bottle.hole}mm/`}>See holders for {bottle.hole} mm</InlineLink>.
                 </Notice>
               ) : null}
               {selected.length && recommended && size === recommended && worstAtSize?.ok ? (
@@ -699,18 +723,20 @@ export default function Product() {
                   <Check />
                   <span>
                     Recommended: {recommended} mm holes.{" "}
-                    {worstAtSize.gap === 0 ? (selected.length > 1 ? "Largest bottle snug, the rest have a little room." : "Snug fit.") : worstAtSize.gap === 1 ? "Every bottle fits with a little room." : "The smallest bottle will be loose."}
+                    {worstAtSize.gap === 0 ? "Snug fit." : worstAtSize.gap === 1 ? "Fits with a little room." : "Loose; may lean."}
                   </span>
                 </Fit>
               ) : null}
-              {plan ? null : product.holeSizes.length > 1 ? (
+              {product.holeSizes.length > 1 ? (
                 <>
-                  <Muted>{selected.length ? "Hole size:" : "Or pick the hole size:"}</Muted>
+                  <Muted>{mixed ? `Hole sizes, one per row (up to ${rows}):` : selected.length ? "Hole size:" : "Or pick the hole size:"}</Muted>
                   <ChipRow>
                     {product.holeSizes.map((h) => {
-                      const f = selected.length ? fitForAll(h, holes) : null;
+                      const f = !mixed && selected.length ? fitForAll(h, holes) : null;
+                      const active = mixed ? sizes.includes(h) : size === h;
+                      const off = mixed ? !active && sizes.length >= rows : f ? !f.ok : false;
                       return (
-                        <Chip key={h} type="button" $active={size === h} disabled={f ? !f.ok : false} title={f ? f.label : undefined} onClick={() => pickSize(h)} style={f && !f.ok ? { opacity: 0.4, cursor: "default" } : undefined}>
+                        <Chip key={h} type="button" $active={active} aria-pressed={mixed ? active : undefined} disabled={off} title={f ? f.label : off ? "All rows are taken" : undefined} onClick={() => pickSize(h)} style={off ? { opacity: 0.4, cursor: "default" } : undefined}>
                           {h} mm{f && f.ok ? <FitNote>{f.short}</FitNote> : null}
                         </Chip>
                       );

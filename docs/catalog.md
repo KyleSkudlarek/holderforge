@@ -21,7 +21,7 @@ under `src/site/`, driven entirely by the data files in `src/catalog/`.
 | `/design` | The configurator | `GridPreview.jsx` |
 
 Product page state lives in the query string (`?size=19&color=copper&bottle=<id>`,
-or `?mixed=1&bottles=<id>,<id>` for several bottles) so links from finder and
+or `?mixed=1&sizes=16,22&bottles=<id>,<id>` for a size per row) so links from finder and
 brand pages can preselect it. The canonical URL is the clean path. Links into
 the designer use `?d=<mm>` for one size or `?d=<front>,<middle>,<back>` for a
 size per row.
@@ -45,9 +45,9 @@ size per row.
   recommended hole is S (snug), S-1 (a little room) or S-2 (loose, may lean).
   `fitFor`, `fitForAll`, `bestSizeFor` and `RULE_TEXT` drive the size pills,
   the mixed-collection check, size pages and "holders that fit" lists.
-  `rowPlanFor` handles a collection no single size takes: it groups the
-  bottles into at most one size per row (smallest in front) and the product
-  page sells the same holder with those sizes. No separate product exists for
+  `sizesFor`, `rowFor` and `rowsForSizes` back the product page's mixed
+  mode: up to one hole size per row (smallest in front), picked from the size
+  chips or added when a bottle needs one. No separate product exists for
   mixed rows; it is the same print at the same price.
 - `index.js`: queries (`search`, `fitsForProduct`, `bottlesFittingSize`,
   `productsForHole`, `brands`, `staticRoutes`) shared by pages and the

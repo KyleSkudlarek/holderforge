@@ -46,35 +46,47 @@ export function bestSizeFor(product, bottleHoles) {
   return sizes.find((s) => s >= need && fitForAll(s, bottleHoles).ok) ?? null;
 }
 
-// Plan for a holder with a different hole size per row. Bottles are grouped
-// from the largest down; a bottle joins the current group while it is within
-// MAX_GAP of the group's largest, which yields the fewest groups. Each group
-// is sold at the smallest size that takes all of it (bestSizeFor). Rows are
-// ordered smallest hole first, so the widest (usually tallest) bottles stand
-// on the back, highest tier. With fewer groups than rows, the group holding
-// the most bottles takes the spare rows. Null when the bottles need more
-// groups than the holder has rows, or a group has no sold size.
-// Returns one entry per row: { hole, bottleHoles } (entries may repeat).
-export function rowPlanFor(product, bottleHoles, rows = 3) {
-  if (!bottleHoles.length) return null;
+// Hole sizes for a holder with a size per row, from a set of bottles: bottles
+// are grouped from the largest down, a bottle joining the group while it is
+// within MAX_GAP of the group's largest (fewest groups), and each group is
+// sold at the smallest size that takes all of it. Ascending. Null when the
+// bottles need more groups than `rows` or a group has no sold size.
+export function sizesFor(product, bottleHoles, rows = 3) {
   const sorted = [...bottleHoles].sort((a, b) => b - a);
   const groups = [];
   for (const h of sorted) {
     const g = groups[groups.length - 1];
-    if (g && g.bottleHoles[0] - h <= MAX_GAP) g.bottleHoles.push(h);
-    else groups.push({ bottleHoles: [h] });
+    if (g && g[0] - h <= MAX_GAP) g.push(h);
+    else groups.push([h]);
   }
-  if (groups.length > rows) return null;
-  for (const g of groups) {
-    g.hole = bestSizeFor(product, g.bottleHoles);
-    if (!g.hole) return null;
+  if (!groups.length || groups.length > rows) return null;
+  const sizes = groups.map((g) => bestSizeFor(product, g));
+  return sizes.every(Boolean) ? sizes.reverse() : null;
+}
+
+// The size among `sizes` a bottle fits best (smallest gap), or null.
+export function rowFor(sizes, bottleHole) {
+  let best = null;
+  for (const s of sizes) {
+    const f = fitFor(s, bottleHole);
+    if (f.ok && (best === null || f.gap < fitFor(best, bottleHole).gap)) best = s;
   }
-  groups.reverse();
-  const busiest = groups.reduce((a, b) => (b.bottleHoles.length > a.bottleHoles.length ? b : a));
+  return best;
+}
+
+// Hole size of each row, front row first, for a holder sold with `sizes`
+// (at most one per row). Rows run smallest first so the widest, usually
+// tallest, bottles stand on the back, highest tier. Spare rows go to the size
+// holding the most bottles, ties to the larger size.
+export function rowsForSizes(sizes, bottleHoles, rows = 3) {
+  const sorted = [...new Set(sizes)].sort((a, b) => a - b).slice(0, rows);
+  if (!sorted.length) return null;
+  const count = (s) => bottleHoles.filter((h) => rowFor(sorted, h) === s).length;
+  const busiest = sorted.reduce((a, b) => (count(b) >= count(a) ? b : a));
   const plan = [];
-  for (const g of groups) {
-    plan.push(g);
-    if (g === busiest) while (plan.length + (groups.length - groups.indexOf(g) - 1) < rows) plan.push(g);
+  for (const s of sorted) {
+    plan.push(s);
+    if (s === busiest) while (plan.length + (sorted.length - sorted.indexOf(s) - 1) < rows) plan.push(s);
   }
   return plan;
 }

@@ -1,8 +1,8 @@
 // Catalog holders. A product is a named preset of the designer configuration:
 // `layout` fixes rows and holes per row, `holeSizes` lists the hole diameters
-// it is sold in (one size per holder), `fitsHoles` optionally widens the
-// bottle sizes it accepts (the universal holder), and `configFor(hole)` yields
-// the same eleven fields the designer sends to checkout.
+// it is sold in (one size per holder; which bottles each size accepts is the
+// rule in fit.js), and `configFor(hole)` yields the same eleven fields the
+// designer sends to checkout.
 //
 // priceCents is display-only until the order API prices by SKU.
 // images: { [colorId]: [url, ...] }. Missing entries render a placeholder.
@@ -59,15 +59,13 @@ export const products = [
   {
     slug: "universal-travel-spray-holder-15-slot",
     name: "Universal Travel Spray Holder",
-    tagline: "One 23 mm hole size for a mixed collection of 15-22 mm bottles.",
+    tagline: "One 23 mm hole size for a mixed collection of 20-22 mm bottles.",
     categories: ["travel-sprays", "rollerballs", "decants"],
     layout: { rows: 3, holesPerRow: 5 },
     holeSizes: [23],
-    // Bottle hole sizes this oversized hole accepts (see productsForHole).
-    fitsHoles: [15, 22],
     priceCents: 4500,
     description:
-      "Own bottles from several brands? The universal holder uses one oversized 23 mm hole so anything from 15 to 22 mm stands in it. Looser fit than a matched size, but nothing to measure.",
+      "Own the larger travel sprays from several brands? The universal holder uses one 23 mm hole, so 22 mm bottles like Tom Ford and Jo Malone sit snug and 20-21 mm bottles stand with a little room. Anything narrower than 20 mm will lean; pick a matched size or design a mixed holder instead.",
     images: {},
     configFor,
   },

@@ -39,8 +39,13 @@ clean path.
   suggestions only cross-reference bottles of those types.
 - `colors.js`: filament colours. `available: false` shows a crossed-out
   swatch rather than hiding it.
-- `index.js`: queries (`search`, `fitsForProduct`, `productsForHole`,
-  `brands`, `staticRoutes`) shared by pages and the prerender script.
+- `fit.js`: the fit rule, stated once. A holder with hole S takes bottles whose
+  recommended hole is S (snug), S-1 (a little room) or S-2 (loose, may lean).
+  `fitFor`, `fitForAll`, `bestSizeFor` and `RULE_TEXT` drive the size pills,
+  the mixed-collection check, size pages and "holders that fit" lists.
+- `index.js`: queries (`search`, `fitsForProduct`, `bottlesFittingSize`,
+  `productsForHole`, `brands`, `staticRoutes`) shared by pages and the
+  prerender script.
 
 ## Photos
 

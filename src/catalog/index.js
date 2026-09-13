@@ -3,8 +3,10 @@ import { bottles, bottleTypes } from "./bottles";
 import { products, productBySlug, footprintFor } from "./products";
 import { categories, categoryBySlug } from "./categories";
 import { colors, defaultColorId } from "./colors";
+import { fitFor, fitForAll, recommendedHole, bestSizeFor, FIT_GRADES, MAX_GAP, RULE_TEXT } from "./fit";
 
 export { bottles, bottleTypes, products, productBySlug, footprintFor, categories, categoryBySlug, colors, defaultColorId };
+export { fitFor, fitForAll, recommendedHole, bestSizeFor, FIT_GRADES, MAX_GAP, RULE_TEXT };
 
 export const slugify = (s) =>
   s
@@ -35,14 +37,24 @@ export const holeSizes = () => [...new Set(bottles.map((b) => b.hole))].sort((a,
 
 export const bottlesForHole = (hole) => bottles.filter((b) => b.hole === hole);
 
-// Products sold in `hole` mm. With a bottle `type`, only products whose
-// categories cover that type (a perfume spray never suggests the makeup organizer).
+const productCoversType = (p, type) => !type || p.categories.some((slug) => (categoryBySlug(slug)?.types || []).includes(type));
+
+// Products sold in a size that accepts a bottle with recommended hole `hole`
+// (see fit.js). With a bottle `type`, only products whose categories cover
+// that type (a perfume spray never suggests the makeup organizer).
 export const productsForHole = (hole, type) =>
-  products.filter(
-    (p) =>
-      (p.holeSizes.includes(hole) || (p.fitsHoles && hole >= p.fitsHoles[0] && hole <= p.fitsHoles[1])) &&
-      (!type || p.categories.some((slug) => (categoryBySlug(slug)?.types || []).includes(type)))
-  );
+  products.filter((p) => productCoversType(p, type) && p.holeSizes.some((s) => fitFor(s, hole).ok));
+
+// Bottles that go into a holder with hole size `size`, grouped by fit grade
+// (best first). `types` limits to bottle types; omit for all.
+export function bottlesFittingSize(size, types) {
+  return FIT_GRADES.map((grade) => ({
+    grade,
+    bottles: bottles.filter((b) => b.hole === size - grade.gap && (!types || types.has(b.type))),
+  })).filter((g) => g.bottles.length > 0);
+}
+
+export const productTypes = (product) => new Set(product.categories.flatMap((slug) => categoryBySlug(slug)?.types || []));
 
 export const productsForCategory = (slug) => products.filter((p) => p.categories.includes(slug));
 
@@ -55,7 +67,7 @@ export const bottlesForCategory = (slug) => {
 // bottle types covered by the product's categories count, so a makeup
 // organizer sold in 15 mm does not claim to fit 15 mm perfume sprays.
 export function fitsForProduct(product) {
-  const types = new Set(product.categories.flatMap((slug) => categoryBySlug(slug)?.types || []));
+  const types = productTypes(product);
   return product.holeSizes
     .map((hole) => ({ hole, bottles: bottlesForHole(hole).filter((b) => types.has(b.type)) }))
     .filter((g) => g.bottles.length > 0);

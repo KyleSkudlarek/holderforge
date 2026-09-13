@@ -11,7 +11,7 @@ export default function ProductCard({ product, size, bottle, hint }) {
   const sizeText = sizes.length === 1 ? `${sizes[0]} mm holes` : `${sizes[0]}-${sizes[sizes.length - 1]} mm holes`;
   const params = new URLSearchParams();
   if (size && product.holeSizes.includes(size)) params.set("size", size);
-  if (bottle) params.set("bottle", bottle);
+  if (bottle) params.set(bottle.includes(",") ? "bottles" : "bottle", bottle);
   const qs = params.toString();
   return (
     <CardLink to={`/shop/${product.slug}/${qs ? `?${qs}` : ""}`}>

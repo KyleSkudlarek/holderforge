@@ -4,7 +4,7 @@ import Seo, { breadcrumbLd } from "../Seo";
 import ProductCard from "../ProductCard";
 import NotFound from "./NotFound";
 import { Container, Section, H1, H2, H3, Lead, Text, Muted, Grid, Card, CardBody, ChipRow, ChipLink, ButtonLink, Placeholder, Breadcrumbs, InlineLink } from "../ui";
-import { brandBySlug, bottlesForHole, productsForHole, holeSizes, bottleTypes, bottleId, bottleLabel, brandSlug, categories } from "../../catalog";
+import { brandBySlug, bottlesForHole, productsForHole, holeSizes, bottleTypes, bottleId, bottleLabel, brandSlug, categories, bottlesFittingSize, bestSizeFor, fitFor, RULE_TEXT } from "../../catalog";
 
 const Facts = styled.dl`
   margin: 0;
@@ -58,7 +58,8 @@ const categoryFor = (type) => categories.find((c) => c.types.includes(type));
 
 function SizePage({ hole }) {
   const list = bottlesForHole(hole);
-  const holders = productsForHole(hole);
+  // Holders for the kinds of bottle measured at this size (no makeup organizer on a fragrance page).
+  const holders = [...new Map([...new Set(list.map((b) => b.type))].flatMap((t) => productsForHole(hole, t).map((p) => [p.slug, p]))).values()];
   const path = `/fits/${hole}mm`;
   return (
     <>
@@ -78,19 +79,23 @@ function SizePage({ hole }) {
         <Section style={{ paddingTop: 20 }}>
           <H1>Holders for {hole} mm bottles</H1>
           <Lead>
-            A {hole} mm hole fits bottles that measure about {hole - 1} mm across the base. {list.length} of the bottles we've measured are this size.
+            A {hole} mm hole is made for bottles that measure about {hole - 1} mm across the base; {list.length} of the bottles we've measured are this size. {RULE_TEXT}
           </Lead>
         </Section>
-        <Section style={{ paddingTop: 0 }}>
-          <H2>Bottles at this size</H2>
-          <ChipRow>
-            {list.map((b) => (
-              <ChipLink key={bottleId(b)} to={`/fits/${brandSlug(b.brand)}/`}>
-                {bottleLabel(b)}
-              </ChipLink>
-            ))}
-          </ChipRow>
-        </Section>
+        {bottlesFittingSize(hole).map((g) => (
+          <Section key={g.grade.id} style={{ paddingTop: 0 }}>
+            <H2>
+              {g.grade.gap === 0 ? "Made for this size" : g.grade.label} <Muted>{hole - g.grade.gap} mm bottles</Muted>
+            </H2>
+            <ChipRow>
+              {g.bottles.map((b) => (
+                <ChipLink key={bottleId(b)} to={`/fits/${brandSlug(b.brand)}/`}>
+                  {bottleLabel(b)}
+                </ChipLink>
+              ))}
+            </ChipRow>
+          </Section>
+        ))}
         <Section style={{ paddingTop: 0 }}>
           <H2>Holders made with {hole} mm holes</H2>
           <Grid $cols={3}>
@@ -192,8 +197,10 @@ function BrandPage({ brand }) {
           <H2>Holders that fit {brand.name}</H2>
           <Grid $cols={3}>
             {holders.map((p) => {
-              const b = brand.bottles.find((x) => p.holeSizes.includes(x.hole)) || first;
-              return <ProductCard key={p.slug} product={p} size={b.hole} bottle={bottleId(b)} hint={`Preselected: ${b.hole} mm holes`} />;
+              const b = brand.bottles.find((x) => bestSizeFor(p, [x.hole])) || first;
+              const s = bestSizeFor(p, [b.hole]);
+              const f = s ? fitFor(s, b.hole) : null;
+              return <ProductCard key={p.slug} product={p} size={s || undefined} bottle={bottleId(b)} hint={s ? `Preselected: ${s} mm holes, ${f.short}` : undefined} />;
             })}
             <Card style={{ borderStyle: "dashed", justifyContent: "center", textAlign: "center" }}>
               <CardBody style={{ alignItems: "center", gap: 10, padding: 24 }}>

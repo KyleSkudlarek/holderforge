@@ -22,6 +22,13 @@ import {
   money,
   categoryBySlug,
   productImage,
+  productTypes,
+  bottlesFittingSize,
+  fitFor,
+  fitForAll,
+  bestSizeFor,
+  recommendedHole,
+  RULE_TEXT,
 } from "../../catalog";
 
 const SHIPPING_CENTS = 695;
@@ -154,7 +161,7 @@ const Fit = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  color: ${({ theme }) => theme.colors.success};
+  color: ${({ theme, $tone }) => ($tone === "warning" ? theme.colors.warning : theme.colors.success)};
   font-size: 15px;
   button {
     background: none;
@@ -164,6 +171,63 @@ const Fit = styled.div`
     cursor: pointer;
     font-size: 13px;
     font-family: inherit;
+  }
+`;
+
+const SelectedList = styled.ul`
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: ${({ theme }) => theme.colors.headerPrimary};
+  }
+  li > span:first-child {
+    flex: 1;
+  }
+  button {
+    background: none;
+    border: 0;
+    padding: 0 4px;
+    color: ${({ theme }) => theme.colors.muted};
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+  }
+`;
+
+const FitTag = styled.span`
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  color: ${({ theme, $tone }) => ($tone === "success" ? theme.colors.success : $tone === "warning" ? theme.colors.warning : theme.colors.muted)};
+  border: 1px solid currentColor;
+`;
+
+const FitNote = styled.span`
+  margin-left: 6px;
+  font-size: 11px;
+  opacity: 0.8;
+`;
+
+const MixedToggle = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.headerSecondary};
+  cursor: pointer;
+  input {
+    width: 16px;
+    height: 16px;
+    accent-color: ${({ theme }) => theme.colors.highlightPrimary};
   }
 `;
 
@@ -363,13 +427,29 @@ export default function Product() {
   const [params, setParams] = useSearchParams();
   const [quantity, setQuantity] = useState(1);
   const [brandFilter, setBrandFilter] = useState("");
+  const [showAllSizes, setShowAllSizes] = useState(false);
   const [view, setView] = useState("photo");
 
   if (!product) return <NotFound />;
 
-  const bottle = params.get("bottle") ? bottleById(params.get("bottle")) : null;
+  // Selected bottles: ?bottles=id,id (several sizes) or the single ?bottle=id
+  // that finder and brand pages link with.
+  const selected = (params.get("bottles") || params.get("bottle") || "")
+    .split(",")
+    .map((id) => bottleById(id))
+    .filter(Boolean);
+  const bottle = selected[0] || null;
+  const mixed = params.get("mixed") === "1" || selected.length > 1;
+  const holes = selected.map((b) => b.hole);
   const sizeParam = Number(params.get("size"));
-  const size = product.holeSizes.includes(sizeParam) ? sizeParam : bottle && product.holeSizes.includes(bottle.hole) ? bottle.hole : product.holeSizes.length === 1 ? product.holeSizes[0] : null;
+  const size = product.holeSizes.includes(sizeParam)
+    ? sizeParam
+    : selected.length
+      ? bestSizeFor(product, holes)
+      : product.holeSizes.length === 1
+        ? product.holeSizes[0]
+        : null;
+  const recommended = selected.length ? bestSizeFor(product, holes) : null;
   const colorId = colors.some((c) => c.id === params.get("color")) ? params.get("color") : defaultColorId;
   const color = colors.find((c) => c.id === colorId);
 
@@ -382,22 +462,35 @@ export default function Product() {
     setParams(next, { replace: true });
   };
 
-  const pickBottle = (b) => update({ bottle: bottleId(b), size: product.holeSizes.includes(b.hole) ? b.hole : null });
-  const pickSize = (h) => update({ size: h, bottle: bottle && bottle.hole === h ? bottleId(bottle) : null });
+  const setSelected = (list) => {
+    const ids = [...new Set(list.map(bottleId))];
+    update({ bottles: ids.join(","), bottle: null, size: bestSizeFor(product, list.map((b) => b.hole)) });
+  };
+  const pickBottle = (b) => setSelected(mixed ? [...selected, b] : [b]);
+  const removeBottle = (b) => setSelected(selected.filter((x) => bottleId(x) !== bottleId(b)));
+  const pickSize = (h) => update({ size: h });
+  const setMixed = (on) => update({ mixed: on ? "1" : null, bottles: on ? params.get("bottles") || params.get("bottle") : bottle ? bottleId(bottle) : null, bottle: null });
 
   const fits = fitsForProduct(product);
   const brandCount = new Set(fits.flatMap((g) => g.bottles.map((b) => b.brand))).size;
+  // With a size chosen the list narrows to bottles that go into that size,
+  // grouped by fit; otherwise every size the holder is sold in.
+  const narrowed = size && !showAllSizes;
+  const fitGroups = narrowed
+    ? bottlesFittingSize(size, productTypes(product)).map((g) => ({ key: g.grade.id, title: g.grade.label, hole: size - g.grade.gap, bottles: g.bottles }))
+    : fits.map((g) => ({ key: String(g.hole), title: `${g.hole} mm`, hole: g.hole, bottles: g.bottles }));
   const filteredFits = brandFilter
-    ? fits.map((g) => ({ ...g, bottles: g.bottles.filter((b) => bottleLabel(b).toLowerCase().includes(brandFilter.toLowerCase())) })).filter((g) => g.bottles.length)
-    : fits;
+    ? fitGroups.map((g) => ({ ...g, bottles: g.bottles.filter((b) => bottleLabel(b).toLowerCase().includes(brandFilter.toLowerCase())) })).filter((g) => g.bottles.length)
+    : fitGroups;
   const footprint = footprintFor(size || product.holeSizes[0], product.layout.holesPerRow);
   const slots = product.layout.rows * product.layout.holesPerRow;
-  const bottleFitsThisProduct = bottle && product.holeSizes.includes(bottle.hole);
+  const worstAtSize = size && selected.length ? fitForAll(size, holes) : null;
   const photos = product.images[colorId] || [];
   const renderSize = size || product.holeSizes[0];
   const liveConfig = holderConfig({ hole: renderSize, holesPerRow: product.layout.holesPerRow, rows: product.layout.rows });
   const liveBottles = { diameter: bottle ? bottle.hole - 1 : renderSize - 1, height: bottle?.height || 90 };
   const others = size ? productsForHole(size).filter((p) => p.slug !== product.slug && p.categories.some((c) => product.categories.includes(c))) : [];
+  const bottlesParam = selected.length ? selected.map(bottleId).join(",") : undefined;
   const primaryCategory = categoryBySlug(product.categories[0]);
   const designerHref = `/design/?d=${size || product.holeSizes[0]}`;
   const path = `/shop/${product.slug}`;
@@ -504,40 +597,71 @@ export default function Product() {
               <StepTitle>
                 <span className="n">1</span>Which bottle is it for?
               </StepTitle>
-              {bottle ? (
-                bottleFitsThisProduct ? (
-                  <Fit>
-                    <Check />
-                    <span>
-                      {bottleLabel(bottle)} fits. Made with {bottle.hole} mm holes.
-                    </span>
-                    <button type="button" onClick={() => update({ bottle: null })}>
-                      change
-                    </button>
-                  </Fit>
-                ) : (
-                  <Notice $tone="warning">
-                    {bottleLabel(bottle)} needs a {bottle.hole} mm hole, which this holder isn't sold in.{" "}
-                    <InlineLink to={`/fits/${bottle.hole}mm/`}>See holders for {bottle.hole} mm</InlineLink>.
-                  </Notice>
-                )
-              ) : (
-                <BottleSearch placeholder='Search your brand, e.g. "ScentSplit"' onPick={pickBottle} />
-              )}
+              {selected.length ? (
+                <SelectedList>
+                  {selected.map((b) => {
+                    const f = size ? fitFor(size, b.hole) : null;
+                    return (
+                      <li key={bottleId(b)}>
+                        <span>{bottleLabel(b)}</span>
+                        {f ? <FitTag $tone={f.tone}>{f.label}</FitTag> : null}
+                        <button type="button" onClick={() => removeBottle(b)} aria-label={`Remove ${bottleLabel(b)}`}>
+                          remove
+                        </button>
+                      </li>
+                    );
+                  })}
+                </SelectedList>
+              ) : null}
+              {!selected.length || mixed ? (
+                <BottleSearch placeholder={mixed && selected.length ? "Add another bottle" : 'Search your brand, e.g. "ScentSplit"'} onPick={pickBottle} />
+              ) : null}
+              {product.holeSizes.length > 1 ? (
+                <MixedToggle>
+                  <input type="checkbox" checked={mixed} onChange={(e) => setMixed(e.target.checked)} />I have bottles of several sizes
+                </MixedToggle>
+              ) : null}
+              {selected.length && !recommended ? (
+                <Notice $tone="warning">
+                  {selected.length > 1 ? "These bottles span too wide a range for one hole size." : `${bottleLabel(bottle)} needs a ${bottle.hole} mm hole, which this holder isn't sold in.`}{" "}
+                  {selected.length > 1 ? (
+                    <>
+                      <InlineLink to={`/design/?d=${recommendedHole(holes)}`}>Design a holder with a different size per row</InlineLink>.
+                    </>
+                  ) : (
+                    <>
+                      <InlineLink to={`/fits/${bottle.hole}mm/`}>See holders for {bottle.hole} mm</InlineLink>.
+                    </>
+                  )}
+                </Notice>
+              ) : null}
+              {selected.length && recommended && size === recommended && worstAtSize?.ok ? (
+                <Fit $tone={worstAtSize.tone}>
+                  <Check />
+                  <span>
+                    Recommended: {recommended} mm holes.{" "}
+                    {worstAtSize.gap === 0 ? (selected.length > 1 ? "Largest bottle snug, the rest have a little room." : "Snug fit.") : worstAtSize.gap === 1 ? "Every bottle fits with a little room." : "The smallest bottle will be loose."}
+                  </span>
+                </Fit>
+              ) : null}
               {product.holeSizes.length > 1 ? (
                 <>
-                  <Muted>{bottle ? "Or pick a different size:" : "Or pick the hole size:"}</Muted>
+                  <Muted>{selected.length ? "Hole size:" : "Or pick the hole size:"}</Muted>
                   <ChipRow>
-                    {product.holeSizes.map((h) => (
-                      <Chip key={h} type="button" $active={size === h} onClick={() => pickSize(h)}>
-                        {h} mm
-                      </Chip>
-                    ))}
+                    {product.holeSizes.map((h) => {
+                      const f = selected.length ? fitForAll(h, holes) : null;
+                      return (
+                        <Chip key={h} type="button" $active={size === h} disabled={f ? !f.ok : false} title={f ? f.label : undefined} onClick={() => pickSize(h)} style={f && !f.ok ? { opacity: 0.4, cursor: "default" } : undefined}>
+                          {h} mm{f && f.ok ? <FitNote>{f.short}</FitNote> : null}
+                        </Chip>
+                      );
+                    })}
                   </ChipRow>
                 </>
               ) : (
                 <Muted>One size: {product.holeSizes[0]} mm holes.</Muted>
               )}
+              <Muted>{RULE_TEXT}</Muted>
               <Muted>
                 Not sure? <InlineLink to="/guides/how-to-measure/">Measure your bottle</InlineLink> (30 seconds).
               </Muted>
@@ -604,17 +728,28 @@ export default function Product() {
           <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
             {fits.length ? (
               <Section style={{ padding: 0 }}>
-                <H2>Bottles this holder fits</H2>
-                <Muted>Grouped by the hole size we make for them. Recommendation: measured base width plus 1 mm.</Muted>
+                <H2>{narrowed ? `Bottles that fit the ${size} mm holder` : "Bottles this holder fits"}</H2>
+                <Muted>
+                  {narrowed ? `${RULE_TEXT} ` : "Grouped by the hole size we make for them. "}
+                  {size ? (
+                    <button type="button" onClick={() => setShowAllSizes(!showAllSizes)} style={{ background: "none", border: 0, padding: 0, color: "inherit", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>
+                      {showAllSizes ? `Show only ${size} mm` : "Show every size"}
+                    </button>
+                  ) : null}
+                </Muted>
                 <FilterInput type="search" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} placeholder="Filter brands" aria-label="Filter brands" />
                 <FitsGrid>
                   {filteredFits.map((g) => (
-                    <FitsGroup key={g.hole}>
+                    <FitsGroup key={g.key}>
                       <h4>
-                        {g.hole} mm{" "}
-                        <Chip as="button" type="button" $active={size === g.hole} onClick={() => pickSize(g.hole)} style={{ minHeight: 26, padding: "2px 10px", fontSize: 12, marginLeft: 6 }}>
-                          {size === g.hole ? "selected" : "select"}
-                        </Chip>
+                        {g.title}
+                        {!narrowed ? (
+                          <Chip as="button" type="button" $active={size === g.hole} onClick={() => pickSize(g.hole)} style={{ minHeight: 26, padding: "2px 10px", fontSize: 12, marginLeft: 6 }}>
+                            {size === g.hole ? "selected" : "select"}
+                          </Chip>
+                        ) : (
+                          <Muted style={{ marginLeft: 6 }}>{g.hole} mm bottles</Muted>
+                        )}
                       </h4>
                       <ul>
                         {g.bottles.map((b) => (
@@ -625,7 +760,7 @@ export default function Product() {
                       </ul>
                     </FitsGroup>
                   ))}
-                  {filteredFits.length === 0 ? <Muted>No brand matches. Measure the bottle and pick a size above.</Muted> : null}
+                  {filteredFits.length === 0 ? <Muted>{narrowed ? `No measured bottle fits ${size} mm yet.` : "No brand matches. Measure the bottle and pick a size above."}</Muted> : null}
                 </FitsGrid>
               </Section>
             ) : (
@@ -659,7 +794,7 @@ export default function Product() {
             <Section style={{ padding: 0 }}>
               <H2>How to measure your bottle</H2>
               <Text>
-                Stand the bottle on paper, trace the base, measure the width of the trace to the nearest millimetre, then choose the hole size 1 mm larger.{" "}
+                Stand the bottle on paper, trace the base, measure the width of the trace to the nearest millimetre, then choose the hole size 1 mm larger. {RULE_TEXT}{" "}
                 <InlineLink to="/guides/how-to-measure/">Full guide with photos</InlineLink>.
               </Text>
             </Section>
@@ -669,7 +804,7 @@ export default function Product() {
               <Faq>
                 <summary>My bottles are different sizes. Can I mix?</summary>
                 <p>
-                  A ready-made holder has one hole size. For a mix, either pick the universal holder (one loose 23 mm size) or{" "}
+                  A ready-made holder has one hole size, and it takes bottles up to 3 mm narrower than the hole. Tick "I have bottles of several sizes" above to check a mix; if the range is wider than that,{" "}
                   <InlineLink to="/design/">design a holder</InlineLink> with a different size on each row.
                 </p>
               </Faq>
@@ -679,7 +814,7 @@ export default function Product() {
               </Faq>
               <Faq>
                 <summary>Will tall bottles tip over?</summary>
-                <p>Holes are cut to about a third of the bottle height. Tall, narrow rollerballs benefit from the exact matched size rather than the universal holder.</p>
+                <p>Holes are cut to about a third of the bottle height. Bottles more than 2 mm narrower than the hole start to lean, and tall rollerballs lean first, so match the size.</p>
               </Faq>
             </Section>
 
@@ -712,7 +847,7 @@ export default function Product() {
               <>
                 <H3>Other holders for {size} mm bottles</H3>
                 {others.map((p) => (
-                  <ProductCard key={p.slug} product={p} size={size} bottle={bottle ? bottleId(bottle) : undefined} />
+                  <ProductCard key={p.slug} product={p} size={size} bottle={bottlesParam} />
                 ))}
               </>
             ) : null}

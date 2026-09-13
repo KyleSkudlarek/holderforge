@@ -92,7 +92,7 @@ export default function Measure() {
             </li>
           </Steps>
           <Rule>
-            Measured <strong>18 mm</strong>? Choose <strong>19 mm</strong> holes.
+            Measured <strong>18 mm</strong>? Choose <strong>19 mm</strong> holes. 20 mm also works with a little room; 21 mm is loose and may lean.
           </Rule>
         </Section>
         <Section style={{ paddingTop: 0 }}>

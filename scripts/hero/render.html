@@ -189,7 +189,7 @@
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   const { scene } = buildScene({ color: "#b87333", bottles: false, flat: false });
   const camera = new THREE.PerspectiveCamera(28, 1040 / 780, 1, 2000);
-  const yaw = 0.62, elev = 0.55, dist = 380, lookY = 26;
+  const yaw = 0.62, elev = 0.55, dist = 300, lookY = 28;
   camera.position.set(Math.sin(yaw) * Math.cos(elev) * dist, lookY + Math.sin(elev) * dist, Math.cos(yaw) * Math.cos(elev) * dist);
   camera.lookAt(0, lookY, 0);
   renderer.render(scene, camera);

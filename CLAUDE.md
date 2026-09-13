@@ -50,11 +50,17 @@ Every picture of a holder comes from the shared renderer
 (`src/render/holderScene.js`, `HolderCanvas`, `scripts/render/`): see
 `docs/renders.md`. Never hand-draw a holder or copy the geometry code.
 
+## Business context
+
+Positioning, customer, channel rules and product ideas: `docs/business.md`.
+The premise to protect: the customer names a brand and never measures a bottle.
+
 ## Etsy shop
 
 The shop is `SkudsWorkshop` (shop id 55988004), not "holderforge". `npm run
 etsy:pull` snapshots its public data into `docs/etsy/` (`listings.md` is the
-readable digest; `listings.json`/`shop.json` are raw). Use that copy as the
+readable digest with listings and all reviews; `listings.json`, `reviews.json`
+and `shop.json` are raw). Use that copy as the
 reference voice for catalog pages. Read-only, API key only; drafts, inventory
 and writes need OAuth (`listings_r`/`listings_w`) which is not set up.
 

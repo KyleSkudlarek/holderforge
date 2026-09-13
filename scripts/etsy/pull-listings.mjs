@@ -46,10 +46,19 @@ async function activeListingIds() {
   }
 }
 
+async function shopReviews() {
+  const reviews = []
+  for (let offset = 0; ; offset += 100) {
+    const page = await get(`/shops/${SHOP_ID}/reviews`, { limit: 100, offset })
+    reviews.push(...page.results)
+    if (reviews.length >= page.count || page.results.length === 0) return reviews
+  }
+}
+
 const decode = (s) => (s ?? '').replaceAll('&#39;', "'").replaceAll('&quot;', '"').replaceAll('&amp;', '&')
 const money = (p) => `${(p.amount / p.divisor).toFixed(2)} ${p.currency_code}`
 
-function markdown(shop, listings) {
+function markdown(shop, listings, reviews) {
   const lines = [
     `# ${shop.shop_name} on Etsy`,
     '',
@@ -91,6 +100,13 @@ function markdown(shop, listings) {
     }
     lines.push('', decode(l.description), '')
   }
+  lines.push('## Reviews', '')
+  const titles = new Map(listings.map((l) => [l.listing_id, decode(l.title)]))
+  for (const r of reviews) {
+    const when = new Date(r.created_timestamp * 1000).toISOString().slice(0, 10)
+    lines.push(`- ${'★'.repeat(r.rating)} ${when}, ${titles.get(r.listing_id) ?? `listing ${r.listing_id}`}`)
+    if (r.review) lines.push(`  ${decode(r.review).replaceAll('\n', ' ')}`)
+  }
   return lines.join('\n')
 }
 
@@ -105,9 +121,11 @@ for (let i = 0; i < ids.length; i += 100) {
   listings.push(...batch.results)
 }
 listings.sort((a, b) => a.listing_id - b.listing_id)
+const reviews = await shopReviews()
 
 mkdirSync(OUT_DIR, { recursive: true })
 writeFileSync(join(OUT_DIR, 'shop.json'), JSON.stringify(shop, null, 2) + '\n')
 writeFileSync(join(OUT_DIR, 'listings.json'), JSON.stringify(listings, null, 2) + '\n')
-writeFileSync(join(OUT_DIR, 'listings.md'), markdown(shop, listings))
-console.log(`Wrote ${listings.length} listings to ${OUT_DIR}`)
+writeFileSync(join(OUT_DIR, 'reviews.json'), JSON.stringify(reviews, null, 2) + '\n')
+writeFileSync(join(OUT_DIR, 'listings.md'), markdown(shop, listings, reviews))
+console.log(`Wrote ${listings.length} listings and ${reviews.length} reviews to ${OUT_DIR}`)

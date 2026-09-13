@@ -328,3 +328,54 @@ Please reach out to me with any questions! I can also make holders in other hole
 Made in the USA by a one-man workshop in Austin, TX. Made out of durable, biodegradable PLA plastic. Custom designed and measured down to the millimeter to ensure the highest quality and fit. Produced using a state-of the-art 3D printer with fine-tuned filament settings for a smooth finish.
 
 Special Offer: Buy 2 or more items and save 25%! It’s my way of saying thanks for bundling your order and passing on the shipping savings to you. Discount applied automatically at checkout.
+
+## Reviews
+
+- ★★★ 2026-02-22, Customizable 15-Slot Cologne & Perfume Travel Spray Holder
+  After I ordered an incorrect size, the seller really did try to accommodate me and sent a replacement, which was appreciated. Yet I found even on the new one that the depth of the holder is too short and things were constantly tipping over. Went with an entirely different holder.
+- ★★★★★ 2026-01-12, Customizable 15-Slot Cologne & Perfume Travel Spray Holder
+  Thank you so  much for your talent. The perfume holder was a perfect size. Again thank you.
+- ★★★★★ 2025-11-29, listing 4411028688
+  Excellent quality and custom design help was great.
+- ★★★★★ 2025-10-02, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  Great item and shipped quickly!
+- ★★★★★ 2025-09-04, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  I would be happy to purchase from this seller again
+- ★★★★★ 2025-06-29, Customizable 15-Slot Cologne & Perfume Travel Spray Holder
+  I. Love. This. So. Much!! It is perfect to hold my perfumes, and the bronze color is exactly what I wanted. It's very sturdy and heavier than I thought it would be, in a good way! Thank you!!
+- ★★★★★ 2025-06-23, Cologne & Perfume Travel Spray and Rollerball Bottle Holder - Universal Size - (10ml, 15-22mm) – 15 Slots
+  This makes storing my travel sprays so much easier!
+- ★★★★★ 2025-05-29, Cologne & Perfume Sample Spray Bottle Holder (1-2 ml, 12mm universal size) – 15 Slots
+  Useful item, fits where I need it to
+- ★★★★★ 2025-05-29, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  Man I Love these things
+- ★★★★★ 2025-05-09, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  Great quality every single time!
+- ★★★★★ 2025-05-09, Customizable 15-Slot Cologne & Perfume Travel Spray Holder
+  I needed a bit of help with the custom sizing and Kyle was super quick to respond and help. Great quality. Great service.
+- ★★★★★ 2025-04-30, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  Incredible work. I could not be happier
+- ★★★★★ 2025-04-08, Cologne & Perfume Sample Spray Bottle Holder (1-2 ml, 12mm universal size) – 15 Slots
+  Good packaging !!! Fast delivery !!! Exact item as described !!! I highly recommend this seller !!! Very professional & exceeds in customer care/service
+- ★★★★★ 2025-03-21, listing 1873031431
+  This is exactly what I needed.
+- ★★★★★ 2025-03-02, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  Please support this business. Amazing!
+- ★★★★★ 2025-02-22, listing 1873921009
+  I can't say enough about how great Kyle's been to work with. I love my holders and am about to order more.
+- ★★★★★ 2025-02-21, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  This is absolutely perfect and a great solution for my travel size fragrances! Kyle has been wonderful to work with and even made me a custom sized option. I'll be purchasing more for my other bottles.
+- ★★★★★ 2025-02-09, Cologne & Perfume Travel Spray and Rollerball Bottle Holder - Universal Size - (10ml, 15-22mm) – 15 Slots
+  Absolutely outstanding customer service.  When my order didn’t fit my perfume travel sprays as I expected it would, Kyle messaged me immediately to offer a replacement. They went above and beyond to ensure I ended up with a product that fit my various travel sprays perfectly, with prompt communication and shipments. I was so impressed by their efforts, and am very happy with the final product! Thank you, Kyle!
+- ★★★★★ 2025-01-26, Cologne & Perfume Sample Spray Bottle Holder (1-2 ml, 12mm universal size) – 15 Slots
+  Exactly what I needed. Great item.
+- ★★★★★ 2025-01-08, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  This is my second organizer from Kyle. As perfect as the first. I love it!! Thank you so much! ☺️
+- ★★★★★ 2025-01-05, Cologne & Perfume Sample Spray Bottle Holder (1-2 ml, 12mm universal size) – 15 Slots
+  Very high quality and works perfectly! Seller was also very kind and responsive
+- ★★★★★ 2024-12-27, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  This seller went out of his way to make sure my item arrived before Christmas, at no extra cost to myself! I would highly recommend him and his products! I’d definitely buy from him again!
+- ★★★★★ 2024-12-26, Cologne & Perfume Sample Spray Bottle Holder (1-2 ml, 12mm universal size) – 15 Slots
+  Super high quality and seller was very communicative with me. Would definitely buy again (which may be necessary if I keep collecting samples).
+- ★★★★★ 2024-12-03, ScentSplit™ Cologne & Perfume Spray Bottle Holder (9ml, 19mm size) – 15 Slots
+  This was my first purchase from Kyle and he did not disappoint! Shipped super fast, packaged well, and it’s well made!! I love it so much and it’s going to look great on my vanity! Thanks again Kyle!

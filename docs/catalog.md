@@ -56,6 +56,13 @@ images: { copper: ["/images/products/travel-spray-holder-15-slot/copper-1.jpg"] 
 Keep photos under ~300 KB (1600 px wide is plenty). Brand pages and the
 measuring guide also show placeholders; those get real photos in a later pass.
 
+## Home hero image
+
+`public/images/home-holder.png` is rendered from the designer's dimensions
+(15 slots, 19 mm, copper) by `scripts/hero/render.html`, a standalone three.js
+page; `scripts/hero/render.sh` screenshots it at 2x with a transparent
+background. Change the camera, colour or size there and re-run the script.
+
 ## Build and SEO
 
 `npm run build` runs `vite build` then `scripts/prerender.mjs`, which builds a

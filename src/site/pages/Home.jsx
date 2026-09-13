@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import Seo from "../Seo";
 import BottleSearch from "../BottleSearch";
-import HolderIllustration from "../HolderIllustration";
 import ProductCard from "../ProductCard";
 import { Container, Section, H1, H2, H3, Lead, Text, Muted, ButtonLink, Card, CardBody, CardLink, Grid, ChipRow, ChipLink, Placeholder, InlineLink, ExternalLink } from "../ui";
 import { categories, products, bottles, brandSlug, colors } from "../../catalog";
@@ -35,10 +34,10 @@ const Actions = styled.div`
 const Illustration = styled.div`
   display: flex;
   justify-content: center;
-  svg {
+  img {
     width: 100%;
     height: auto;
-    max-width: 520px;
+    max-width: 560px;
   }
 `;
 
@@ -141,7 +140,13 @@ export default function Home() {
             <BottleSearch wide />
           </HeroText>
           <Illustration>
-            <HolderIllustration holder={colors[0].swatch} />
+            <img
+              src="/images/home-holder.png"
+              width="1040"
+              height="780"
+              alt="Three-tier copper holder with fifteen 19 mm holes, rendered from the designer"
+              fetchPriority="high"
+            />
           </Illustration>
         </Hero>
 

@@ -64,6 +64,93 @@ live in `priceCents` in `src/catalog/products.js`.
 - PLA softens around 60 °C. A kitchen-counter supplement holder near a stove
   or in direct sun is the one use case where PETG is worth the print cost.
 
+## Go to market
+
+Goal: the first order on the site, then a repeatable source of them. Etsy
+proves demand (66 sales); the site has no traffic source of its own yet, so
+the work is sequencing channels, cheapest first.
+
+### Status (2026-09-13)
+
+`holderforge.com` serves the pre-catalog build from 2026-09-08: the storefront
+routes 404 in production, `holderforge-api-prod` does not exist and no
+`/holderforge/prod/*` parameters are set. The whole catalog and order flow
+exist only on staging. Nothing below matters until the going-live checklist in
+`docs/payments.md` is done. Also pending: ScentSplit changed its vial; the
+19 mm row in `bottles.js` and the Etsy listing are stale, and a stale row
+breaks the "never measure" premise on the first sale.
+
+### Order of operations
+
+1. Go live (checklist in `docs/payments.md`), place a real test order.
+   Measure the new ScentSplit vial and add it as a second row; keep the old
+   row for existing collections. The mixed-size product covers both.
+2. Day one after live: Search Console with `sitemap.xml`, an analytics tag,
+   a Google Merchant Center feed (free Shopping-tab listings; needs a contact
+   page and returns policy), printed insert cards for Etsy boxes.
+3. Week one: maker posts with real photos in the communities below; mail a
+   finished holder to two decant sellers.
+4. Week two onward, only if nothing has landed: a small exact-match Google
+   Search campaign, run as a measurement, not a growth channel.
+
+### Channels, cheapest per sale first
+
+- **Etsy boxes.** Every shipment carries a card with the site and a discount
+  code. Etsy's policy is about steering the transaction off-platform in
+  listings and messages; a branded insert in the package is standard
+  practice. Repeat buyers exist ("second organizer") and are the most likely
+  first site customers.
+- **Communities.** r/fragrance, r/Perfumes, r/DecantExchange, Fragrantica
+  forums, fragrance Facebook groups; r/3Dprinting for the making side. Post
+  as a maker showing the holder full of bottles with the brand list it fits;
+  check each community's self-promotion rule first.
+- **Decant sellers (ScentSplit, DecantX, similar).** Small shops; a referral
+  link is no incentive. Offer wholesale so they list the holder as an
+  accessory at their own margin, or a free holder full of their vials for
+  their photos and newsletter. Send a finished unit with a one-page note, not
+  an email. Expect most to ignore it; one yes is a channel.
+- **Scentbird** is the largest US travel-spray audience with one standard
+  vial and a real search term ("scentbird holder"). Measure one and add a
+  brand page.
+- **Google Merchant Center free listings.** Product feed generated from
+  `products.js`.
+- **Google Search ads, exact match only** ("scentsplit holder", "travel spray
+  organizer", "perfume sample vial holder"). Low volume, high intent, cheap
+  clicks. Budget on the order of USD 50-150 over a few weeks for one sale.
+  Skip Meta ads: cold traffic for a niche organizer costs more per sale than
+  the item until conversion rate is known.
+
+### What ads do and do not do
+
+Paid ads have no effect on organic ranking, and neither do sales. Early ad
+spend buys two numbers: whether the product page converts and at what rate.
+At USD 35, exact-match clicks well under a dollar and a conversion rate of a
+few percent put cost per sale inside margin; a fraction of a percent rules
+ads out. Either answer is worth the spend once.
+
+### What ranks
+
+One page per brand and size answering a query nobody else has a page for,
+indexed and left alone. Organic Google is a 2-4 month bet, not a first-sale
+plan; every measured bottle adds a page at zero marginal cost. Etsy cannot
+make a per-brand page.
+
+### Long-term role of the site
+
+Etsy remains the discovery channel and the majority of sales for at least a
+year. The site does three things Etsy cannot:
+
+1. Own the long-tail brand and size pages.
+2. Own the customer: email list, insert cards, repeat and referral.
+3. Self-serve custom sizing through the finder and designer, where Etsy needs
+   a message thread and a custom listing.
+
+Per unit, USD 35 via Stripe nets about the same as USD 45 on Etsy without
+offsite ads, so the site is not the higher-margin channel at current prices.
+Its advantage is ownership and fit certainty, not price; do not price it far
+below Etsy. Ads become a growth channel only when measured cost per sale sits
+inside margin, which is why the conversion rate gets measured early.
+
 ## Ideas not yet acted on
 
 - An entry-price holder (5 or 8 slots) below USD 25 and a collector size (30+

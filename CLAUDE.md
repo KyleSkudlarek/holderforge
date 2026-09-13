@@ -50,14 +50,6 @@ Every picture of a holder comes from the shared renderer
 (`src/render/holderScene.js`, `HolderCanvas`, `scripts/render/`): see
 `docs/renders.md`. Never hand-draw a holder or copy the geometry code.
 
-## Designer downloads
-
-The STL / Fusion-script downloads on `/design` are hidden unless the browser is
-unlocked via `/design?unlock` with the passphrase (30-day localStorage unlock,
-`src/downloadGate.js`). It is a client-side curtain, not a paywall; selling the
-files needs server-side generation. Rotate the passphrase by replacing
-`PASSPHRASE_SHA256` with `printf %s 'phrase' | shasum -a 256`.
-
 ## Business context
 
 Positioning, customer, channel rules and product ideas: `docs/business.md`.

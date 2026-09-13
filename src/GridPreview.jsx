@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { atom, useAtom } from "jotai";
 import { pythonTemplate } from "./template"; // Import the Python template
 import OrderPanel from "./OrderPanel";
-import { isUnlocked, lock, tryUnlock, unlockRequested } from "./downloadGate";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -1279,34 +1278,6 @@ const DownloadButton = styled.button`
   }
 `;
 
-const UnlockForm = styled.form`
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-
-  input {
-    padding: 5px 8px;
-    font-size: 14px;
-    border: 1px solid ${({ theme }) => theme.colors.outline};
-    border-radius: 5px;
-    background: transparent;
-    color: inherit;
-    width: 180px;
-  }
-`;
-
-const LockLink = styled.button`
-  align-self: flex-start;
-  margin-top: 12px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-  font-size: 12px;
-  cursor: pointer;
-  text-decoration: underline;
-`;
-
 const ComputedDiv = styled.div`
   box-sizing: border-box;
   padding-left: 20px;
@@ -1933,21 +1904,6 @@ const GridPreview = () => {
   const [modelConfig] = useAtom(modelConfigAtom); // Auto-updated values
   const [exportScene, setExportScene] = useState(null); // Scene reference stored in state
   const [stlURL, setStlURL] = useState(null); // STL URL for Three.js
-  const [downloadsUnlocked, setDownloadsUnlocked] = useState(isUnlocked);
-  const [showUnlock] = useState(unlockRequested);
-  const [unlockError, setUnlockError] = useState(false);
-
-  const submitUnlock = async (event) => {
-    event.preventDefault();
-    const ok = await tryUnlock(new FormData(event.currentTarget).get("passphrase"));
-    setDownloadsUnlocked(ok);
-    setUnlockError(!ok);
-  };
-
-  const lockDownloads = () => {
-    lock();
-    setDownloadsUnlocked(false);
-  };
   const [openAccordions, setOpenAccordions] = useState({
     bottle1: false,
     bottle2: false,
@@ -2664,25 +2620,12 @@ const GridPreview = () => {
       </CenterPanel>
       <RightPanel>
         <OrderPanel modelConfig={modelConfig} stlURL={stlURL} />
-        {downloadsUnlocked ? (
-          <DownloadDiv>
-            <h2>Download</h2>
-            <p>Print with a 3D printer</p>
-            <DownloadButton onClick={downloadSTLFile}>Download STL File</DownloadButton>
-            <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
-            <LockLink type="button" onClick={lockDownloads}>Lock downloads on this browser</LockLink>
-          </DownloadDiv>
-        ) : showUnlock ? (
-          <DownloadDiv>
-            <h2>Download</h2>
-            <p>Enter the passphrase to enable downloads for 30 days.</p>
-            <UnlockForm onSubmit={submitUnlock}>
-              <input name="passphrase" type="password" autoComplete="current-password" aria-label="Passphrase" />
-              <DownloadButton as="button" type="submit" style={{ width: "auto", marginTop: 0 }}>Unlock</DownloadButton>
-            </UnlockForm>
-            {unlockError && <p style={{ marginTop: 8 }}>That passphrase did not match.</p>}
-          </DownloadDiv>
-        ) : null}
+        <DownloadDiv>
+          <h2>Download</h2>
+          <p>Print with a 3D printer</p>
+          <DownloadButton onClick={downloadSTLFile}>Download STL File</DownloadButton>
+          <DownloadButton onClick={generatePythonFile}>Download Autodesk Fusion Python File</DownloadButton>
+        </DownloadDiv>
         <ComputedDiv>
           <h2>Computed Values</h2>
           <ModelOutput>

@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useLocation, useParams } from "react-router-dom";
 import { Provider } from "jotai";
 import { ThemeProvider } from "styled-components";
-import { theme } from "./theme";
+import { theme, lightTheme } from "./theme";
 import Layout from "./site/Layout";
 import Home from "./site/pages/Home";
 import Shop from "./site/pages/Shop";
@@ -54,7 +54,13 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           <Route path="/design" element={<Designer />} />
-          <Route element={<Layout />}>
+          <Route
+            element={
+              <ThemeProvider theme={lightTheme}>
+                <Layout />
+              </ThemeProvider>
+            }
+          >
             <Route index element={<Home />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/shop/:slug" element={<ShopSlug />} />

@@ -1,6 +1,18 @@
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
+import { Helmet } from "react-helmet";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Container } from "./ui";
+
+// The catalog runs light while index.css (shared with the designer) is dark.
+const SiteGlobal = createGlobalStyle`
+  :root {
+    color-scheme: light;
+  }
+  body {
+    background: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.headerSecondary};
+  }
+`;
 
 const Header = styled.header`
   background: ${({ theme }) => theme.colors.background};
@@ -97,6 +109,10 @@ const FooterLinks = styled.div`
 export default function Layout() {
   return (
     <>
+      <SiteGlobal />
+      <Helmet>
+        <meta name="theme-color" content="#f4f3ef" />
+      </Helmet>
       <Header>
         <HeaderRow>
           <Logo to="/">HolderForge</Logo>

@@ -5,7 +5,7 @@ import Seo from "../Seo";
 import BottleSearch from "../BottleSearch";
 import HolderIllustration from "../HolderIllustration";
 import ProductCard from "../ProductCard";
-import { Container, Section, H1, H2, H3, Lead, Text, Muted, ButtonLink, Card, CardBody, CardLink, Grid, ChipRow, ChipLink, Placeholder, InlineLink } from "../ui";
+import { Container, Section, H1, H2, H3, Lead, Text, Muted, ButtonLink, Card, CardBody, CardLink, Grid, ChipRow, ChipLink, Placeholder, InlineLink, ExternalLink } from "../ui";
 import { categories, products, bottles, brandSlug, colors } from "../../catalog";
 
 const Hero = styled.div`
@@ -237,9 +237,9 @@ export default function Home() {
         <Section>
           <Text>
             Made in the USA by a one-person workshop in Austin, TX from durable PLA. 4.9 stars across 24 reviews on{" "}
-            <a href="https://www.etsy.com/shop/SkudsWorkshop" rel="noopener" style={{ color: "#4D9AF1" }}>
+            <ExternalLink href="https://www.etsy.com/shop/SkudsWorkshop" rel="noopener">
               Etsy as SkudsWorkshop
-            </a>
+            </ExternalLink>
             .
           </Text>
         </Section>

@@ -41,8 +41,9 @@ git branch; never create long-lived branches.
 
 ## Site structure
 
-Two halves: the designer (`/design`, `src/GridPreview.jsx`) and the catalog
-(`src/site/` pages driven by `src/catalog/` data). Routes, data model, photo
+Two halves: the designer (`/design`, `src/GridPreview.jsx`, dark `theme`) and
+the catalog (`src/site/` pages driven by `src/catalog/` data, light
+`lightTheme` applied per-route in `App.jsx`; both themes share token names). Routes, data model, photo
 naming and the prerender step: `docs/catalog.md`. Adding a measured bottle is
 one row in `src/catalog/bottles.js`; everything else derives from it.
 

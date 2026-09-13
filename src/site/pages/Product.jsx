@@ -5,7 +5,7 @@ import Seo, { breadcrumbLd, canonicalUrl } from "../Seo";
 import BottleSearch from "../BottleSearch";
 import ProductCard from "../ProductCard";
 import NotFound from "./NotFound";
-import { Container, Section, H1, H2, H3, Text, Muted, Button, ButtonLink, Card, CardBody, ChipRow, Chip, Placeholder, Swatch, Breadcrumbs, InlineLink, Notice } from "../ui";
+import { Container, Section, H1, H2, H3, Text, Muted, Button, ButtonLink, Card, CardBody, ChipRow, Chip, Placeholder, Swatch, Breadcrumbs, InlineLink, ExternalLink, Notice } from "../ui";
 import {
   productBySlug,
   colors,
@@ -26,6 +26,9 @@ const SHIPPING_CENTS = 695;
 const Layout = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(320px, 5fr);
+  /* Row 1 is the gallery's height; the buy box spans both rows, so the
+     description sits directly under the gallery. */
+  grid-template-rows: auto 1fr;
   align-items: start;
   gap: 40px;
   padding-top: 20px;
@@ -274,6 +277,17 @@ const Specs = styled.dl`
   dd:nth-last-of-type(1) {
     border-bottom: 0;
   }
+`;
+
+const FilterInput = styled.input`
+  max-width: 320px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid ${({ theme }) => theme.colors.outline};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.headerPrimary};
+  font-size: 14px;
+  font-family: inherit;
 `;
 
 const Faq = styled.details`
@@ -555,9 +569,9 @@ export default function Product() {
             <Notice>
               Checkout for ready-made holders opens soon. You can order this exact size today in the designer:{" "}
               <InlineLink to={designerHref}>open it with {size || product.holeSizes[0]} mm holes</InlineLink>, or message us on{" "}
-              <a href="https://www.etsy.com/shop/SkudsWorkshop" rel="noopener" style={{ color: "#4D9AF1" }}>
+              <ExternalLink href="https://www.etsy.com/shop/SkudsWorkshop" rel="noopener">
                 Etsy
-              </a>
+              </ExternalLink>
               .
             </Notice>
             <Trust>
@@ -578,14 +592,7 @@ export default function Product() {
               <Section style={{ padding: 0 }}>
                 <H2>Bottles this holder fits</H2>
                 <Muted>Grouped by the hole size we make for them. Recommendation: measured base width plus 1 mm.</Muted>
-                <input
-                  type="search"
-                  value={brandFilter}
-                  onChange={(e) => setBrandFilter(e.target.value)}
-                  placeholder="Filter brands"
-                  aria-label="Filter brands"
-                  style={{ maxWidth: 320, padding: "10px 12px", borderRadius: 6, border: "1px solid #3c3c3c", background: "#1c1c1c", color: "#FAFBFC", fontSize: 14, fontFamily: "inherit" }}
-                />
+                <FilterInput type="search" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} placeholder="Filter brands" aria-label="Filter brands" />
                 <FitsGrid>
                   {filteredFits.map((g) => (
                     <FitsGroup key={g.hole}>

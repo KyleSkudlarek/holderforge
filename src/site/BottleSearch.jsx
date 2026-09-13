@@ -49,7 +49,7 @@ const Menu = styled.ul`
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.outline};
   background: ${({ theme }) => theme.colors.surface};
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 30px ${({ theme }) => theme.colors.shadow};
   max-height: 360px;
   overflow-y: auto;
 `;

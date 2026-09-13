@@ -176,7 +176,7 @@ const chipStyles = css`
   border-radius: 999px;
   border: 1px solid ${({ theme, $active }) => ($active ? theme.colors.highlightPrimary : theme.colors.outline)};
   background: ${({ theme, $active }) => ($active ? theme.colors.highlightPrimary : theme.colors.surface)};
-  color: ${({ theme }) => theme.colors.headerPrimary};
+  color: ${({ theme, $active }) => ($active ? "#fff" : theme.colors.headerPrimary)};
   font-size: 14px;
   font-family: inherit;
   text-decoration: none;
@@ -218,6 +218,15 @@ export const Breadcrumbs = styled.nav`
   }
 `;
 
+export const ExternalLink = styled.a`
+  color: ${({ theme }) => theme.colors.highlightPrimary};
+  font-weight: 500;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 export const InlineLink = styled(Link)`
   color: ${({ theme }) => theme.colors.highlightSecondary};
   font-weight: 500;
@@ -234,7 +243,7 @@ const PlaceholderBox = styled.div`
   width: 100%;
   aspect-ratio: ${({ $ratio }) => $ratio};
   background-color: ${({ theme }) => theme.colors.surfaceRaised};
-  background-image: repeating-linear-gradient(135deg, transparent 0 14px, rgba(255, 255, 255, 0.035) 14px 16px);
+  background-image: repeating-linear-gradient(135deg, transparent 0 14px, ${({ theme }) => theme.colors.hatch} 14px 16px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -247,7 +256,7 @@ const Tint = styled.div`
   border-radius: 6px;
   background: ${({ $tint }) => $tint};
   opacity: 0.85;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 30px ${({ theme }) => theme.colors.shadow};
 `;
 
 const PlaceholderLabel = styled.span`
@@ -288,7 +297,7 @@ export const Swatch = styled.button`
         left: -4px;
         right: -4px;
         height: 2px;
-        background: #fff;
+        background: ${({ theme }) => theme.colors.headerPrimary};
         transform: rotate(-45deg);
       }
     `}
@@ -300,7 +309,7 @@ export const SwatchDots = ({ colors, max = 4 }) => (
       <span
         key={c.id}
         title={c.name}
-        style={{ width: 12, height: 12, borderRadius: "50%", background: c.swatch, outline: "1px solid #3c3c3c" }}
+        style={{ width: 12, height: 12, borderRadius: "50%", background: c.swatch, outline: "1px solid rgba(128, 128, 128, 0.5)" }}
       />
     ))}
     {colors.length > max ? <Muted>+{colors.length - max}</Muted> : null}

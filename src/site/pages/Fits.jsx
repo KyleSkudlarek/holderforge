@@ -205,9 +205,9 @@ function BrandPage({ brand }) {
             <Card style={{ borderStyle: "dashed", justifyContent: "center", textAlign: "center" }}>
               <CardBody style={{ alignItems: "center", gap: 10, padding: 24 }}>
                 <H3>Mixing {brand.name} with other bottles?</H3>
-                <Text>Design a holder with a different size on each row.</Text>
-                <ButtonLink to={`/design/?d=${first.hole}`} $variant="secondary">
-                  Design your own
+                <Text>Add them all and each row gets its own hole size. Same holder, same price.</Text>
+                <ButtonLink to={holders[0] ? `/shop/${holders[0].slug}/?mixed=1&bottles=${bottleId(first)}` : `/design/?d=${first.hole}`} $variant="secondary">
+                  Add your other bottles
                 </ButtonLink>
               </CardBody>
             </Card>

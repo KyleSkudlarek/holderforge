@@ -28,6 +28,7 @@ import {
   fitForAll,
   bestSizeFor,
   recommendedHole,
+  rowPlanFor,
   RULE_TEXT,
 } from "../../catalog";
 
@@ -216,6 +217,23 @@ const SelectedList = styled.ul`
   }
 `;
 
+// Bottles grouped by the row that holds them, for a size-per-row holder.
+const RowPlan = styled.ul`
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  > li > strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.headerPrimary};
+  }
+`;
+
 const FitTag = styled.span`
   font-size: 12px;
   padding: 2px 8px;
@@ -230,6 +248,11 @@ const FitNote = styled.span`
   font-size: 11px;
   opacity: 0.8;
 `;
+
+const ROW_NAMES = ["front", "middle", "back"];
+// "Front row", "Front and middle rows".
+const rowsLabel = (names) => (names.length === 1 ? `${names[0]} row` : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]} rows`);
+const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const SIZE_MODE_OPTIONS = [
   { value: "one", label: "One size" },
@@ -455,6 +478,12 @@ export default function Product() {
         ? product.holeSizes[0]
         : null;
   const recommended = selected.length ? bestSizeFor(product, holes) : null;
+  // Bottles too far apart for one hole size get a size per row instead: the
+  // same print, so the price and photos are unchanged.
+  const plan = selected.length > 1 && !recommended ? rowPlanFor(product, holes, product.layout.rows) : null;
+  const planHoles = plan ? plan.map((r) => r.hole) : null;
+  const planGroups = plan ? [...new Set(plan)].map((g) => ({ ...g, rows: plan.flatMap((x, i) => (x === g ? [ROW_NAMES[i]] : [])) })) : [];
+  const holeForBottle = (b) => (plan ? plan.find((g) => g.bottleHoles.includes(b.hole)).hole : size);
   const colorId = colors.some((c) => c.id === params.get("color")) ? params.get("color") : defaultColorId;
   const color = colors.find((c) => c.id === colorId);
 
@@ -498,12 +527,15 @@ export default function Product() {
   const requestedPhoto = view.startsWith("photo-") ? Number(view.slice(6)) : null;
   const activeView = requestedPhoto === null ? view : photos[requestedPhoto] ? view : photos.length ? "photo-0" : "render";
   const renderSize = size || product.holeSizes[0];
-  const liveConfig = holderConfig({ hole: renderSize, holesPerRow: product.layout.holesPerRow, rows: product.layout.rows });
-  const liveBottles = { diameter: bottle ? bottle.hole - 1 : renderSize - 1, height: bottle?.height || 90 };
+  const liveConfig = holderConfig({ hole: renderSize, holes: planHoles, holesPerRow: product.layout.holesPerRow, rows: product.layout.rows });
+  // Without a diameter each bottle takes its row's hole, which is what a
+  // size-per-row holder should show.
+  const liveBottles = { diameter: plan ? undefined : bottle ? bottle.hole - 1 : renderSize - 1, height: bottle?.height || 90 };
   const others = size ? productsForHole(size).filter((p) => p.slug !== product.slug && p.categories.some((c) => product.categories.includes(c))) : [];
   const bottlesParam = selected.length ? selected.map(bottleId).join(",") : undefined;
   const primaryCategory = categoryBySlug(product.categories[0]);
-  const designerHref = `/design/?d=${size || product.holeSizes[0]}`;
+  const holesLabel = planHoles ? planHoles.join(" / ") : String(size || product.holeSizes[0]);
+  const designerHref = `/design/?d=${planHoles ? planHoles.join(",") : size || product.holeSizes[0]}`;
   const path = `/shop/${product.slug}`;
 
   const jsonLd = [
@@ -531,6 +563,20 @@ export default function Product() {
       },
       breadcrumbLd([{ name: "Shop", path: "/shop" }, ...(primaryCategory ? [{ name: primaryCategory.name, path: `/shop/${primaryCategory.slug}` }] : []), { name: product.name, path }]),
     ];
+
+  const bottleItem = (b) => {
+    const hole = holeForBottle(b);
+    const f = hole ? fitFor(hole, b.hole) : null;
+    return (
+      <li key={bottleId(b)}>
+        <span>{bottleLabel(b)}</span>
+        {f ? <FitTag $tone={f.tone}>{f.label}</FitTag> : null}
+        <button type="button" onClick={() => removeBottle(b)} aria-label={`Remove ${bottleLabel(b)}`}>
+          remove
+        </button>
+      </li>
+    );
+  };
 
   const sizeSummary = product.holeSizes.length === 1 ? `${product.holeSizes[0]} mm` : `${product.holeSizes[0]}-${product.holeSizes[product.holeSizes.length - 1]} mm`;
 
@@ -579,7 +625,7 @@ export default function Product() {
                     view="product"
                     spin
                     ratio="1 / 1"
-                    alt={`${product.name} in ${color.name} with ${renderSize} mm bottles. Drag to turn.`}
+                    alt={`${product.name} in ${color.name} with ${plan ? "your" : `${renderSize} mm`} bottles. Drag to turn.`}
                   />
                 ) : activeView === "render" ? (
                   <img src={renderImage(product, colorId)} alt={`${product.name} in ${color.name}, rendered`} width="800" height="600" style={{ display: "block", width: "100%", height: "auto", padding: "8% 0", boxSizing: "border-box" }} />
@@ -588,7 +634,7 @@ export default function Product() {
                 )}
                 <Badge>
                   {activeView === "render" || activeView === "3d" ? `${color.name}, rendered` : photoColorId === colorId ? color.name : `Photographed in ${photoColor.name}`}
-                  {size ? `, ${size} mm holes` : ""}
+                  {size || plan ? `, ${holesLabel} mm holes` : ""}
                 </Badge>
               </MainImage>
             </Gallery>
@@ -609,21 +655,18 @@ export default function Product() {
               <StepTitle>
                 <span className="n">1</span>Which bottle is it for?
               </StepTitle>
-              {selected.length ? (
-                <SelectedList>
-                  {selected.map((b) => {
-                    const f = size ? fitFor(size, b.hole) : null;
-                    return (
-                      <li key={bottleId(b)}>
-                        <span>{bottleLabel(b)}</span>
-                        {f ? <FitTag $tone={f.tone}>{f.label}</FitTag> : null}
-                        <button type="button" onClick={() => removeBottle(b)} aria-label={`Remove ${bottleLabel(b)}`}>
-                          remove
-                        </button>
-                      </li>
-                    );
-                  })}
-                </SelectedList>
+              {selected.length && !plan ? <SelectedList>{selected.map((b) => bottleItem(b))}</SelectedList> : null}
+              {plan ? (
+                <RowPlan>
+                  {planGroups.map((g) => (
+                    <li key={g.rows[0]}>
+                      <strong>
+                        {capitalize(rowsLabel(g.rows))}: {g.hole} mm
+                      </strong>
+                      <SelectedList>{selected.filter((b) => g.bottleHoles.includes(b.hole)).map((b) => bottleItem(b))}</SelectedList>
+                    </li>
+                  ))}
+                </RowPlan>
               ) : null}
               {!selected.length || mixed ? (
                 <BottleSearch placeholder={mixed && selected.length ? "Add another bottle" : 'Search your brand, e.g. "ScentSplit"'} onPick={pickBottle} />
@@ -631,7 +674,13 @@ export default function Product() {
               {product.holeSizes.length > 1 ? (
                 <Segmented label="Bottle sizes" options={SIZE_MODE_OPTIONS} value={mixed ? "mixed" : "one"} onChange={(v) => setMixed(v === "mixed")} style={{ alignSelf: "flex-start" }} />
               ) : null}
-              {selected.length && !recommended ? (
+              {plan ? (
+                <Fit $tone="success">
+                  <Check />
+                  <span>One hole size per row, so every bottle fits. Same holder, same price.</span>
+                </Fit>
+              ) : null}
+              {selected.length && !recommended && !plan ? (
                 <Notice $tone="warning">
                   {selected.length > 1 ? "These bottles span too wide a range for one hole size." : `${bottleLabel(bottle)} needs a ${bottle.hole} mm hole, which this holder isn't sold in.`}{" "}
                   {selected.length > 1 ? (
@@ -654,7 +703,7 @@ export default function Product() {
                   </span>
                 </Fit>
               ) : null}
-              {product.holeSizes.length > 1 ? (
+              {plan ? null : product.holeSizes.length > 1 ? (
                 <>
                   <Muted>{selected.length ? "Hole size:" : "Or pick the hole size:"}</Muted>
                   <ChipRow>
@@ -716,7 +765,7 @@ export default function Product() {
             </div>
             <Notice>
               Checkout for ready-made holders opens soon. You can order this exact size today in the designer:{" "}
-              <InlineLink to={designerHref}>open it with {size || product.holeSizes[0]} mm holes</InlineLink>, or message us on{" "}
+              <InlineLink to={designerHref}>open it with {holesLabel} mm holes</InlineLink>, or message us on{" "}
               <ExternalLink href="https://www.etsy.com/shop/SkudsWorkshop" rel="noopener">
                 Etsy
               </ExternalLink>
@@ -845,7 +894,7 @@ export default function Product() {
             <Card style={{ borderStyle: "dashed" }}>
               <CardBody>
                 <H3>Need something different?</H3>
-                <Text>Mixed sizes in one holder, more rows, square holes, or a size we don't stock.</Text>
+                <Text>More rows, square holes, a different count per row, or a size we don't stock.</Text>
                 <div>
                   <ButtonLink to={designerHref} $variant="secondary">
                     Design your own

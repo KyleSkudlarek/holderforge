@@ -1346,12 +1346,18 @@ const ModelOutputValue = styled.span`
 
 
 // State for model - user inputs and system values
-// Catalog pages link here with ?d=<mm> to open the designer at that hole size.
-// Width and depth are recomputed on mount from the diameters.
-const initialHoleDiameter = (() => {
-  if (typeof window === "undefined") return 15;
-  const d = Number(new URLSearchParams(window.location.search).get("d"));
-  return Number.isFinite(d) && d >= 8 && d <= 40 ? d : 15;
+// Catalog pages link here with ?d=<mm> to open the designer at that hole
+// size, or ?d=<front>,<middle>,<back> for a size per row (a short list fills
+// the remaining rows with its last value). Width and depth are recomputed on
+// mount from the diameters.
+const initialHoleDiameters = (() => {
+  const fallback = [15, 15, 15];
+  if (typeof window === "undefined") return fallback;
+  const list = (new URLSearchParams(window.location.search).get("d") || "")
+    .split(",")
+    .map(Number)
+    .filter((d) => Number.isFinite(d) && d >= 8 && d <= 40);
+  return list.length ? fallback.map((_, i) => list[Math.min(i, list.length - 1)]) : fallback;
 })();
 
 const baseModelConfigAtom = atom({
@@ -1368,9 +1374,9 @@ const baseModelConfigAtom = atom({
   // Default values for user inputs
   model_width: 120,
   model_depth: 81,
-  row_1_hole_diameter: initialHoleDiameter,
-  row_2_hole_diameter: initialHoleDiameter,
-  row_3_hole_diameter: initialHoleDiameter,
+  row_1_hole_diameter: initialHoleDiameters[0],
+  row_2_hole_diameter: initialHoleDiameters[1],
+  row_3_hole_diameter: initialHoleDiameters[2],
   row_1_bottle_height: 120,
   row_2_bottle_height: 120,
   row_3_bottle_height: 120,

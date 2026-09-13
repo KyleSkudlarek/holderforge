@@ -58,7 +58,7 @@ export const products = [
     holeSizes: range(15, 22),
     priceCents: 4500,
     description:
-      "Holds 15 travel sprays, rollerballs or decants in three staggered tiers so every label is visible. Each holder is printed with one hole size, chosen to match your bottles: pick the brand and the size is set for you, or measure the base and add 1 mm.",
+      "Holds 15 travel sprays, rollerballs or decants in three staggered tiers so every label is visible. The holes are printed to match your bottles: pick the brand and the size is set for you, or measure the base and add 1 mm. Bottles of different sizes get their own row, at the same price.",
     images: withHeroes({ "rose-gold": ["rose-gold-travel-sprays.jpg", "rose-gold-scentsplit.jpg", "rose-gold-decantx.jpg"] }),
     configFor,
   },

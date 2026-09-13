@@ -20,9 +20,11 @@ under `src/site/`, driven entirely by the data files in `src/catalog/`.
 | `/guides/how-to-measure` | Measuring guide | `site/pages/Measure.jsx` |
 | `/design` | The configurator | `GridPreview.jsx` |
 
-Product page state lives in the query string (`?size=19&color=copper&bottle=<id>`)
-so links from finder and brand pages can preselect it. The canonical URL is the
-clean path.
+Product page state lives in the query string (`?size=19&color=copper&bottle=<id>`,
+or `?mixed=1&bottles=<id>,<id>` for several bottles) so links from finder and
+brand pages can preselect it. The canonical URL is the clean path. Links into
+the designer use `?d=<mm>` for one size or `?d=<front>,<middle>,<back>` for a
+size per row.
 
 ## Data files (`src/catalog/`)
 
@@ -43,6 +45,10 @@ clean path.
   recommended hole is S (snug), S-1 (a little room) or S-2 (loose, may lean).
   `fitFor`, `fitForAll`, `bestSizeFor` and `RULE_TEXT` drive the size pills,
   the mixed-collection check, size pages and "holders that fit" lists.
+  `rowPlanFor` handles a collection no single size takes: it groups the
+  bottles into at most one size per row (smallest in front) and the product
+  page sells the same holder with those sizes. No separate product exists for
+  mixed rows; it is the same print at the same price.
 - `index.js`: queries (`search`, `fitsForProduct`, `bottlesFittingSize`,
   `productsForHole`, `brands`, `staticRoutes`) shared by pages and the
   prerender script.

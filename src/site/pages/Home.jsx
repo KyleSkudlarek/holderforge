@@ -186,7 +186,8 @@ export default function Home() {
               <H3>Tell us the bottle</H3>
               <Text>
                 Search the brand. We have measured {brandCount} of them, so the hole size is already known. Own something we
-                haven't measured? <InlineLink to="/guides/how-to-measure/">Measure it in 30 seconds</InlineLink>.
+                haven't measured? <InlineLink to="/guides/how-to-measure/">Measure it in 30 seconds</InlineLink>. Bottles of
+                different sizes? Each row can have its own.
               </Text>
             </Step>
             <Step>

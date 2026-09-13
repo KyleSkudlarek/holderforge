@@ -3,10 +3,10 @@ import { bottles, bottleTypes } from "./bottles";
 import { products, productBySlug, footprintFor } from "./products";
 import { categories, categoryBySlug } from "./categories";
 import { colors, defaultColorId } from "./colors";
-import { fitFor, fitForAll, recommendedHole, bestSizeFor, FIT_GRADES, MAX_GAP, RULE_TEXT } from "./fit";
+import { fitFor, fitForAll, recommendedHole, bestSizeFor, rowPlanFor, FIT_GRADES, MAX_GAP, RULE_TEXT } from "./fit";
 
 export { bottles, bottleTypes, products, productBySlug, footprintFor, categories, categoryBySlug, colors, defaultColorId };
-export { fitFor, fitForAll, recommendedHole, bestSizeFor, FIT_GRADES, MAX_GAP, RULE_TEXT };
+export { fitFor, fitForAll, recommendedHole, bestSizeFor, rowPlanFor, FIT_GRADES, MAX_GAP, RULE_TEXT };
 
 export const slugify = (s) =>
   s

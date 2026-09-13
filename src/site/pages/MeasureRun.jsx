@@ -123,8 +123,21 @@ const CATEGORIES = [
       ["Glossier", "Cloud Paint", "S"],
     ],
   },
+  {
+    id: "essential-oils",
+    name: "Essential oils (Whole Foods)",
+    what: "Small amber or blue glass dropper bottles. One per size covers every brand: 5, 10, 15, 30 ml and the 10 ml roll-on. Measure the glass at the base; the cap is usually wider, note it.",
+    examples: [],
+    rows: [
+      ["NOW Foods", "Lavender, 1 fl oz (30 ml)", "W"],
+      ["Aura Cacia", "Lavender, 0.5 fl oz (15 ml)", "W"],
+      ["Plant Therapy", "Lavender, 10 ml", "W"],
+      ["Plant Therapy", "any 5 ml (sets, kids line)", "W"],
+      ["Aura Cacia / Plant Therapy", "roll-on, 10 ml", "W"],
+    ],
+  },
 ];
-const STORE = { S: "Sephora", U: "Ulta", SU: "Both" };
+const STORE = { S: "Sephora", U: "Ulta", SU: "Both", W: "Whole Foods" };
 
 const slug = (s) =>
   s

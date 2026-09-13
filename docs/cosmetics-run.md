@@ -136,6 +136,25 @@ Rare Beauty Soft Pinch Liquid Blush (~27 mm sq shoulders), Rare Beauty
 Positive Light Liquid Luminizer, Saie Dew Blush, Milk Cooling Water Jelly
 Tint (fat stick, ~30 mm).
 
+### Essential oils (Whole Foods, separate trip or same day)
+
+Not cosmetics, but the same premise with a larger audience: doTERRA and
+Young Living reps own thirty to sixty bottles, and the whole category ships
+in standardised euro-dropper glass, so one measurement per size covers every
+brand. Estimates, base outer diameter in mm:
+
+| Size | Est. | Where |
+|---|---|---|
+| 5 ml dropper | 21-22 | Plant Therapy sets; doTERRA, Young Living (direct only) |
+| 10 ml dropper | 23-25 | Plant Therapy |
+| 15 ml dropper | 26-28 | Aura Cacia, Garden of Life; doTERRA, Young Living |
+| 30 ml / 1 fl oz dropper | 32-34 | NOW Foods, Plant Therapy |
+| 10 ml roll-on | 18-20 | Aura Cacia, Plant Therapy; overlaps the travel-spray sizes |
+
+Caps are usually wider than the glass; record both. The product is a tiered
+rack with mixed 5 and 15 ml holes and labels readable from the front;
+competing wood racks give every bottle the same hole.
+
 ## The phone sheet (staging only, temporary)
 
 `https://staging.holderforge.com/measure-run/?k=<measure_key>` is the same

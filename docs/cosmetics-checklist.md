@@ -10,7 +10,7 @@ cap on. Circle R (round) or S (square) in Shape.
 **Bring:** digital calipers, this sheet, a pen, phone for a photo of each
 tester next to the calipers with the shelf label in frame.
 
-Store key: **S** Sephora, **U** Ulta, **SU** both.
+Store key: **S** Sephora, **U** Ulta, **SU** both, **W** Whole Foods.
 
 ---
 
@@ -83,6 +83,23 @@ Store key: **S** Sephora, **U** Ulta, **SU** both.
 | 3 | Saie | Dew Blush | S | R | ____ | ____ | ____ | |
 | 4 | Milk Makeup | Cooling Water Jelly Tint | S | R | ____ | ____ | ____ | fat stick |
 | 5 | Glossier | Cloud Paint | S | | ____ | ____ | ____ | squeeze tube? |
+
+## 8. Essential oils (Whole Foods)
+
+Dropper bottles are standard glass shared across brands, so one bottle per
+size covers the market: 5, 10, 15, 30 ml plus the 10 ml roll-on. Measure the
+glass at the base and the cap; caps are often wider than the bottle.
+
+| # | Brand | Product | Store | Shape | Base mm | Cap mm | Height mm | Notes |
+|---|---|---|---|---|---|---|---|---|
+| 1 | NOW Foods | Lavender, 1 fl oz (30 ml) | W | R | ____ | ____ | ____ | |
+| 2 | Aura Cacia | Lavender, 0.5 fl oz (15 ml) | W | R | ____ | ____ | ____ | |
+| 3 | Plant Therapy | Lavender, 10 ml | W | R | ____ | ____ | ____ | |
+| 4 | Plant Therapy | any 5 ml (sets, kids line) | W | R | ____ | ____ | ____ | |
+| 5 | Aura Cacia or Plant Therapy | roll-on, 10 ml (0.31-0.33 fl oz) | W | R | ____ | ____ | ____ | |
+
+Not in stores, biggest audience: doTERRA and Young Living 5 ml and 15 ml
+(borrow or buy secondhand). Same glass as above; confirm before listing.
 
 ---
 

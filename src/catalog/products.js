@@ -29,6 +29,25 @@ function configFor(hole, bottleHeight = 100) {
 
 const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
 
+// Every 15-slot holder is the same print with a different hole size, so the
+// colour photos are shared; only the bottles-in-holder hero differs.
+const P = "/images/products/15-slot";
+const colourPhotos = {
+  "rose-gold": [`${P}/rose-gold.jpg`],
+  gunmetal: [`${P}/gunmetal.jpg`],
+  silver: [`${P}/silver.jpg`],
+  blue: [`${P}/blue.jpg`],
+  red: [`${P}/red.jpg`],
+  yellow: [`${P}/yellow.jpg`],
+  grey: [`${P}/grey.jpg`],
+  white: [`${P}/white.jpg`],
+};
+const withHeroes = (heroes) => {
+  const images = { ...colourPhotos };
+  for (const [color, files] of Object.entries(heroes)) images[color] = [...files.map((f) => `${P}/${f}`), ...colourPhotos[color]];
+  return images;
+};
+
 export const products = [
   {
     slug: "travel-spray-holder-15-slot",
@@ -40,7 +59,7 @@ export const products = [
     priceCents: 4500,
     description:
       "Holds 15 travel sprays, rollerballs or decants in three staggered tiers so every label is visible. Each holder is printed with one hole size, chosen to match your bottles: pick the brand and the size is set for you, or measure the base and add 1 mm.",
-    images: {},
+    images: withHeroes({ "rose-gold": ["rose-gold-travel-sprays.jpg", "rose-gold-scentsplit.jpg", "rose-gold-decantx.jpg"] }),
     configFor,
   },
   {
@@ -53,7 +72,7 @@ export const products = [
     priceCents: 4000,
     description:
       "For the little 1-2ml sample sprays that come with orders and in discovery sets. One universal 12 mm hole size fits the common vial bodies; no measuring needed.",
-    images: {},
+    images: withHeroes({ "rose-gold": ["rose-gold-samples.jpg"], white: ["white-samples.jpg"] }),
     configFor: (hole) => configFor(hole, 60),
   },
   {
@@ -66,7 +85,7 @@ export const products = [
     priceCents: 4500,
     description:
       "The same three-tier layout sized for makeup tubes. Round tubes pick a hole size below; square or rectangular tubes are made to order in the designer with square holes.",
-    images: {},
+    images: withHeroes({}),
     configFor: (hole) => configFor(hole, 90),
   },
 ];

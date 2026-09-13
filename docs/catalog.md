@@ -50,16 +50,21 @@ clean path.
 ## Photos
 
 `products[].images` maps a colour id to an array of image URLs; the first is
-the gallery hero for that colour. Until an entry exists the page shows a
-tinted placeholder. Convention: `public/images/products/<product-slug>/<color-id>-<n>.jpg`,
-e.g. `public/images/products/travel-spray-holder-15-slot/copper-1.jpg`, then
+the gallery hero for that colour. The 15-slot holders are one print with
+different hole sizes, so they share the colour shots in
+`public/images/products/15-slot/<color-id>.jpg` and differ only in the
+bottles-in-holder heroes (`<color-id>-<what>.jpg`), composed per product with
+`withHeroes()` in `products.js`. These files are the Etsy listing photos
+(`docs/etsy/listings.json` has the originals). A product-specific photo goes
+in `public/images/products/<product-slug>/`.
 
-```js
-images: { copper: ["/images/products/travel-spray-holder-15-slot/copper-1.jpg"] }
-```
-
-Keep photos under ~300 KB (1600 px wide is plenty). Brand pages and the
-measuring guide also show placeholders; those get real photos in a later pass.
+Gallery order on the product page: photos of the chosen colour (or, when that
+colour has none, of the first colour that has photos, badged "Photographed
+in …"), then the render in the chosen colour, then the live 3D view. The
+render is always offered so a colour without photos still shows its finish.
+Keep photos under ~300 KB (1400 px on the long side). Brand pages and the
+measuring guide still show placeholders. Colours seen in the Etsy photos but
+not in `colors.js` (matte dusty rose, matte lime) were left out.
 
 ## Holder pictures
 

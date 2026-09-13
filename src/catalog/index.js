@@ -75,7 +75,8 @@ export function fitsForProduct(product) {
 
 // First image for a product in a colour: a real photo when one is listed,
 // otherwise the rendered PNG from scripts/render/render-images.mjs.
-export const productImage = (product, colorId) => product.images[colorId]?.[0] || `/images/renders/${product.slug}/${colorId}.png`;
+export const renderImage = (product, colorId) => `/images/renders/${product.slug}/${colorId}.png`;
+export const productImage = (product, colorId) => product.images[colorId]?.[0] || renderImage(product, colorId);
 
 export const bottleLabel = (b) => `${b.brand} ${b.product} ${b.volume}`;
 

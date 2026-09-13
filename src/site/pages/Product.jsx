@@ -21,7 +21,7 @@ import {
   footprintFor,
   money,
   categoryBySlug,
-  productImage,
+  renderImage,
   productTypes,
   bottlesFittingSize,
   fitFor,
@@ -428,7 +428,7 @@ export default function Product() {
   const [quantity, setQuantity] = useState(1);
   const [brandFilter, setBrandFilter] = useState("");
   const [showAllSizes, setShowAllSizes] = useState(false);
-  const [view, setView] = useState("photo");
+  const [view, setView] = useState("photo-0");
 
   if (!product) return <NotFound />;
 
@@ -485,7 +485,13 @@ export default function Product() {
   const footprint = footprintFor(size || product.holeSizes[0], product.layout.holesPerRow);
   const slots = product.layout.rows * product.layout.holesPerRow;
   const worstAtSize = size && selected.length ? fitForAll(size, holes) : null;
-  const photos = product.images[colorId] || [];
+  // Photos of the chosen colour, else of the first colour that has any, so a
+  // buyer always sees a real print; the render view carries the exact colour.
+  const photoColorId = product.images[colorId]?.length ? colorId : Object.keys(product.images).find((c) => product.images[c]?.length);
+  const photos = photoColorId ? product.images[photoColorId] : [];
+  const photoColor = colors.find((c) => c.id === photoColorId);
+  const requestedPhoto = view.startsWith("photo-") ? Number(view.slice(6)) : null;
+  const activeView = requestedPhoto === null ? view : photos[requestedPhoto] ? view : photos.length ? "photo-0" : "render";
   const renderSize = size || product.holeSizes[0];
   const liveConfig = holderConfig({ hole: renderSize, holesPerRow: product.layout.holesPerRow, rows: product.layout.rows });
   const liveBottles = { diameter: bottle ? bottle.hole - 1 : renderSize - 1, height: bottle?.height || 90 };
@@ -546,20 +552,20 @@ export default function Product() {
           <div>
             <Gallery>
               <Thumbs>
-                <Thumb type="button" $active={view === "photo"} onClick={() => setView("photo")} aria-label={`${color.name} photo`}>
-                  <span style={{ width: 28, height: 28, borderRadius: "50%", background: color.swatch, display: "block" }} />
-                </Thumb>
-                {photos.slice(1).map((src, i) => (
-                  <Thumb key={src} type="button" $active={view === `photo-${i + 1}`} onClick={() => setView(`photo-${i + 1}`)}>
+                {photos.map((src, i) => (
+                  <Thumb key={src} type="button" $active={activeView === `photo-${i}`} onClick={() => setView(`photo-${i}`)} aria-label={`Photo ${i + 1}, ${photoColor.name}`}>
                     <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </Thumb>
                 ))}
-                <Thumb type="button" $active={view === "3d"} onClick={() => setView("3d")}>
+                <Thumb type="button" $active={activeView === "render"} onClick={() => setView("render")} aria-label={`${color.name}, rendered`}>
+                  <img src={renderImage(product, colorId)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </Thumb>
+                <Thumb type="button" $active={activeView === "3d"} onClick={() => setView("3d")}>
                   3D with your bottles
                 </Thumb>
               </Thumbs>
               <MainImage>
-                {view === "3d" ? (
+                {activeView === "3d" ? (
                   <HolderCanvas
                     config={liveConfig}
                     color={color.swatch}
@@ -569,13 +575,13 @@ export default function Product() {
                     ratio="1 / 1"
                     alt={`${product.name} in ${color.name} with ${renderSize} mm bottles. Drag to turn.`}
                   />
-                ) : photos.length ? (
-                  <img src={photos[view === "photo" ? 0 : Number(view.split("-")[1])]} alt={`${product.name} in ${color.name}`} style={{ display: "block", width: "100%" }} />
+                ) : activeView === "render" ? (
+                  <img src={renderImage(product, colorId)} alt={`${product.name} in ${color.name}, rendered`} width="800" height="600" style={{ display: "block", width: "100%", height: "auto", padding: "8% 0", boxSizing: "border-box" }} />
                 ) : (
-                  <img src={productImage(product, colorId)} alt={`${product.name} in ${color.name}, rendered`} width="800" height="600" style={{ display: "block", width: "100%", height: "auto", padding: "8% 0", boxSizing: "border-box" }} />
+                  <img src={photos[Number(activeView.slice(6))]} alt={`${product.name} in ${photoColor.name}`} style={{ display: "block", width: "100%" }} />
                 )}
                 <Badge>
-                  {color.name}
+                  {activeView === "render" || activeView === "3d" ? `${color.name}, rendered` : photoColorId === colorId ? color.name : `Photographed in ${photoColor.name}`}
                   {size ? `, ${size} mm holes` : ""}
                 </Badge>
               </MainImage>

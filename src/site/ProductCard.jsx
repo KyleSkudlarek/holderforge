@@ -21,7 +21,7 @@ export default function ProductCard({ product, size, bottle, hint }) {
         width="800"
         height="600"
         loading="lazy"
-        style={{ display: "block", width: "100%", height: "auto", background: "var(--render-bg, transparent)" }}
+        style={{ display: "block", width: "100%", aspectRatio: "1 / 1", objectFit: "cover", background: "var(--render-bg, transparent)" }}
       />
       <CardBody>
         <H3>{product.name}</H3>

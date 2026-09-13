@@ -6,6 +6,7 @@ set -euo pipefail
 CH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 OUT="$(pwd)/public/images/home-holder.png"
 PROFILE="$(mktemp -d)"
+rm -f "$OUT"
 "$CH" --headless=new --disable-gpu --use-angle=swiftshader --enable-unsafe-swiftshader \
   --hide-scrollbars --window-size=1040,780 --force-device-scale-factor=2 \
   --default-background-color=00000000 --user-data-dir="$PROFILE" \

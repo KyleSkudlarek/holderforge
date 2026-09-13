@@ -40,6 +40,10 @@ Parameters:
     Type: Number
     Default: 4
 
+Conditions:
+  # The measuring-run scratch store exists on staging only.
+  IsStaging: !Equals [!Ref Stage, staging]
+
 Globals:
   Function:
     Runtime: nodejs22.x
@@ -61,6 +65,7 @@ Globals:
         PARCEL_LENGTH_IN: !Ref ParcelLengthIn
         PARCEL_WIDTH_IN: !Ref ParcelWidthIn
         PARCEL_HEIGHT_IN: !Ref ParcelHeightIn
+        MEASUREMENTS_TABLE: !If [IsStaging, !Ref MeasurementsTable, ""]
 
 Resources:
   Api:
@@ -68,7 +73,7 @@ Resources:
     Properties:
       CorsConfiguration:
         AllowOrigins: !Ref AllowedOrigins
-        AllowMethods: [GET, POST, OPTIONS]
+        AllowMethods: [GET, POST, PUT, DELETE, OPTIONS]
         AllowHeaders: [content-type]
         MaxAge: 3600
 
@@ -190,6 +195,65 @@ Resources:
             - Effect: Allow
               Action: [ses:SendEmail]
               Resource: "*"
+
+  # Staging-only: rows typed into /measure-run on the storefront during the
+  # cosmetics measuring trip (docs/cosmetics-run.md). Remove with that page.
+  MeasurementsTable:
+    Type: AWS::DynamoDB::Table
+    Condition: IsStaging
+    Properties:
+      TableName: !Sub holderforge-measurements-${Stage}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  MeasurementsFunction:
+    Type: AWS::Serverless::Function
+    Condition: IsStaging
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2022
+        Minify: false
+        Sourcemap: false
+        External: ["@aws-sdk/*"]
+        EntryPoints: [src/handlers/measurements.js]
+    Properties:
+      CodeUri: .
+      Handler: measurements.handler
+      Description: Staging-only scratch store for the cosmetics measuring run.
+      Events:
+        List:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /measurements
+            Method: GET
+        Put:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /measurements/{id}
+            Method: PUT
+        Delete:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /measurements/{id}
+            Method: DELETE
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MeasurementsTable
+        - Statement:
+            - Effect: Allow
+              Action: [ssm:GetParametersByPath]
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/holderforge/${Stage}
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/holderforge/${Stage}/*
 
 Outputs:
   ApiUrl:

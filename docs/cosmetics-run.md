@@ -136,6 +136,31 @@ Rare Beauty Soft Pinch Liquid Blush (~27 mm sq shoulders), Rare Beauty
 Positive Light Liquid Luminizer, Saie Dew Blush, Milk Cooling Water Jelly
 Tint (fat stick, ~30 mm).
 
+## The phone sheet (staging only, temporary)
+
+`https://staging.holderforge.com/measure-run/?k=<measure_key>` is the same
+list as `cosmetics-checklist.md` with Base, Height and Note fields per row,
+example photos per category, and an Add line for products not on the list.
+Every field saves on blur (and shortly after typing stops) to the backend's
+`/measurements` API, which stores one DynamoDB item per row. The key is SSM
+`/holderforge/staging/measure_key`; the page remembers it in localStorage
+after the first visit, so later visits can drop `?k=`.
+
+Read the results back with:
+
+```
+aws dynamodb scan --table-name holderforge-measurements-staging --output json
+```
+
+Remove before production, all together: `src/site/pages/MeasureRun.jsx` and
+its route in `App.jsx`, `public/images/measure/`, the `Disallow` line in
+`public/robots.txt`, `backend/src/handlers/measurements.js` with its test,
+the `MeasurementsTable`/`MeasurementsFunction`/`IsStaging` block in
+`backend/template.yaml` (and the PUT/DELETE CORS methods), the `measure_key`
+SSM parameter, and this section. Production never gets the table or
+function even if the template is deployed there, because both carry the
+`IsStaging` condition.
+
 ## After the run
 
 1. Add measured rows to `bottles.js` with `measured` and `height` filled in.

@@ -11,6 +11,7 @@ import Find from "./site/pages/Find";
 import FitsIndex from "./site/pages/FitsIndex";
 import Fits from "./site/pages/Fits";
 import Measure from "./site/pages/Measure";
+import MeasureRun from "./site/pages/MeasureRun";
 import NotFound from "./site/pages/NotFound";
 import { categoryBySlug } from "./catalog";
 
@@ -68,6 +69,8 @@ export default function App() {
             <Route path="/fits" element={<FitsIndex />} />
             <Route path="/fits/:slug" element={<Fits />} />
             <Route path="/guides/how-to-measure" element={<Measure />} />
+            {/* Temporary, staging only; see docs/cosmetics-run.md. */}
+            <Route path="/measure-run" element={<MeasureRun />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

@@ -10,6 +10,7 @@
 //   shippo/api_key          shippo_test_... or shippo_live_...
 //   ship_from               JSON Shippo address object for the shop's outbound address
 //   notify_email            SES-verified address that receives order notifications
+//   measure_key             staging only: shared key for the /measurements scratch API
 //
 // Parameters are fetched once per container and cached.
 
@@ -22,6 +23,8 @@ const config = {
   ssmPrefix: env.SSM_PREFIX,
   ordersTable: env.ORDERS_TABLE,
   uploadsBucket: env.UPLOADS_BUCKET,
+  measurementsTable: env.MEASUREMENTS_TABLE || "", // staging only
+
   siteUrl: env.SITE_URL,
   allowedOrigins: (env.ALLOWED_ORIGINS || "").split(",").filter(Boolean),
   productName: env.PRODUCT_NAME,

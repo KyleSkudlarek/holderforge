@@ -75,6 +75,7 @@ and writes need OAuth (`listings_r`/`listings_w`) which is not set up.
 | IAM role | `holderforge-github-deploy` (GitHub OIDC, trusts environments `production` and `staging`; PowerUserAccess + inline `amplify-deploy-holderforge-prod` + `holderforge-api-stack-roles`) |
 | CloudFormation stacks | `holderforge-api-staging`, `holderforge-api-prod` (SAM; HTTP API, 2 Lambdas, DynamoDB table `holderforge-orders-<stage>`, S3 `holderforge-uploads-<stage>-641383114949`) |
 | SSM parameters | `/holderforge/<stage>/{stripe/secret_key, stripe/webhook_secret, shippo/api_key, ship_from, notify_email}` |
+| Temporary (staging only) | `/measure-run` page, `MeasurementsFunction` + DynamoDB `holderforge-measurements-staging`, SSM `/holderforge/staging/measure_key`; removal list in `docs/cosmetics-run.md` |
 | SSM parameter | `/holderforge/staging/etsy/api_key` = `keystring:shared_secret` for Etsy Seller App `holderforge-shop-sync` (10 QPS / 10K per day) |
 | Stripe | account HolderForge; webhook endpoints per stage managed by `backend/scripts/register-stripe-webhook.sh` |
 | Shippo | account for label purchase; test and live tokens in SSM |

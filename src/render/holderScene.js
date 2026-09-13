@@ -158,10 +158,14 @@ export function createHolderScene({ config, color = "#d9a08a", bottles = false, 
     holder.add(mesh);
     if (style === "flat") holder.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 28), new THREE.LineBasicMaterial({ color: 0x2a2a2a })));
   }
-  scene.add(holder);
+  // Holder and bottles share a rig that the viewer turns; lights, ground and
+  // camera stay fixed so shading and shadow behave like a real turntable.
+  const rig = new THREE.Group();
+  rig.add(holder);
+  scene.add(rig);
 
   const bottleMeshes = new THREE.Group();
-  scene.add(bottleMeshes);
+  rig.add(bottleMeshes);
   const setBottles = (spec) => {
     bottleMeshes.clear();
     if (!spec) return;
@@ -181,7 +185,7 @@ export function createHolderScene({ config, color = "#d9a08a", bottles = false, 
     d.position.set(100, 200, 150);
     scene.add(d);
   } else {
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.ShadowMaterial({ opacity: 0.12 }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.ShadowMaterial({ opacity: 0.16 }));
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.01;
     ground.receiveShadow = true;
@@ -207,6 +211,7 @@ export function createHolderScene({ config, color = "#d9a08a", bottles = false, 
 
   return {
     scene,
+    rig,
     layout,
     setColor: (hex) => material.color.set(hex),
     setBottles,
@@ -218,7 +223,8 @@ export function createHolderScene({ config, color = "#d9a08a", bottles = false, 
 }
 
 // Canvas-bound viewer. Renders on demand; `setSpin(true)` starts a turntable
-// loop, `attachDrag()` lets the viewer be spun by pointer.
+// loop, `attachDrag()` lets the viewer be spun by pointer. Turning rotates the
+// holder rig under fixed lights; the camera only moves through `setView`.
 export function createViewer(canvas, { config, color, bottles, style, view = "hero", pixelRatio, transparent = true, shadowMap }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: transparent, preserveDrawingBuffer: true });
   renderer.setPixelRatio(pixelRatio ?? Math.min(globalThis.devicePixelRatio || 1, 2));
@@ -231,7 +237,7 @@ export function createViewer(canvas, { config, color, bottles, style, view = "he
   const holder = createHolderScene({ config, color, bottles, style, shadowMap: shadowMap ?? (canvas.width > 1200 ? 2048 : 1024) });
   const camera = new THREE.PerspectiveCamera(28, 4 / 3, 1, 4000);
   const size = Math.max(holder.layout.width, holder.layout.depth);
-  const state = { yaw: 0, elev: 0.5, distance: size * 2.6, lookY: holder.layout.height * 0.45, spinning: false, raf: 0, disposed: false };
+  const state = { yaw: 0, elev: 0.5, distance: size * 2.6, lookY: holder.layout.height * 0.45, turn: 0, spinning: false, raf: 0, disposed: false };
 
   const setView = (v) => {
     const preset = typeof v === "string" ? VIEWS[v] : v;
@@ -258,6 +264,7 @@ export function createViewer(canvas, { config, color, bottles, style, view = "he
   const render = () => {
     if (state.disposed) return;
     fit();
+    holder.rig.rotation.y = state.turn;
     camera.position.set(
       Math.sin(state.yaw) * Math.cos(state.elev) * state.distance,
       state.lookY + Math.sin(state.elev) * state.distance,
@@ -269,7 +276,7 @@ export function createViewer(canvas, { config, color, bottles, style, view = "he
 
   const loop = () => {
     if (state.disposed) return;
-    if (state.spinning) state.yaw += 0.004;
+    if (state.spinning) state.turn += 0.004;
     render();
     state.raf = requestAnimationFrame(loop);
   };
@@ -289,7 +296,7 @@ export function createViewer(canvas, { config, color, bottles, style, view = "he
     };
     const move = (e) => {
       if (!dragging) return;
-      state.yaw += (e.clientX - lastX) * 0.01;
+      state.turn += (e.clientX - lastX) * 0.01;
       lastX = e.clientX;
       if (!state.raf) render();
     };

@@ -6,7 +6,7 @@ import BottleSearch from "../BottleSearch";
 import ProductCard from "../ProductCard";
 import HolderCanvas from "../HolderCanvas";
 import { holderConfig } from "../../render/holderConfig";
-import { Container, Section, H1, H2, H3, Lead, Text, Muted, ButtonLink, Card, CardBody, CardLink, Grid, ChipRow, ChipLink, Placeholder, InlineLink, ExternalLink } from "../ui";
+import { Container, Section, H1, H2, H3, Lead, Text, Muted, ButtonLink, Card, CardBody, CardLink, Grid, ChipRow, ChipLink, Placeholder, InlineLink, ExternalLink, Segmented } from "../ui";
 import { categories, products, bottles, brandSlug, colors, defaultColorId } from "../../catalog";
 
 const Hero = styled.div`
@@ -37,30 +37,25 @@ const Illustration = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   > * {
     width: 100%;
     max-width: 560px;
   }
 `;
 
-const PreviewToggle = styled.label`
-  display: inline-flex;
-  justify-content: center;
+// Preview switch and the drag hint, centred under the render.
+const PreviewControls = styled.div`
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.headerSecondary};
-  cursor: pointer;
-  user-select: none;
-  input {
-    width: 18px;
-    height: 18px;
-    accent-color: ${({ theme }) => theme.colors.highlightPrimary};
-    cursor: pointer;
-  }
 `;
+
+const PREVIEW_OPTIONS = [
+  { value: "empty", label: "Holder only" },
+  { value: "loaded", label: "With bottles" },
+];
 
 // Bottles shown by the hero toggle: a 10 ml travel spray, 18 mm by 92 mm.
 const HERO_BOTTLES = { diameter: 18, height: 92 };
@@ -177,10 +172,10 @@ export default function Home() {
               poster="/images/renders/hero.png"
               alt="Three-tier rose gold holder with fifteen 19 mm holes. Drag to turn it."
             />
-            <PreviewToggle>
-              <input type="checkbox" checked={withBottles} onChange={(e) => setWithBottles(e.target.checked)} />
-              Preview with bottles
-            </PreviewToggle>
+            <PreviewControls>
+              <Segmented label="Preview" options={PREVIEW_OPTIONS} value={withBottles ? "loaded" : "empty"} onChange={(v) => setWithBottles(v === "loaded")} />
+              <Muted>Drag to turn</Muted>
+            </PreviewControls>
           </Illustration>
         </Hero>
 

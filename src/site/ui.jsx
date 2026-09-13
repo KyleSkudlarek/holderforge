@@ -195,6 +195,58 @@ export const ChipLink = styled(Link)`
   ${chipStyles}
 `;
 
+// Segmented control: a pill of mutually exclusive options, one always
+// active. Options are `{ value, label }`; the active one is raised on a
+// surface tile so the state reads at a glance without a checkbox.
+const SegmentedGroup = styled.div`
+  display: inline-flex;
+  padding: 4px;
+  gap: 2px;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  border: 1px solid ${({ theme }) => theme.colors.outline};
+`;
+
+const SegmentedOption = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: ${({ theme, $active }) => ($active ? theme.colors.surface : "transparent")};
+  color: ${({ theme, $active }) => ($active ? theme.colors.headerPrimary : theme.colors.muted)};
+  box-shadow: ${({ theme, $active }) => ($active ? `0 1px 3px ${theme.colors.shadow}` : "none")};
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  &:hover {
+    color: ${({ theme }) => theme.colors.headerPrimary};
+  }
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.highlightPrimary};
+    outline-offset: 1px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`;
+
+export const Segmented = ({ options, value, onChange, label, style }) => (
+  <SegmentedGroup role="group" aria-label={label} style={style}>
+    {options.map((o) => (
+      <SegmentedOption key={o.value} type="button" $active={o.value === value} aria-pressed={o.value === value} onClick={() => onChange(o.value)}>
+        {o.label}
+      </SegmentedOption>
+    ))}
+  </SegmentedGroup>
+);
+
 export const Divider = styled.hr`
   border: 0;
   border-top: 1px solid ${({ theme }) => theme.colors.outline};

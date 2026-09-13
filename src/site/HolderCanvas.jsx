@@ -27,6 +27,12 @@ const Frame = styled.div`
   img {
     object-fit: contain;
   }
+  /* The poster is prerendered for crawlers and no-WebGL viewers; once the
+     live canvas has drawn, hide it (author display:block would otherwise
+     override the hidden attribute). */
+  img[hidden] {
+    display: none;
+  }
 `;
 
 export default function HolderCanvas({ config, color, bottles = false, view = "hero", spin = false, poster, alt = "", ratio = "4 / 3", style }) {

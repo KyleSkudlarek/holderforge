@@ -146,7 +146,7 @@ export function bottleGroup({ diameter, height }, style) {
 //   bottles: false | { diameter, height }  (one bottle per hole)
 //   style:   "studio" (default) | "flat"
 //   shadowMap: shadow map resolution (2048 default; 1024 is fine below ~800 px)
-export function createHolderScene({ config, color = "#b87333", bottles = false, style = "studio", shadowMap = 2048 }) {
+export function createHolderScene({ config, color = "#d9a08a", bottles = false, style = "studio", shadowMap = 2048 }) {
   const scene = new THREE.Scene();
   const { parts, layout } = holderGeometries(config);
   const material = holderMaterial(color, style);

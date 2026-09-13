@@ -7,7 +7,7 @@ import ProductCard from "../ProductCard";
 import HolderCanvas from "../HolderCanvas";
 import { holderConfig } from "../../render/holderConfig";
 import { Container, Section, H1, H2, H3, Lead, Text, Muted, ButtonLink, Card, CardBody, CardLink, Grid, ChipRow, ChipLink, Placeholder, InlineLink, ExternalLink } from "../ui";
-import { categories, products, bottles, brandSlug, colors } from "../../catalog";
+import { categories, products, bottles, brandSlug, colors, defaultColorId } from "../../catalog";
 
 const Hero = styled.div`
   display: grid;
@@ -43,7 +43,7 @@ const Illustration = styled.div`
 
 // The hero holder: 15 slots at 19 mm in rose gold, drag to turn.
 const HERO_CONFIG = holderConfig({ hole: 19 });
-const HERO_COLOR = colors.find((c) => c.id === "rose-gold").swatch;
+const HERO_COLOR = colors.find((c) => c.id === defaultColorId).swatch;
 
 const Steps = styled.ol`
   list-style: none;

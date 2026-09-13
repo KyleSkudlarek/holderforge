@@ -46,6 +46,9 @@ the catalog (`src/site/` pages driven by `src/catalog/` data, light
 `lightTheme` applied per-route in `App.jsx`; both themes share token names). Routes, data model, photo
 naming and the prerender step: `docs/catalog.md`. Adding a measured bottle is
 one row in `src/catalog/bottles.js`; everything else derives from it.
+Every picture of a holder comes from the shared renderer
+(`src/render/holderScene.js`, `HolderCanvas`, `scripts/render/`): see
+`docs/renders.md`. Never hand-draw a holder or copy the geometry code.
 
 ## Infrastructure inventory
 

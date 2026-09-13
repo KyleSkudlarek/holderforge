@@ -1,7 +1,6 @@
-import { CardLink, CardBody, H3, Muted, Placeholder, SwatchDots } from "./ui";
+import { CardLink, CardBody, H3, Muted, SwatchDots } from "./ui";
+import { productImage } from "../catalog";
 import { colors, defaultColorId, fitsForProduct, money } from "../catalog";
-
-const tintFor = (id) => colors.find((c) => c.id === id)?.swatch;
 
 // Grid tile for a catalog holder. `size` preselects a hole size on the
 // product page, `bottle` the bottle id that led here.
@@ -16,7 +15,14 @@ export default function ProductCard({ product, size, bottle, hint }) {
   const qs = params.toString();
   return (
     <CardLink to={`/shop/${product.slug}/${qs ? `?${qs}` : ""}`}>
-      <Placeholder label={`${product.name}, ${colors.find((c) => c.id === defaultColorId).name}`} tint={tintFor(defaultColorId)} />
+      <img
+        src={productImage(product, defaultColorId)}
+        alt={`${product.name} in ${colors.find((c) => c.id === defaultColorId).name}`}
+        width="800"
+        height="600"
+        loading="lazy"
+        style={{ display: "block", width: "100%", height: "auto", background: "var(--render-bg, transparent)" }}
+      />
       <CardBody>
         <H3>{product.name}</H3>
         <Muted>{hint || (brandCount ? `Fits ${brandCount} brands, ${sizeText}` : sizeText)}</Muted>

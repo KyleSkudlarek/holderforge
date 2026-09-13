@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Seo from "../Seo";
 import BottleSearch from "../BottleSearch";
 import ProductCard from "../ProductCard";
+import HolderCanvas from "../HolderCanvas";
+import { holderConfig } from "../../render/holderConfig";
 import { Container, Section, H1, H2, H3, Lead, Text, Muted, ButtonLink, Card, CardBody, CardLink, Grid, ChipRow, ChipLink, Placeholder, InlineLink, ExternalLink } from "../ui";
 import { categories, products, bottles, brandSlug, colors } from "../../catalog";
 
@@ -34,12 +36,14 @@ const Actions = styled.div`
 const Illustration = styled.div`
   display: flex;
   justify-content: center;
-  img {
-    width: 100%;
-    height: auto;
+  > * {
     max-width: 560px;
   }
 `;
+
+// The hero holder: 15 slots at 19 mm in rose gold, drag to turn.
+const HERO_CONFIG = holderConfig({ hole: 19 });
+const HERO_COLOR = colors.find((c) => c.id === "rose-gold").swatch;
 
 const Steps = styled.ol`
   list-style: none;
@@ -140,12 +144,12 @@ export default function Home() {
             <BottleSearch wide />
           </HeroText>
           <Illustration>
-            <img
-              src="/images/home-holder.png"
-              width="1040"
-              height="780"
-              alt="Three-tier copper holder with fifteen 19 mm holes, rendered from the designer"
-              fetchPriority="high"
+            <HolderCanvas
+              config={HERO_CONFIG}
+              color={HERO_COLOR}
+              view="hero"
+              poster="/images/renders/hero.png"
+              alt="Three-tier rose gold holder with fifteen 19 mm holes. Drag to turn it."
             />
           </Illustration>
         </Hero>

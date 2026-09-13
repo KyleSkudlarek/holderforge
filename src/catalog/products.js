@@ -7,18 +7,10 @@
 // priceCents is display-only until the order API prices by SKU.
 // images: { [colorId]: [url, ...] }. Missing entries render a placeholder.
 
-const MIN_INNER_GAP = 2.75;
-const EDGE_GAP_SCALE = 1.32;
+import { minimumFootprint } from "../model/ModelCalculator.js";
 
-// Mirrors computeRequiredModelDimensions in src/GridPreview.jsx: the smallest
-// footprint that fits `holesPerRow` holes of `hole` mm per row.
-export function footprintFor(hole, holesPerRow = 5) {
-  const padding = MIN_INNER_GAP * EDGE_GAP_SCALE;
-  return {
-    model_width: Math.ceil(MIN_INNER_GAP * (holesPerRow - 1) + 2 * padding + holesPerRow * hole),
-    model_depth: Math.ceil(3 * (8 + hole)),
-  };
-}
+// Smallest footprint that fits `holesPerRow` holes of `hole` mm per row.
+export const footprintFor = (hole, holesPerRow = 5) => minimumFootprint(hole, holesPerRow);
 
 function configFor(hole, bottleHeight = 100) {
   return {

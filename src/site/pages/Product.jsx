@@ -4,8 +4,10 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import Seo, { breadcrumbLd, canonicalUrl } from "../Seo";
 import BottleSearch from "../BottleSearch";
 import ProductCard from "../ProductCard";
+import HolderCanvas from "../HolderCanvas";
+import { holderConfig } from "../../render/holderConfig";
 import NotFound from "./NotFound";
-import { Container, Section, H1, H2, H3, Text, Muted, Button, ButtonLink, Card, CardBody, ChipRow, Chip, Placeholder, Swatch, Breadcrumbs, InlineLink, ExternalLink, Notice } from "../ui";
+import { Container, Section, H1, H2, H3, Text, Muted, Button, ButtonLink, Card, CardBody, ChipRow, Chip, Swatch, Breadcrumbs, InlineLink, ExternalLink, Notice } from "../ui";
 import {
   productBySlug,
   colors,
@@ -19,6 +21,7 @@ import {
   footprintFor,
   money,
   categoryBySlug,
+  productImage,
 } from "../../catalog";
 
 const SHIPPING_CENTS = 695;
@@ -391,6 +394,9 @@ export default function Product() {
   const slots = product.layout.rows * product.layout.holesPerRow;
   const bottleFitsThisProduct = bottle && product.holeSizes.includes(bottle.hole);
   const photos = product.images[colorId] || [];
+  const renderSize = size || product.holeSizes[0];
+  const liveConfig = holderConfig({ hole: renderSize, holesPerRow: product.layout.holesPerRow, rows: product.layout.rows });
+  const liveBottles = { diameter: bottle ? bottle.hole - 1 : renderSize - 1, height: bottle?.height || 90 };
   const others = size ? productsForHole(size).filter((p) => p.slug !== product.slug && p.categories.some((c) => product.categories.includes(c))) : [];
   const primaryCategory = categoryBySlug(product.categories[0]);
   const designerHref = `/design/?d=${size || product.holeSizes[0]}`;
@@ -461,11 +467,19 @@ export default function Product() {
               </Thumbs>
               <MainImage>
                 {view === "3d" ? (
-                  <Placeholder label="3D preview with your bottle size: coming soon" ratio="1 / 1" />
+                  <HolderCanvas
+                    config={liveConfig}
+                    color={color.swatch}
+                    bottles={liveBottles}
+                    view="product"
+                    spin
+                    ratio="1 / 1"
+                    alt={`${product.name} in ${color.name} with ${renderSize} mm bottles. Drag to turn.`}
+                  />
                 ) : photos.length ? (
                   <img src={photos[view === "photo" ? 0 : Number(view.split("-")[1])]} alt={`${product.name} in ${color.name}`} style={{ display: "block", width: "100%" }} />
                 ) : (
-                  <Placeholder label={`Photo of the ${color.name.toLowerCase()} holder coming soon`} tint={color.swatch} ratio="1 / 1" />
+                  <img src={productImage(product, colorId)} alt={`${product.name} in ${color.name}, rendered`} width="800" height="600" style={{ display: "block", width: "100%", height: "auto", padding: "8% 0", boxSizing: "border-box" }} />
                 )}
                 <Badge>
                   {color.name}

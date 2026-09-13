@@ -61,6 +61,10 @@ export function fitsForProduct(product) {
     .filter((g) => g.bottles.length > 0);
 }
 
+// First image for a product in a colour: a real photo when one is listed,
+// otherwise the rendered PNG from scripts/render/render-images.mjs.
+export const productImage = (product, colorId) => product.images[colorId]?.[0] || `/images/renders/${product.slug}/${colorId}.png`;
+
 export const bottleLabel = (b) => `${b.brand} ${b.product} ${b.volume}`;
 
 export const bottleId = (b) => slugify(`${b.brand} ${b.product} ${b.volume}`);

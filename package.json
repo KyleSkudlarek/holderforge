@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build && node scripts/prerender.mjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "etsy:pull": "node scripts/etsy/pull-listings.mjs"
   },
   "dependencies": {
     "@jscad/modeling": "^2.12.5",

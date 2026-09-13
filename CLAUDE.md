@@ -50,6 +50,14 @@ Every picture of a holder comes from the shared renderer
 (`src/render/holderScene.js`, `HolderCanvas`, `scripts/render/`): see
 `docs/renders.md`. Never hand-draw a holder or copy the geometry code.
 
+## Etsy shop
+
+The shop is `SkudsWorkshop` (shop id 55988004), not "holderforge". `npm run
+etsy:pull` snapshots its public data into `docs/etsy/` (`listings.md` is the
+readable digest; `listings.json`/`shop.json` are raw). Use that copy as the
+reference voice for catalog pages. Read-only, API key only; drafts, inventory
+and writes need OAuth (`listings_r`/`listings_w`) which is not set up.
+
 ## Infrastructure inventory
 
 | Resource | Name / id |
@@ -61,6 +69,7 @@ Every picture of a holder comes from the shared renderer
 | IAM role | `holderforge-github-deploy` (GitHub OIDC, trusts environments `production` and `staging`; PowerUserAccess + inline `amplify-deploy-holderforge-prod` + `holderforge-api-stack-roles`) |
 | CloudFormation stacks | `holderforge-api-staging`, `holderforge-api-prod` (SAM; HTTP API, 2 Lambdas, DynamoDB table `holderforge-orders-<stage>`, S3 `holderforge-uploads-<stage>-641383114949`) |
 | SSM parameters | `/holderforge/<stage>/{stripe/secret_key, stripe/webhook_secret, shippo/api_key, ship_from, notify_email}` |
+| SSM parameter | `/holderforge/staging/etsy/api_key` = `keystring:shared_secret` for Etsy Seller App `holderforge-shop-sync` (10 QPS / 10K per day) |
 | Stripe | account HolderForge; webhook endpoints per stage managed by `backend/scripts/register-stripe-webhook.sh` |
 | Shippo | account for label purchase; test and live tokens in SSM |
 | SES | email identity = `notify_email` (sandbox mode is sufficient) |
@@ -109,5 +118,8 @@ Every picture of a holder comes from the shared renderer
 - Amplify 301s `/shop` to `/shop/` because prerendered routes are directories.
   Internal links, canonicals and the sitemap all use trailing slashes
   (`canonicalUrl` in `src/site/Seo.jsx`); keep new links that way.
+- Etsy's `x-api-key` header must be `keystring:shared_secret`; the keystring
+  alone returns "Shared secret is required". The batch listings endpoint
+  rejects `includes=Inventory` (inventory is OAuth-only).
 - `npm run lint` has ~140 pre-existing errors in `GridPreview.jsx` (prop-types,
   unused imports); it is not a gate.
